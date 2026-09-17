@@ -94,3 +94,33 @@ $$;
 
 revoke all on function zebra_excluir_minha_conta() from public, anon;
 grant execute on function zebra_excluir_minha_conta() to authenticated;
+
+-- ---------------------------------------------------------------- perfil junto com a conta
+-- Antes o navegador criava a conta e só depois inseria o perfil, em duas
+-- viagens. Se a segunda falhasse (queda, apelido tomado na corrida), sobrava
+-- login sem apelido: a pessoa entrava e não existia no ranking.
+-- Agora o perfil nasce dentro da mesma transação do cadastro. Se o apelido
+-- estiver em uso, o índice único derruba o insert e a conta inteira não é
+-- criada — nunca sobra metade.
+create or replace function zebra_perfil_da_conta_nova()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  ap text := nullif(trim(new.raw_user_meta_data ->> 'apelido'), '');
+begin
+  -- Sem apelido informado (ou fora do tamanho), gera um para nunca ficar órfão.
+  if ap is null or char_length(ap) < 2 or char_length(ap) > 18 then
+    ap := 'zebra' || lpad((floor(random() * 100000))::int::text, 5, '0');
+  end if;
+  insert into zebra_perfis (id, apelido) values (new.id, ap);
+  return new;
+end;
+$$;
+
+drop trigger if exists zebra_ao_criar_usuario on auth.users;
+create trigger zebra_ao_criar_usuario
+  after insert on auth.users
+  for each row execute function zebra_perfil_da_conta_nova();

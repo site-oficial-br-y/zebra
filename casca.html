@@ -337,6 +337,22 @@ h1 em{font-style:italic;color:var(--verde)}
 .perigo p{font-size:12.5px;color:var(--apagado);line-height:1.55;margin-bottom:11px}
 .btn.risco{background:var(--vermelho);color:#fff}
 
+.elo{background:none;border:none;padding:0;color:var(--verde);font-family:inherit;
+  font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.elo:hover{color:var(--claro)}
+.linha-elos{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.aceite{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.5;
+  color:var(--apagado);margin-top:2px}
+.aceite input{width:16px;height:16px;flex:none;margin-top:1px;accent-color:var(--verde)}
+.aceite .elo{font-size:12px}
+.legal{max-width:640px;margin-top:22px}
+.legal h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--verde);
+  font-weight:800;margin:26px 0 9px}
+.legal h3:first-child{margin-top:0}
+.legal p{font-size:13.5px;line-height:1.7;color:var(--apagado);margin-bottom:11px}
+.legal p b{color:var(--claro);font-weight:800}
+.legal .data{font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-top:30px}
+
 rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(--linha);
   text-align:center;color:var(--apagado);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
 </style>
@@ -424,17 +440,37 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     <button class="btn ghost sm" id="contaVoltar">Voltar ao jogo</button></div>
 
   <div id="deslogado">
-    <div class="abas">
+    <div class="abas" id="abasConta">
       <button class="tab on" id="tabEntrar">Entrar</button>
       <button class="tab" id="tabCriar">Criar conta</button>
     </div>
+    <p class="dica" id="dicaRecuperar" style="margin-top:16px;max-width:380px" hidden>
+      Digite o e-mail da conta. Se existir cadastro, chega um link para escolher uma senha nova.</p>
     <div class="form">
       <input id="fApelido" type="text" placeholder="Apelido no ranking" maxlength="18" autocomplete="nickname" hidden>
       <input id="fEmail" type="email" placeholder="E-mail" autocomplete="email">
       <input id="fSenha" type="password" placeholder="Senha (mínimo 6)" autocomplete="current-password">
+      <label class="aceite" id="aceiteBox" hidden>
+        <input type="checkbox" id="fAceite">
+        <span>Li e aceito os <button type="button" class="elo" data-legal="termos">termos de uso</button>
+          e a <button type="button" class="elo" data-legal="privacidade">política de privacidade</button>.</span>
+      </label>
       <button class="btn" id="fEnviar">Entrar</button>
     </div>
+    <div class="linha-elos">
+      <button class="elo" id="eloRecuperar">Esqueci minha senha</button>
+      <button class="elo" id="eloVoltarLogin" hidden>← Voltar ao login</button>
+    </div>
     <div id="contaAviso"></div>
+  </div>
+
+  <div id="trocaSenha" hidden>
+    <p class="dica" style="max-width:380px">Você chegou pelo link de recuperação. Escolha a senha nova.</p>
+    <div class="form">
+      <input id="fNovaSenha" type="password" placeholder="Senha nova (mínimo 6)" autocomplete="new-password">
+      <button class="btn" id="btTrocaSenha">Salvar senha</button>
+    </div>
+    <div id="trocaAviso"></div>
   </div>
 
   <div id="logado" hidden>
@@ -516,7 +552,81 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
   </div>
 </section>
 
-<rodape>Zebra · futebol brasileiro de todos os tempos</rodape>
+<section id="scr-legal" hidden>
+  <div class="contexto"><div class="quem" id="legalTitulo">Termos de uso</div>
+    <button class="btn ghost sm" id="legalVoltar">Voltar</button></div>
+
+  <div class="legal" id="legalTermos">
+    <h3>O que é o Zebra</h3>
+    <p>O Zebra é um jogo gratuito de navegador sobre a história do futebol brasileiro.
+      Nada aqui é vendido, e não existe cobrança de nenhum tipo. Usar o jogo não exige conta:
+      a conta serve só para guardar suas partidas e aparecer no ranking.</p>
+
+    <h3>Sobre os jogadores e os clubes</h3>
+    <p>Os elencos são <b>fatos históricos</b> — escalações de finais que aconteceram de verdade,
+      cada uma com a fonte registrada. O jogo não usa escudo, uniforme, foto nem qualquer marca de clube:
+      cada time é só duas cores. As notas de overall são opinião do jogo, feitas para dar equilíbrio
+      à partida, e não são avaliação de ninguém. O Zebra não tem vínculo, patrocínio nem autorização
+      de nenhum clube, federação ou atleta.</p>
+
+    <h3>Sua conta e seu apelido</h3>
+    <p>O apelido que você escolhe fica <b>visível para qualquer pessoa</b> no ranking. Por isso:
+      não use o nome completo, telefone, nem dado de outra pessoa. Apelido ofensivo, que se passe por
+      outra pessoa ou que viole a lei pode ser removido sem aviso. Você é responsável pelo que faz
+      com a sua conta e por manter a sua senha em segredo.</p>
+
+    <h3>Resultado não se edita</h3>
+    <p>Partida registrada não pode ser alterada nem por você nem por nós — só apagada junto com a conta.
+      É o que mantém o ranking honesto. Tentar burlar o ranking por fora do jogo pode custar a conta.</p>
+
+    <h3>O jogo é oferecido como está</h3>
+    <p>É um projeto pessoal e gratuito. Pode sair do ar, mudar de regra, perder dados ou ser encerrado
+      a qualquer momento, sem aviso e sem indenização. Se isso for um problema para você, não crie conta —
+      o jogo funciona inteiro sem ela.</p>
+
+    <h3>Menores de idade</h3>
+    <p>Quem tem menos de 18 anos precisa da concordância de um responsável para criar conta.</p>
+
+    <p class="data">Vigente desde 17 de setembro de 2026</p>
+  </div>
+
+  <div class="legal" id="legalPriv" hidden>
+    <h3>O que o Zebra guarda</h3>
+    <p>Sem conta, <b>nada</b>: o jogo roda inteiro no seu navegador e não envia nada para lugar nenhum.
+      Com conta, só três coisas: o <b>e-mail</b> (para entrar e recuperar a senha), o <b>apelido</b>
+      (público no ranking) e o <b>resultado das suas partidas</b> — overall, formação, gols, até onde chegou.</p>
+
+    <h3>O que o Zebra não guarda</h3>
+    <p>Não pedimos nome, CPF, telefone, endereço nem nada de pagamento. Não há rastreador de
+      publicidade, pixel de rede social nem venda ou troca de dados com ninguém. Seu e-mail nunca
+      aparece para outros jogadores — só o apelido aparece.</p>
+
+    <h3>Onde ficam</h3>
+    <p>No Supabase, em servidor no Brasil (região São Paulo). O acesso é restrito por regra no próprio
+      banco: cada conta só consegue ler e apagar os próprios dados. O ranking e os apelidos são
+      públicos de propósito, porque é a função deles.</p>
+
+    <h3>Cookies</h3>
+    <p>Só o necessário para manter você logado. Nenhum cookie de anúncio ou de análise.</p>
+
+    <h3>Seus direitos</h3>
+    <p>Você pode <b>excluir a conta a qualquer momento</b>, sozinho, em Sua conta › Excluir conta.
+      Isso apaga o login, o apelido e todas as partidas na hora, sem passar por ninguém — e não tem
+      como desfazer. Pela LGPD você também pode pedir acesso, correção ou uma cópia dos seus dados.</p>
+
+    <h3>Contato</h3>
+    <p>Para qualquer pedido sobre dados: <b>Instagram @variant.agencia</b>.</p>
+
+    <p class="data">Vigente desde 17 de setembro de 2026</p>
+  </div>
+</section>
+
+<rodape>
+  <span style="display:block;margin-bottom:10px">Zebra · futebol brasileiro de todos os tempos</span>
+  <button class="elo" data-legal="termos">Termos de uso</button>
+  <span style="opacity:.35;margin:0 8px">·</span>
+  <button class="elo" data-legal="privacidade">Privacidade</button>
+</rodape>
 </div>
 <script type="module">
 /* O jogo roda sem banco. Se o Supabase não carregar (offline, CDN bloqueado),
@@ -541,15 +651,30 @@ try {
       if (error) throw new Error(traduz(error.message));
     },
     async criar(email, senha, apelido){
+      // Aviso cedo, com mensagem boa, antes de criar qualquer coisa.
       const { data: livre } = await sb.from('zebra_perfis').select('id').ilike('apelido', apelido).maybeSingle();
       if (livre) throw new Error('Esse apelido já está em uso.');
-      const { data, error } = await sb.auth.signUp({ email, password: senha });
+      // O perfil nasce no banco, por trigger, dentro da mesma transação da conta.
+      // Se o apelido for tomado nesse meio-tempo, a conta inteira não é criada
+      // em vez de sobrar um login sem apelido.
+      const { data, error } = await sb.auth.signUp({
+        email, password: senha, options: { data: { apelido } },
+      });
       if (error) throw new Error(traduz(error.message));
       if (!data.session) throw new Error('Confirmação de e-mail ainda está ligada no Supabase. Desligue em Authentication › Providers › Email.');
-      const { error: e2 } = await sb.from('zebra_perfis').insert({ id: data.user.id, apelido });
-      if (e2) throw new Error(e2.code === '23505' ? 'Esse apelido já está em uso.' : e2.message);
     },
     async sair(){ await sb.auth.signOut(); },
+    async recuperarSenha(email){
+      // A resposta é sempre a mesma, exista ou não a conta: este formulário não
+      // pode virar jeito de descobrir quem tem cadastro no Zebra.
+      const volta = location.origin + location.pathname;
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: volta });
+      if (error) console.warn('recuperação:', error.message);
+    },
+    async definirSenha(senha){
+      const { error } = await sb.auth.updateUser({ password: senha });
+      if (error) throw new Error(traduz(error.message));
+    },
     async excluir(){ const { error } = await sb.rpc('zebra_excluir_minha_conta'); if (error) throw error; await sb.auth.signOut(); },
     async salvarPartida(p){
       const s = await this.sessao(); if (!s) return false;
@@ -568,7 +693,13 @@ try {
     /Invalid login/i.test(m) ? 'E-mail ou senha não conferem.' :
     /already registered/i.test(m) ? 'Esse e-mail já tem conta. Tente entrar.' :
     /Password should be/i.test(m) ? 'A senha precisa de pelo menos 6 caracteres.' :
-    /valid email/i.test(m) ? 'E-mail inválido.' : m;
+    /valid email/i.test(m) ? 'E-mail inválido.' :
+    /Database error saving/i.test(m) ? 'Esse apelido acabou de ser levado. Escolha outro.' :
+    /New password should be different/i.test(m) ? 'A senha nova precisa ser diferente da atual.' :
+    /Auth session missing|session_not_found/i.test(m) ? 'O link de recuperação expirou. Peça outro.' : m;
+  sb.auth.onAuthStateChange((ev) => {
+    if (ev === 'PASSWORD_RECOVERY') window.dispatchEvent(new Event('zb-recuperar'));
+  });
   window.dispatchEvent(new Event('zb-pronto'));
 } catch (e) {
   console.warn('Supabase indisponível; jogo segue sem conta.', e);

@@ -88,7 +88,7 @@ const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
 
 /* ---------- telas ---------- */
 const $ = id => document.getElementById(id);
-const TELAS = ['scr-home','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank'];
+const TELAS = ['scr-home','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank','scr-legal'];
 const mostra = id => {
   TELAS.forEach(x => $(x).hidden = x !== id);
   const el = $(id);
@@ -438,11 +438,17 @@ function pintaConta(){
         : '<span>Nenhuma partida registrada ainda</span>';
     }).catch(()=>{});
   } else {
-    const criando = modoConta === 'criar';
-    $('tabEntrar').classList.toggle('on', !criando);
+    const criando = modoConta === 'criar', recuperando = modoConta === 'recuperar';
+    $('abasConta').hidden = recuperando;
+    $('dicaRecuperar').hidden = !recuperando;
+    $('tabEntrar').classList.toggle('on', modoConta === 'entrar');
     $('tabCriar').classList.toggle('on', criando);
     $('fApelido').hidden = !criando;
-    $('fEnviar').textContent = criando ? 'Criar conta' : 'Entrar';
+    $('fSenha').hidden = recuperando;
+    $('aceiteBox').hidden = !criando;
+    $('eloRecuperar').hidden = recuperando;
+    $('eloVoltarLogin').hidden = !recuperando;
+    $('fEnviar').textContent = recuperando ? 'Enviar link' : criando ? 'Criar conta' : 'Entrar';
     $('fSenha').autocomplete = criando ? 'new-password' : 'current-password';
   }
 }
@@ -451,7 +457,8 @@ function abreConta(){
   if (!window.ZB) return;
   if (!$('scr-conta').hidden) return;
   voltarPara = TELAS.find(t=>!$(t).hidden) || 'scr-home';
-  diz('contaAviso',''); diz('excluirAviso','');
+  diz('contaAviso',''); diz('excluirAviso',''); diz('trocaAviso','');
+  $('trocaSenha').hidden = true;
   mostra('scr-conta'); pintaConta();
 }
 $('btConta').onclick = abreConta;
@@ -463,8 +470,20 @@ $('tabCriar').onclick  = () => { modoConta='criar';  diz('contaAviso',''); pinta
 $('fEnviar').onclick = async () => {
   const email = $('fEmail').value.trim(), senha = $('fSenha').value;
   const apelido = $('fApelido').value.trim();
-  if (!email || !senha) return diz('contaAviso','Preencha e-mail e senha.');
-  if (modoConta === 'criar' && apelido.length < 2) return diz('contaAviso','Escolha um apelido de 2 a 18 letras.');
+  if (!email) return diz('contaAviso','Preencha o e-mail.');
+  if (modoConta === 'recuperar'){
+    $('fEnviar').disabled = true; diz('contaAviso','');
+    try { await window.ZB.recuperarSenha(email); } catch {}
+    // Mesma resposta exista ou não a conta, de propósito.
+    diz('contaAviso','Se existir conta com esse e-mail, o link de recuperação já está a caminho. Confira o spam.', true);
+    $('fEnviar').disabled = false;
+    return;
+  }
+  if (!senha) return diz('contaAviso','Preencha a senha.');
+  if (modoConta === 'criar'){
+    if (apelido.length < 2) return diz('contaAviso','Escolha um apelido de 2 a 18 letras.');
+    if (!$('fAceite').checked) return diz('contaAviso','Marque que aceita os termos de uso e a política de privacidade.');
+  }
   $('fEnviar').disabled = true; diz('contaAviso','');
   try {
     if (modoConta === 'criar') await window.ZB.criar(email, senha, apelido);
@@ -475,6 +494,49 @@ $('fEnviar').onclick = async () => {
   } catch(e){ diz('contaAviso', e.message); }
   $('fEnviar').disabled = false;
 };
+
+$('eloRecuperar').onclick   = () => { modoConta='recuperar'; diz('contaAviso',''); pintaConta(); };
+$('eloVoltarLogin').onclick = () => { modoConta='entrar';    diz('contaAviso',''); pintaConta(); };
+
+/* ---- senha nova, quando a pessoa volta pelo link do e-mail ---- */
+function abreTrocaSenha(){
+  voltarPara = 'scr-home';
+  mostra('scr-conta');
+  $('deslogado').hidden = true; $('logado').hidden = true;
+  $('trocaSenha').hidden = false;
+  diz('trocaAviso','');
+}
+window.addEventListener('zb-recuperar', abreTrocaSenha);
+
+$('btTrocaSenha').onclick = async () => {
+  const nova = $('fNovaSenha').value;
+  if (nova.length < 6) return diz('trocaAviso','A senha precisa de pelo menos 6 caracteres.');
+  $('btTrocaSenha').disabled = true; diz('trocaAviso','');
+  try {
+    await window.ZB.definirSenha(nova);
+    $('fNovaSenha').value = '';
+    $('trocaSenha').hidden = true;
+    await carregaEu();
+    pintaConta();
+    diz('contaAviso','Senha trocada. Você já está dentro.', true);
+    history.replaceState(null, '', location.pathname);
+  } catch(e){ diz('trocaAviso', e.message); }
+  $('btTrocaSenha').disabled = false;
+};
+
+/* ---- termos e privacidade ---- */
+function abreLegal(qual){
+  if ($('scr-legal').hidden) voltarPara = TELAS.find(t=>!$(t).hidden) || 'scr-home';
+  const priv = qual === 'privacidade';
+  $('legalTitulo').textContent = priv ? 'Privacidade' : 'Termos de uso';
+  $('legalTermos').hidden = priv;
+  $('legalPriv').hidden = !priv;
+  mostra('scr-legal');
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.querySelectorAll('[data-legal]').forEach(b =>
+  b.addEventListener('click', e => { e.preventDefault(); abreLegal(b.dataset.legal); }));
+$('legalVoltar').onclick = () => mostra(voltarPara);
 
 $('btSair').onclick = async () => { await window.ZB.sair(); EU=null; pintaTopo(); pintaConta(); };
 
