@@ -49,7 +49,7 @@ body{
   font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
   min-height:100vh; padding:0 16px 40px; overflow-x:hidden;
 }
-.wrap{max-width:900px;margin:0 auto}
+.wrap{max-width:1180px;margin:0 auto}
 .tag{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--apagado);font-weight:800}
 button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
 
@@ -109,8 +109,8 @@ h1 em{font-style:italic;color:var(--verde)}
 
 /* ---- o campo ---- */
 .campo{position:relative;border:1px solid var(--linha);border-radius:12px;
-  margin:18px auto 8px;max-width:560px;
-  padding:34px 26px;aspect-ratio:3/4;
+  width:100%;margin:0 auto 8px;max-width:470px;
+  padding:26px 20px;aspect-ratio:3/3.35;
   background:repeating-linear-gradient(0deg,#122a19 0 9%,#16351f 9% 18%)}
 .campo .marcacao{position:absolute;inset:11px;border:2px solid rgba(255,255,255,.17);border-radius:4px;pointer-events:none}
 .campo .meio{position:absolute;left:11px;right:11px;top:50%;height:2px;background:rgba(255,255,255,.17);pointer-events:none}
@@ -139,22 +139,23 @@ h1 em{font-style:italic;color:var(--verde)}
   .pos .rot,.pos .quem{width:66px}.pos .rot{font-size:8px}.pos .quem{font-size:9.5px}}
 
 /* ---- elenco sorteado ---- */
-.timehead{display:flex;align-items:center;gap:12px;margin:24px 0 3px}
-.flag{width:36px;height:25px;border-radius:3px;flex:0 0 auto;
+.timehead{display:flex;align-items:center;gap:9px;margin:0 0 3px}
+.flag{width:28px;height:20px;border-radius:3px;flex:0 0 auto;
   box-shadow:0 0 0 1px rgba(255,255,255,.2);transform:skewX(-9deg)}
-.timehead h2{font-size:22px;font-weight:900;font-style:italic;letter-spacing:-.025em;text-transform:uppercase}
+.timehead h2{font-size:17px;font-weight:900;font-style:italic;letter-spacing:-.025em;text-transform:uppercase}
 .timehead .yr{color:var(--verde)}
-.conq{color:var(--apagado);font-size:12px;margin-bottom:13px}
-.list{display:grid;gap:5px}
+.conq{color:var(--apagado);font-size:10.5px;margin-bottom:10px;line-height:1.35}
+.list{display:grid;gap:4px}
 .pl{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:11px;align-items:center;
   background:var(--carta);border:1px solid var(--linha);border-radius:8px;padding:11px 14px;
   text-align:left;width:100%;transition:border-color .12s,background .12s}
 .pl:hover:not(:disabled){border-color:var(--verde);background:#1a2a1e}
 .pl:disabled{opacity:.28;cursor:default}
 .pl .g{font-size:9px;font-weight:900;color:var(--verde);letter-spacing:.08em}
-.pl .nm{font-weight:800;font-size:15px;letter-spacing:-.01em}
-.pl .ps{font-size:11px;color:var(--apagado)}
-.pl .why{font-size:9.5px;color:var(--vermelho);font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.pl .nm{font-weight:800;font-size:13px;letter-spacing:-.01em;line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .ps{font-size:10px;color:var(--apagado)}
+.pl .why{font-size:8.5px;color:var(--vermelho);font-weight:800;text-transform:uppercase;letter-spacing:.07em}
 
 /* ---- campanha ---- */
 .match{background:var(--carta);border:1px solid var(--linha);border-radius:10px;padding:13px 15px;margin-bottom:7px;animation:sobe .45s cubic-bezier(.2,.7,.3,1) both}
@@ -191,6 +192,82 @@ h1 em{font-style:italic;color:var(--verde)}
 .ovbox{display:flex;align-items:baseline;gap:14px;margin:20px 0 2px}
 .ovbox .v{font-size:60px;font-weight:900;font-style:italic;letter-spacing:-.05em;
   color:var(--verde);font-variant-numeric:tabular-nums;line-height:1}
+/* ---- revelacao: numero a esquerda, campo a direita ---- */
+.rev-mesa{display:grid;gap:22px;align-items:center}
+@media(min-width:900px){.rev-mesa{grid-template-columns:minmax(0,340px) minmax(0,1fr)}}
+.rev-campo{display:flex;justify-content:center}
+
+/* ---- mesa de jogo: controles | campo | escalacao ---- */
+.mesa{display:grid;grid-template-columns:286px minmax(0,1fr) 250px;gap:14px;align-items:start;margin-top:14px}
+@media(max-width:1060px){.mesa{grid-template-columns:262px minmax(0,1fr)}
+  .mesa .col-lista{grid-column:1/-1}}
+@media(max-width:760px){
+  /* no telefone a ordem é a do uso: campo, dado, elenco sorteado,
+     tática (mexe uma vez só) e a escalação no fim */
+  /* stretch é obrigatório: as bolas do campo são absolutas e não dão
+     largura intrínseca, então com align-items:start o campo murcha */
+  .mesa{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+  .col-ctrl{display:contents}
+  .col-campo{order:1}
+  .painel.dado{order:2}
+  #teamArea{order:3;margin-top:0}
+  #painelTat{order:4;margin-top:0}
+  .col-lista{order:5}
+  .painel + .painel{margin-top:0}
+  .dado .btn{font-size:16px;padding:16px 10px}
+}
+.painel{background:var(--carvao);border:1px solid var(--linha);border-radius:10px;padding:14px}
+@media(min-width:761px){
+  .col-ctrl{position:sticky;top:12px;max-height:calc(100vh - 24px);display:flex;flex-direction:column}
+  #teamArea{min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  #teamArea .list{overflow-y:auto;min-height:120px;padding-right:2px}
+  #teamArea .list::-webkit-scrollbar{width:5px}
+  #teamArea .list::-webkit-scrollbar-thumb{background:var(--linha);border-radius:3px}
+}
+.painel + .painel{margin-top:10px}
+.painel h3{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--apagado);
+  font-weight:800;margin-bottom:9px}
+
+/* grade compacta de formacoes */
+.grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.grade.duas{grid-template-columns:repeat(2,minmax(0,1fr))}
+.chip{border:1px solid var(--linha);background:var(--carta);border-radius:6px;padding:9px 4px;
+  font-size:12.5px;font-weight:900;font-style:italic;letter-spacing:-.01em;
+  transition:border-color .15s,background .15s,color .15s}
+.chip:hover:not(:disabled){border-color:var(--verde-esc)}
+.chip.on{background:var(--verde);color:#08150c;border-color:var(--verde)}
+.chip:disabled{opacity:.3;cursor:default}
+.chip.largo{font-size:11.5px;font-style:normal;letter-spacing:.02em;text-transform:uppercase}
+.travado{font-size:10.5px;color:var(--apagado);margin-top:8px;line-height:1.4}
+.painel.fechado h3,.painel.fechado .grade,.painel.fechado .travado{display:none}
+.painel.fechado{padding:11px 14px}
+.painel.fechado .previa{margin-top:0!important;border-style:solid}
+
+/* dado */
+.dado{margin-top:10px}
+.dado .btn{width:100%;font-size:17px;padding:17px 10px;letter-spacing:.08em}
+.dica{border:1px dashed var(--linha);border-radius:8px;padding:16px 12px;text-align:center;
+  font-size:12px;color:var(--apagado);line-height:1.5}
+
+/* escalacao lateral */
+.lista-xi{display:grid;gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:8px;overflow:hidden}
+.lista-xi .li{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:8px;align-items:center;
+  background:var(--carvao);padding:9px 11px;font-size:12.5px}
+.lista-xi .li.cheia{background:#18231b}
+.lista-xi .li .p{font-size:9px;font-weight:900;color:var(--apagado);letter-spacing:.07em}
+.lista-xi .li.cheia .p{color:var(--verde)}
+.lista-xi .li .n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lista-xi .li .vazio{color:#4d554d}
+.lista-xi .li .o{font-weight:900;font-style:italic;color:var(--verde);font-variant-numeric:tabular-nums;font-size:12px}
+.resumo{display:flex;gap:14px;font-size:11px;color:var(--apagado);font-weight:700;margin-top:9px;flex-wrap:wrap}
+.resumo b{color:var(--claro);font-weight:900;font-style:italic}
+
+/* barra de contexto no topo da mesa */
+.contexto{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 0;border-bottom:1px solid var(--linha)}
+.contexto .quem{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--apagado)}
+.contexto .quem b{color:var(--verde);font-style:italic;letter-spacing:0}
+
 /* ---- opcoes de tatica ---- */
 .campo.mini{max-width:360px;aspect-ratio:3/4.05;margin:14px auto 4px;padding:30px 22px}
 .campo.mini .pos{--d:34px}
@@ -245,59 +322,81 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
   </div>
 </section>
 
-<section id="scr-tatica" hidden>
-  <div class="bar"><div><div class="tag">Antes de escalar</div><div class="contador">Tática</div></div></div>
-  <div class="campo mini">
-    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
-    <div class="area t"></div><div class="area b"></div>
-    <div class="linhas" id="campoPrev"></div>
+<section id="scr-jogo" hidden>
+  <div class="contexto">
+    <div class="quem">Seu time · <b id="tatLabel"></b></div>
+    <div class="contador" id="picks"></div>
   </div>
-  <div class="tag" style="margin:22px 0 9px">Formação</div>
-  <div class="opts" id="forms"></div>
-  <div class="tag" style="margin:24px 0 9px">Postura</div>
-  <div class="opts" id="estilos"></div>
-  <div class="previa" id="previa"></div>
-  <div class="row" style="margin-top:22px"><button class="btn" id="confirmaTat">Começar a escalar</button></div>
-</section>
 
-<section id="scr-draft" hidden>
-  <div class="bar">
-    <div><div class="tag">Seu time · <span id="tatLabel"></span></div><div class="contador" id="picks"></div></div>
-    <div class="row"><button class="btn" id="roll">Rolar o dado</button><button class="btn ghost sm" id="pass">Passar (<span id="passN"></span>)</button></div>
-  </div>
-  <div class="campo">
-    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
-    <div class="area t"></div><div class="area b"></div>
-    <div class="linhas" id="campo"></div>
-  </div>
-  <div id="teamArea" hidden>
-    <div class="timehead"><span class="flag" id="flag"></span><h2 id="tname"></h2></div>
-    <div class="conq" id="tconq"></div>
-    <div class="list" id="squad"></div>
+  <div class="mesa">
+    <div class="col-ctrl">
+      <div class="painel" id="painelTat">
+        <h3>Formação</h3>
+        <div class="grade" id="forms"></div>
+        <h3 style="margin-top:14px">Postura</h3>
+        <div class="grade duas" id="estilos"></div>
+        <div class="travado" id="travado" hidden>A tática trava depois da primeira escalação.</div>
+        <div class="previa" id="previa" style="margin-top:12px;padding:10px 12px;font-size:12px"></div>
+      </div>
+      <div class="painel dado">
+        <button class="btn" id="roll">Rolar o dado</button>
+        <div class="row" style="margin-top:8px">
+          <button class="btn ghost sm" id="pass" style="width:100%">Passar (<span id="passN"></span>)</button>
+        </div>
+      </div>
+      <div class="painel" id="teamArea" hidden>
+        <div class="timehead"><span class="flag" id="flag"></span><h2 id="tname"></h2></div>
+        <div class="conq" id="tconq"></div>
+        <div class="list" id="squad"></div>
+      </div>
+    </div>
+
+    <div class="col-campo">
+      <div class="campo">
+        <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+        <div class="area t"></div><div class="area b"></div>
+        <div class="linhas" id="campo"></div>
+      </div>
+      <div class="dica" id="dicaRolar" style="margin-top:10px">Role o dado para sortear um time campeão e escalar um jogador daquele elenco.</div>
+    </div>
+
+    <div class="col-lista">
+      <div class="painel">
+        <h3>Escalação</h3>
+        <div class="lista-xi" id="listaXi"></div>
+        <div class="resumo" id="resumoXi"></div>
+      </div>
+    </div>
   </div>
 </section>
 
 <section id="scr-reveal" hidden>
-  <div class="tag" style="margin-top:26px">Seu time está pronto</div>
-  <div class="ovbox"><div class="v" id="ovTeam"></div><div class="note" style="margin:0">de overall<br>no <b id="ovTat"></b></div></div>
-  <div class="campo mini rev">
-    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
-    <div class="area t"></div><div class="area b"></div>
-    <div class="linhas" id="campoRev"></div>
+  <div class="rev-mesa">
+    <div class="rev-info">
+      <div class="tag" style="margin-top:26px">Seu time está pronto</div>
+      <div class="ovbox"><div class="v" id="ovTeam"></div><div class="note" style="margin:0">de overall<br>no <b id="ovTat"></b></div></div>
+      <div class="row" style="margin-top:20px">
+        <button class="btn" id="startCamp">Jogar a campanha</button>
+      </div>
+      <div class="speeds" id="modos2" style="margin-top:10px">
+        <button class="sp on" data-modo="auto">Automático</button>
+        <button class="sp" data-modo="manual">Jogo a jogo</button>
+      </div>
+      <div class="speeds" id="speeds2" style="margin-top:6px">
+        <button class="sp on" data-sp="1">Normal</button>
+        <button class="sp" data-sp="4">Rápido</button>
+        <button class="sp" data-sp="0">Ultra</button>
+      </div>
+    </div>
+    <div class="rev-campo">
+      <div class="campo mini rev">
+        <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+        <div class="area t"></div><div class="area b"></div>
+        <div class="linhas" id="campoRev"></div>
+      </div>
+    </div>
   </div>
   <div class="xi" id="xi"></div>
-  <div class="row">
-    <button class="btn" id="startCamp">Jogar a campanha</button>
-    <div class="speeds" id="modos2">
-      <button class="sp on" data-modo="auto">Automático</button>
-      <button class="sp" data-modo="manual">Jogo a jogo</button>
-    </div>
-    <div class="speeds" id="speeds2">
-      <button class="sp on" data-sp="1">Normal</button>
-      <button class="sp" data-sp="4">Rápido</button>
-      <button class="sp" data-sp="0">Ultra</button>
-    </div>
-  </div>
 </section>
 
 <section id="scr-camp" hidden>
@@ -420,28 +519,38 @@ const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
 /* ---------- telas ---------- */
 const $ = id => document.getElementById(id);
 const mostra = id => {
-  ['scr-home','scr-tatica','scr-draft','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
+  ['scr-home','scr-jogo','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
   const el = $(id);
   el.classList.remove('anima'); void el.offsetWidth; el.classList.add('anima');
 };
 
 /* ---------- tática ---------- */
-let escolhaForm = FORMACOES[0], escolhaEst = ESTILOS[1];
+const jaComecou = () => S && S.slots.some(x => x.jog);
 function pintaTatica(){
+  const trava = jaComecou();
   $('forms').innerHTML = FORMACOES.map((f,i)=>
-    `<button class="opt${f===escolhaForm?' on':''}" data-f="${i}">
-       <b>${f.n}</b><span>${f.txt}</span></button>`).join('');
+    `<button class="chip${S && f===S.form?' on':''}" data-f="${i}" ${trava?'disabled':''} title="${f.txt}">${f.n}</button>`).join('');
   $('estilos').innerHTML = ESTILOS.map((e,i)=>
-    `<button class="opt${e===escolhaEst?' on':''}" data-e="${i}">
-       <b>${e.n}</b><span>${e.txt}</span></button>`).join('');
-  $('forms').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ escolhaForm=FORMACOES[+b.dataset.f]; pintaTatica(); });
-  $('estilos').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ escolhaEst=ESTILOS[+b.dataset.e]; pintaTatica(); });
-  previaCampo(escolhaForm);
-  const a = (1+(escolhaForm.a-3)*0.09)*escolhaEst.atk;
-  const d = (1-(escolhaForm.d-4)*0.09-(escolhaForm.m-4)*0.02)*escolhaEst.sof;
+    `<button class="chip largo${S && e===S.estilo?' on':''}" data-e="${i}" ${trava?'disabled':''}>${e.n}</button>`).join('');
+  if (!trava){
+    $('forms').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>trocaTatica(FORMACOES[+b.dataset.f], S.estilo));
+    $('estilos').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>trocaTatica(S.form, ESTILOS[+b.dataset.e]));
+  }
+  $('travado').hidden = !trava;
+  $('painelTat').classList.toggle('fechado', trava);
+  const a = modAtaque(), d = modDefesa();
+  const sinal = v => (v>1?'+':'') + Math.round((v-1)*100) + '%';
   $('previa').innerHTML =
-    `Ataque <b class="${a>1.02?'up':a<0.98?'down':''}">${a>1.02?'+':''}${Math.round((a-1)*100)}%</b>` +
-    ` · Gols sofridos <b class="${d>1.02?'down':d<0.98?'up':''}">${d>1.02?'+':''}${Math.round((d-1)*100)}%</b>`;
+    (trava ? `<b style="font-style:italic">${S.form.n}</b> · ${S.estilo.n}<br>` : '') +
+    `Ataque <b class="${a>1.02?'up':a<0.98?'down':''}">${sinal(a)}</b> · ` +
+    `Gols sofridos <b class="${d>1.02?'down':d<0.98?'up':''}">${sinal(d)}</b>`;
+}
+function trocaTatica(form, estilo){
+  if (jaComecou()) return;
+  const atual = S.atual;
+  novoJogo(form, estilo);
+  S.atual = atual;
+  pinta();
 }
 
 /* ---------- campo ---------- */
@@ -453,16 +562,31 @@ function desenhaCampo(alvo, pontos, mostrarOver){
        <div class="quem">${p.jog ? p.jog.nome : ''}</div>
      </div>`).join('');
 }
-const previaCampo = f => desenhaCampo($('campoPrev'), f.pos.map(p=>({rot:p.rot, x:p.x, y:p.y})));
 function pintaSlots(){
   desenhaCampo($('campo'), S.slots.map((s,i)=>
     ({rot:s.rot, x:s.x, y:s.y, jog:s.jog, novo:i===S.ultimo})), false);
 }
 function pintaBarra(){
-  $('picks').textContent = S.slots.filter(s=>s.jog).length + '/' + S.slots.length;
+  const n = S.slots.filter(s=>s.jog).length;
+  $('picks').textContent = n + '/' + S.slots.length;
   $('passN').textContent = S.passes;
   $('pass').disabled = S.passes === 0 || !S.atual;
   $('tatLabel').textContent = S.form.n + ' · ' + S.estilo.n;
+  $('dicaRolar').hidden = !!S.atual || n > 0;
+  pintaLista();
+}
+function pintaLista(){
+  $('listaXi').innerHTML = S.slots.map(s=>
+    `<div class="li${s.jog?' cheia':''}">
+       <span class="p">${s.rot}</span>
+       <span class="n${s.jog?'':' vazio'}">${s.jog ? s.jog.nome : '—'}</span>
+       <span class="o">${s.jog ? '✓' : ''}</span>
+     </div>`).join('');
+  const feitos = S.slots.filter(s=>s.jog);
+  const clubes = new Set(feitos.map(s=>s.jog.de));
+  $('resumoXi').innerHTML = feitos.length
+    ? `<span>Escalados <b>${feitos.length}</b></span><span>Clubes <b>${clubes.size}</b></span>`
+    : `<span>Nenhum jogador escalado ainda</span>`;
 }
 function pintaElenco(){
   const t = S.atual;
@@ -477,17 +601,17 @@ function pintaElenco(){
     const b = bloqueio(p);
     return `<button class="pl" data-i="${i}" ${b?'disabled':''}>
       <span class="g">${ROT[p.grupo]}</span>
-      <span><span class="nm">${p.nome}</span><br><span class="ps">${p.pos}</span></span>
+      <span class="meio"><span class="nm">${p.nome}</span><span class="ps">${p.pos}</span></span>
       <span class="why">${b||''}</span>
     </button>`;
   }).join('');
   $('squad').querySelectorAll('.pl').forEach(b=>b.onclick=()=>escala(t.elenco[+b.dataset.i]));
 }
 function pinta(){
-  pintaBarra(); pintaSlots(); pintaElenco();
+  pintaBarra(); pintaSlots(); pintaElenco(); pintaTatica();
   const r = $('roll');
   r.disabled = !!S.atual;
-  r.textContent = S.atual ? 'Escolha um jogador abaixo' : 'Rolar o dado';
+  r.textContent = S.atual ? 'Escolha um jogador' : 'Rolar o dado';
 }
 
 function rolar(){
@@ -516,10 +640,9 @@ function escala(p){
   if (completo()) revelar(); else rolar();
 }
 
-$('go').onclick = () => { mostra('scr-tatica'); pintaTatica(); };
-$('confirmaTat').onclick = () => {
-  novoJogo(escolhaForm, escolhaEst);
-  mostra('scr-draft'); pinta(); rolar();
+$('go').onclick = () => {
+  novoJogo(FORMACOES[1], ESTILOS[1]);
+  mostra('scr-jogo'); pinta();
 };
 $('roll').onclick = rolar;
 $('pass').onclick = () => { if(S.passes>0 && S.atual){ S.passes--; S.atual=null; pinta(); rolar(); } };

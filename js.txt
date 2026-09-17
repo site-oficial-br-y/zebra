@@ -89,28 +89,38 @@ const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
 /* ---------- telas ---------- */
 const $ = id => document.getElementById(id);
 const mostra = id => {
-  ['scr-home','scr-tatica','scr-draft','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
+  ['scr-home','scr-jogo','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
   const el = $(id);
   el.classList.remove('anima'); void el.offsetWidth; el.classList.add('anima');
 };
 
 /* ---------- tática ---------- */
-let escolhaForm = FORMACOES[0], escolhaEst = ESTILOS[1];
+const jaComecou = () => S && S.slots.some(x => x.jog);
 function pintaTatica(){
+  const trava = jaComecou();
   $('forms').innerHTML = FORMACOES.map((f,i)=>
-    `<button class="opt${f===escolhaForm?' on':''}" data-f="${i}">
-       <b>${f.n}</b><span>${f.txt}</span></button>`).join('');
+    `<button class="chip${S && f===S.form?' on':''}" data-f="${i}" ${trava?'disabled':''} title="${f.txt}">${f.n}</button>`).join('');
   $('estilos').innerHTML = ESTILOS.map((e,i)=>
-    `<button class="opt${e===escolhaEst?' on':''}" data-e="${i}">
-       <b>${e.n}</b><span>${e.txt}</span></button>`).join('');
-  $('forms').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ escolhaForm=FORMACOES[+b.dataset.f]; pintaTatica(); });
-  $('estilos').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ escolhaEst=ESTILOS[+b.dataset.e]; pintaTatica(); });
-  previaCampo(escolhaForm);
-  const a = (1+(escolhaForm.a-3)*0.09)*escolhaEst.atk;
-  const d = (1-(escolhaForm.d-4)*0.09-(escolhaForm.m-4)*0.02)*escolhaEst.sof;
+    `<button class="chip largo${S && e===S.estilo?' on':''}" data-e="${i}" ${trava?'disabled':''}>${e.n}</button>`).join('');
+  if (!trava){
+    $('forms').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>trocaTatica(FORMACOES[+b.dataset.f], S.estilo));
+    $('estilos').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>trocaTatica(S.form, ESTILOS[+b.dataset.e]));
+  }
+  $('travado').hidden = !trava;
+  $('painelTat').classList.toggle('fechado', trava);
+  const a = modAtaque(), d = modDefesa();
+  const sinal = v => (v>1?'+':'') + Math.round((v-1)*100) + '%';
   $('previa').innerHTML =
-    `Ataque <b class="${a>1.02?'up':a<0.98?'down':''}">${a>1.02?'+':''}${Math.round((a-1)*100)}%</b>` +
-    ` · Gols sofridos <b class="${d>1.02?'down':d<0.98?'up':''}">${d>1.02?'+':''}${Math.round((d-1)*100)}%</b>`;
+    (trava ? `<b style="font-style:italic">${S.form.n}</b> · ${S.estilo.n}<br>` : '') +
+    `Ataque <b class="${a>1.02?'up':a<0.98?'down':''}">${sinal(a)}</b> · ` +
+    `Gols sofridos <b class="${d>1.02?'down':d<0.98?'up':''}">${sinal(d)}</b>`;
+}
+function trocaTatica(form, estilo){
+  if (jaComecou()) return;
+  const atual = S.atual;
+  novoJogo(form, estilo);
+  S.atual = atual;
+  pinta();
 }
 
 /* ---------- campo ---------- */
@@ -122,16 +132,31 @@ function desenhaCampo(alvo, pontos, mostrarOver){
        <div class="quem">${p.jog ? p.jog.nome : ''}</div>
      </div>`).join('');
 }
-const previaCampo = f => desenhaCampo($('campoPrev'), f.pos.map(p=>({rot:p.rot, x:p.x, y:p.y})));
 function pintaSlots(){
   desenhaCampo($('campo'), S.slots.map((s,i)=>
     ({rot:s.rot, x:s.x, y:s.y, jog:s.jog, novo:i===S.ultimo})), false);
 }
 function pintaBarra(){
-  $('picks').textContent = S.slots.filter(s=>s.jog).length + '/' + S.slots.length;
+  const n = S.slots.filter(s=>s.jog).length;
+  $('picks').textContent = n + '/' + S.slots.length;
   $('passN').textContent = S.passes;
   $('pass').disabled = S.passes === 0 || !S.atual;
   $('tatLabel').textContent = S.form.n + ' · ' + S.estilo.n;
+  $('dicaRolar').hidden = !!S.atual || n > 0;
+  pintaLista();
+}
+function pintaLista(){
+  $('listaXi').innerHTML = S.slots.map(s=>
+    `<div class="li${s.jog?' cheia':''}">
+       <span class="p">${s.rot}</span>
+       <span class="n${s.jog?'':' vazio'}">${s.jog ? s.jog.nome : '—'}</span>
+       <span class="o">${s.jog ? '✓' : ''}</span>
+     </div>`).join('');
+  const feitos = S.slots.filter(s=>s.jog);
+  const clubes = new Set(feitos.map(s=>s.jog.de));
+  $('resumoXi').innerHTML = feitos.length
+    ? `<span>Escalados <b>${feitos.length}</b></span><span>Clubes <b>${clubes.size}</b></span>`
+    : `<span>Nenhum jogador escalado ainda</span>`;
 }
 function pintaElenco(){
   const t = S.atual;
@@ -146,17 +171,17 @@ function pintaElenco(){
     const b = bloqueio(p);
     return `<button class="pl" data-i="${i}" ${b?'disabled':''}>
       <span class="g">${ROT[p.grupo]}</span>
-      <span><span class="nm">${p.nome}</span><br><span class="ps">${p.pos}</span></span>
+      <span class="meio"><span class="nm">${p.nome}</span><span class="ps">${p.pos}</span></span>
       <span class="why">${b||''}</span>
     </button>`;
   }).join('');
   $('squad').querySelectorAll('.pl').forEach(b=>b.onclick=()=>escala(t.elenco[+b.dataset.i]));
 }
 function pinta(){
-  pintaBarra(); pintaSlots(); pintaElenco();
+  pintaBarra(); pintaSlots(); pintaElenco(); pintaTatica();
   const r = $('roll');
   r.disabled = !!S.atual;
-  r.textContent = S.atual ? 'Escolha um jogador abaixo' : 'Rolar o dado';
+  r.textContent = S.atual ? 'Escolha um jogador' : 'Rolar o dado';
 }
 
 function rolar(){
@@ -185,10 +210,9 @@ function escala(p){
   if (completo()) revelar(); else rolar();
 }
 
-$('go').onclick = () => { mostra('scr-tatica'); pintaTatica(); };
-$('confirmaTat').onclick = () => {
-  novoJogo(escolhaForm, escolhaEst);
-  mostra('scr-draft'); pinta(); rolar();
+$('go').onclick = () => {
+  novoJogo(FORMACOES[1], ESTILOS[1]);
+  mostra('scr-jogo'); pinta();
 };
 $('roll').onclick = rolar;
 $('pass').onclick = () => { if(S.passes>0 && S.atual){ S.passes--; S.atual=null; pinta(); rolar(); } };
