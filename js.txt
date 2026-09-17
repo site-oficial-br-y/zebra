@@ -88,8 +88,9 @@ const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
 
 /* ---------- telas ---------- */
 const $ = id => document.getElementById(id);
+const TELAS = ['scr-home','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank'];
 const mostra = id => {
-  ['scr-home','scr-jogo','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
+  TELAS.forEach(x => $(x).hidden = x !== id);
   const el = $(id);
   el.classList.remove('anima'); void el.offsetWidth; el.classList.add('anima');
 };
@@ -376,6 +377,19 @@ async function campanha(){
     ${saldoPro} gols marcados, ${saldoContra} sofridos.
     ${goleada ? `<br>Maior goleada: <b style="color:var(--verde)">${goleada.x} a ${goleada.y}</b>.` : ''}`;
   v.scrollIntoView({behavior:'smooth'});
+
+  if (window.ZB && EU){
+    const salvou = await window.ZB.salvarPartida({
+      overall: S.over, formacao: S.form.n, estilo: S.estilo.n,
+      campeao, eliminado_em: campeao ? null : String(eliminado),
+      gols_pro: saldoPro, gols_contra: saldoContra,
+      maior_goleada: goleada ? goleada.d : 0,
+      escalacao: xi.map(p=>({nome:p.nome, over:p.over, pos:ROT[p.grupo], de:p.de})),
+    });
+    if (salvou) $('vtxt').innerHTML += '<br><span style="color:var(--verde)">Partida registrada no ranking.</span>';
+  } else if (window.ZB) {
+    $('vtxt').innerHTML += '<br><span style="color:var(--apagado)">Entre na sua conta para valer no ranking.</span>';
+  }
 }
 function esperaProximo(){
   return new Promise(resolve=>{
@@ -390,6 +404,124 @@ document.querySelectorAll('.sp[data-modo]').forEach(b=>b.onclick=()=>{
   if (S) S.modo = v;
   document.querySelectorAll('.sp[data-modo]').forEach(x=>x.classList.toggle('on', x.dataset.modo === v));
 });
+/* ---------- conta e ranking ---------- */
+let EU = null, modoConta = 'entrar', voltarPara = 'scr-home';
+
+const diz = (onde, txt, bom) =>
+  $(onde).innerHTML = txt ? `<div class="aviso ${bom?'ok':'erro'}">${txt}</div>` : '';
+
+function pintaTopo(){
+  const temBanco = !!window.ZB;
+  $('btConta').hidden = !temBanco;
+  $('btRank').hidden = !temBanco;
+  $('euApelido').hidden = !EU?.apelido;
+  if (EU?.apelido) $('euApelido').textContent = EU.apelido;
+  $('btConta').textContent = EU ? 'Minha conta' : 'Entrar';
+}
+
+async function carregaEu(){
+  if (!window.ZB) return;
+  try { EU = await window.ZB.meuPerfil(); } catch { EU = null; }
+  pintaTopo();
+}
+
+function pintaConta(){
+  $('deslogado').hidden = !!EU;
+  $('logado').hidden = !EU;
+  if (EU){
+    $('meuApelido').textContent = EU.apelido || '—';
+    window.ZB.ranking().then(r=>{
+      const meu = r.find(x=>x.user_id === EU.id);
+      $('meuTit').textContent = meu ? meu.titulos : 0;
+      $('minhasStats').innerHTML = meu
+        ? `<span>Partidas <b>${meu.partidas}</b></span><span>Melhor overall <b>${meu.melhor_overall}</b></span><span>Saldo <b>${meu.saldo>0?'+':''}${meu.saldo}</b></span>`
+        : '<span>Nenhuma partida registrada ainda</span>';
+    }).catch(()=>{});
+  } else {
+    const criando = modoConta === 'criar';
+    $('tabEntrar').classList.toggle('on', !criando);
+    $('tabCriar').classList.toggle('on', criando);
+    $('fApelido').hidden = !criando;
+    $('fEnviar').textContent = criando ? 'Criar conta' : 'Entrar';
+    $('fSenha').autocomplete = criando ? 'new-password' : 'current-password';
+  }
+}
+
+function abreConta(){
+  if (!window.ZB) return;
+  if (!$('scr-conta').hidden) return;
+  voltarPara = TELAS.find(t=>!$(t).hidden) || 'scr-home';
+  diz('contaAviso',''); diz('excluirAviso','');
+  mostra('scr-conta'); pintaConta();
+}
+$('btConta').onclick = abreConta;
+$('contaVoltar').onclick = () => mostra(voltarPara);
+$('rankVoltar').onclick = () => mostra(voltarPara);
+$('tabEntrar').onclick = () => { modoConta='entrar'; diz('contaAviso',''); pintaConta(); };
+$('tabCriar').onclick  = () => { modoConta='criar';  diz('contaAviso',''); pintaConta(); };
+
+$('fEnviar').onclick = async () => {
+  const email = $('fEmail').value.trim(), senha = $('fSenha').value;
+  const apelido = $('fApelido').value.trim();
+  if (!email || !senha) return diz('contaAviso','Preencha e-mail e senha.');
+  if (modoConta === 'criar' && apelido.length < 2) return diz('contaAviso','Escolha um apelido de 2 a 18 letras.');
+  $('fEnviar').disabled = true; diz('contaAviso','');
+  try {
+    if (modoConta === 'criar') await window.ZB.criar(email, senha, apelido);
+    else await window.ZB.entrar(email, senha);
+    await carregaEu();
+    diz('contaAviso', 'Tudo certo, ' + (EU?.apelido || '') + '.', true);
+    pintaConta();
+  } catch(e){ diz('contaAviso', e.message); }
+  $('fEnviar').disabled = false;
+};
+
+$('btSair').onclick = async () => { await window.ZB.sair(); EU=null; pintaTopo(); pintaConta(); };
+
+let confirmando = false;
+$('btExcluir').onclick = async () => {
+  if (!confirmando){
+    confirmando = true;
+    $('btExcluir').textContent = 'Confirmar: apagar tudo';
+    diz('excluirAviso','Clique de novo para confirmar. Isso apaga o login, o apelido e todas as partidas.');
+    setTimeout(()=>{ confirmando=false; $('btExcluir').textContent='Quero excluir minha conta'; diz('excluirAviso',''); }, 8000);
+    return;
+  }
+  $('btExcluir').disabled = true;
+  try { await window.ZB.excluir(); EU=null; pintaTopo(); pintaConta();
+        diz('contaAviso','Conta excluída.', true); }
+  catch(e){ diz('excluirAviso','Não deu para excluir: ' + e.message); }
+  $('btExcluir').disabled = false; confirmando = false;
+  $('btExcluir').textContent = 'Quero excluir minha conta';
+};
+
+$('btRank').onclick = async () => {
+  if (!window.ZB) return;
+  voltarPara = TELAS.find(t=>!$(t).hidden) || 'scr-home';
+  mostra('scr-rank');
+  $('rankCorpo').innerHTML = '<div class="dica" style="margin-top:18px">Carregando…</div>';
+  try {
+    const r = await window.ZB.ranking();
+    if (!r.length){ $('rankCorpo').innerHTML = '<div class="dica" style="margin-top:18px">Ninguém jogou ainda. Seja o primeiro.</div>'; return; }
+    $('rankCorpo').innerHTML = `<table class="rank"><thead><tr>
+        <th></th><th>Jogador</th><th>Títulos</th>
+        <th class="esconde">Partidas</th><th class="esconde">Melhor XI</th><th>Saldo</th>
+      </tr></thead><tbody>` + r.map((x,i)=>
+      `<tr class="${EU && x.user_id===EU.id ? 'eu-linha':''}">
+         <td class="pos">${i+1}</td>
+         <td class="ap">${x.apelido}</td>
+         <td class="dest">${x.titulos}</td>
+         <td class="esconde">${x.partidas}</td>
+         <td class="esconde">${x.melhor_overall||'—'}</td>
+         <td>${x.saldo>0?'+':''}${x.saldo}</td>
+       </tr>`).join('') + '</tbody></table>';
+  } catch(e){ $('rankCorpo').innerHTML = `<div class="aviso erro" style="margin-top:18px">Não deu para carregar o ranking: ${e.message}</div>`; }
+};
+
+window.addEventListener('zb-pronto', () => { pintaTopo(); carregaEu(); });
+window.addEventListener('zb-falhou', pintaTopo);
+pintaTopo();
+
 $('startCamp').onclick = campanha;
 $('again').onclick = () => location.reload();
 document.querySelectorAll('.sp[data-sp]').forEach(b=>b.onclick=()=>{
