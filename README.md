@@ -4,7 +4,8 @@ Monte seu time com quem já jogou.
 
 O dado sorteia um time campeão da história do futebol brasileiro. Você escala
 um jogador daquele elenco — e o próximo sorteio pode não ser tão generoso.
-Onze escolhas e uma campanha de sete jogos até a final.
+Onze escolhas para montar um time que nunca existiu, e sete jogos até a
+final contra os próprios campeões da história.
 
 **Jogue:** https://site-oficial-br-y.github.io/zebra/
 
