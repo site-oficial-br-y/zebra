@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZEBRA — monte seu time com quem já jogou</title>
+<meta name="description" content="O dado sorteia um time campeão da história do futebol brasileiro. Você escala um jogador daquele elenco. Sete escolhas e uma campanha até a final.">
+<meta property="og:title" content="ZEBRA">
+<meta property="og:description" content="Monte seu time com quem já jogou. Sete escolhas, uma campanha, uma final.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0d0a'/><text y='24' x='16' text-anchor='middle' font-size='20' font-weight='900' font-family='sans-serif' fill='%237BE495' font-style='italic'>Z</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+:root{
+  --preto:#0a0d0a; --carvao:#111511; --carta:#151a15; --linha:#232a23;
+  --claro:#eef2ee; --apagado:#8d968d;
+  --verde:#7BE495; --verde-esc:#3f8f56; --vermelho:#ff5a3c; --ouro:#e9c46a;
+  --grama:#16351f;
+}
+html{-webkit-text-size-adjust:100%}
+
+/* ---- luzes de fundo ---- */
+.aura{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aura i{position:absolute;display:block;border-radius:50%;filter:blur(70px)}
+.aura .a{width:70vw;height:70vw;max-width:760px;max-height:760px;left:-18vw;top:-24vw;
+  background:radial-gradient(circle,rgba(123,228,149,.55),rgba(63,143,86,.22) 45%,transparent 70%);animation:deriva 26s ease-in-out infinite}
+.aura .b{width:60vw;height:60vw;max-width:640px;max-height:640px;right:-16vw;top:26vh;
+  background:radial-gradient(circle,rgba(123,228,149,.42),rgba(63,143,86,.18) 45%,transparent 70%);animation:deriva 34s ease-in-out infinite reverse}
+.aura .c{width:120vw;height:46vh;left:-10vw;bottom:-22vh;
+  background:radial-gradient(ellipse at center,rgba(123,228,149,.45),rgba(63,143,86,.18) 40%,transparent 66%);animation:pulsa 12s ease-in-out infinite}
+@keyframes deriva{0%,100%{transform:translate3d(0,0,0) scale(1)}33%{transform:translate3d(6vw,4vh,0) scale(1.1)}66%{transform:translate3d(-4vw,7vh,0) scale(.94)}}
+@keyframes pulsa{0%,100%{opacity:.55}50%{opacity:1}}
+.wrap{position:relative;z-index:1}
+
+/* ---- animacoes ---- */
+@keyframes sobe{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes entraEsq{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes brilha{0%{box-shadow:0 0 0 0 rgba(123,228,149,.55)}70%{box-shadow:0 0 0 16px rgba(123,228,149,0)}100%{box-shadow:0 0 0 0 rgba(123,228,149,0)}}
+@keyframes tremeDado{0%,100%{transform:skewX(-9deg) rotate(0)}25%{transform:skewX(-9deg) rotate(-2.5deg)}75%{transform:skewX(-9deg) rotate(2.5deg)}}
+.anima{animation:sobe .5s cubic-bezier(.2,.7,.3,1) both}
+.anima-1{animation-delay:.06s} .anima-2{animation-delay:.12s} .anima-3{animation-delay:.18s} .anima-4{animation-delay:.24s}
+@media (prefers-reduced-motion:reduce){
+  .anima,.aura i{animation:none!important}
+  *{transition-duration:.01ms!important}
+}
+body{
+  background:var(--preto); color:var(--claro);
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  min-height:100vh; padding:0 16px 40px; overflow-x:hidden;
+}
+.wrap{max-width:900px;margin:0 auto}
+.tag{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--apagado);font-weight:800}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ---- marca ---- */
+.marca{display:inline-block;transform:skewX(-9deg);transition:box-shadow .3s;border:2.5px solid var(--claro);
+  padding:5px 13px 4px;background:var(--preto);box-shadow:4px 4px 0 var(--verde-esc)}
+.marca span{display:block;transform:skewX(9deg);font-weight:900;letter-spacing:.06em;
+  font-size:23px;line-height:1;font-style:italic}
+.marca.g span{font-size:44px}
+topo{display:block;padding:26px 0 0}
+
+/* ---- botoes ---- */
+.btn{background:var(--verde);color:#08150c;font-weight:900;padding:15px 26px;border-radius:6px;
+  font-size:14px;letter-spacing:.04em;text-transform:uppercase;transition:transform .12s,box-shadow .12s;
+  box-shadow:0 0 0 rgba(123,228,149,0)}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 22px rgba(123,228,149,.22)}
+.btn:disabled{background:none;border:1px solid var(--linha);color:var(--apagado);cursor:default;
+  font-weight:700;box-shadow:none;transform:none}
+.btn.ghost{background:none;border:1px solid var(--linha);color:var(--claro)}
+.btn.ghost:hover:not(:disabled){border-color:var(--verde)}
+.btn.sm{padding:10px 16px;font-size:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---- capa ---- */
+#scr-home{padding:30px 0 0}
+.hero{position:relative;border-radius:14px;overflow:hidden;margin-top:26px;
+  background:
+    linear-gradient(to bottom,rgba(10,13,10,.93) 0%,rgba(10,13,10,.55) 45%,rgba(10,13,10,.97) 100%),
+    repeating-linear-gradient(90deg,#132b1a 0 44px,#16351f 44px 88px);
+  border:1px solid var(--linha);padding:44px 28px 92px}
+.hero .glow{position:absolute;left:-12%;right:-12%;bottom:-70px;height:250px;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse 55% 100% at 50% 100%,
+    #a8f0bf 0%, rgba(140,235,170,.78) 18%, rgba(110,215,145,.42) 38%,
+    rgba(63,143,86,.16) 60%, transparent 78%);
+  filter:blur(26px);animation:pulsa 9s ease-in-out infinite}
+.hero::before{content:'';position:absolute;left:50%;bottom:-78px;width:210px;height:210px;
+  border:2px solid rgba(255,255,255,.12);border-radius:50%;transform:translateX(-50%);z-index:0}
+h1{position:relative;z-index:2;font-size:clamp(33px,8.4vw,60px);font-weight:900;letter-spacing:-.035em;line-height:.95;
+  font-style:italic;text-transform:uppercase;position:relative;z-index:1}
+h1 em{font-style:italic;color:var(--verde)}
+.sub{color:#c3ccc3;font-size:14.5px;margin-top:16px;max-width:44ch;line-height:1.55;position:relative;z-index:2}
+.hero .row{margin-top:26px;position:relative;z-index:2}
+
+.comofunc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));
+  gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:12px;
+  overflow:hidden;margin-top:14px}
+.comofunc div{background:var(--carvao);padding:20px 18px;transition:background .25s,transform .25s}
+.comofunc div:hover{background:#17201a;transform:translateY(-3px)}
+.comofunc .n{color:var(--verde);font-weight:900;font-size:13px;font-style:italic}
+.comofunc h3{font-size:13.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:7px 0 6px}
+.comofunc p{font-size:12.5px;color:var(--apagado);line-height:1.5}
+
+/* ---- barra ---- */
+.bar{display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:16px 0;border-bottom:1px solid var(--linha);flex-wrap:wrap;margin-top:22px}
+.contador{font-size:25px;font-weight:900;font-style:italic;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* ---- o campo ---- */
+.campo{position:relative;border:1px solid var(--linha);border-radius:12px;
+  margin:18px auto 8px;max-width:560px;
+  padding:34px 26px;aspect-ratio:3/4;
+  background:repeating-linear-gradient(0deg,#122a19 0 9%,#16351f 9% 18%)}
+.campo .marcacao{position:absolute;inset:11px;border:2px solid rgba(255,255,255,.17);border-radius:4px;pointer-events:none}
+.campo .meio{position:absolute;left:11px;right:11px;top:50%;height:2px;background:rgba(255,255,255,.17);pointer-events:none}
+.campo .circulo{position:absolute;left:50%;top:50%;width:30%;aspect-ratio:1;border:2px solid rgba(255,255,255,.17);
+  border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.campo .area{position:absolute;left:50%;transform:translateX(-50%);width:52%;height:13%;
+  border:2px solid rgba(255,255,255,.17);pointer-events:none}
+.campo .area.b{bottom:11px;border-bottom:0} .campo .area.t{top:11px;border-top:0}
+.linhas{position:relative;height:100%;z-index:1}
+/* a bola fica presa na coordenada; o texto pendura abaixo sem deslocar nada */
+.pos{--d:44px;position:absolute;transform:translate(-50%,-50%);
+  width:var(--d);height:var(--d);text-align:center}
+.bola{width:var(--d);height:var(--d);border-radius:50%;
+  border:2px solid var(--verde-esc);background:rgba(10,13,10,.72);
+  display:flex;align-items:center;justify-content:center;transition:all .2s}
+.pos .rot,.pos .quem{position:absolute;left:50%;transform:translateX(-50%);width:82px}
+.pos.on .bola{border-color:var(--verde);background:var(--verde);box-shadow:0 0 22px rgba(123,228,149,.5)}
+.pos.novo .bola{animation:brilha .9s ease-out}
+.bola b{font-size:17px;font-weight:900;font-style:italic;color:var(--verde);font-variant-numeric:tabular-nums}
+.pos.on .bola b{color:#08150c}
+.pos .rot{top:calc(var(--d) + 3px);font-size:9px;font-weight:900;letter-spacing:.09em;
+  color:rgba(255,255,255,.72);text-shadow:0 1px 4px rgba(0,0,0,.95)}
+.pos .quem{top:calc(var(--d) + 15px);font-size:11px;font-weight:800;line-height:1.15;
+  text-shadow:0 1px 3px rgba(0,0,0,.92);word-break:break-word}
+@media(max-width:560px){.pos{--d:36px}.bola b{font-size:13px}
+  .pos .rot,.pos .quem{width:66px}.pos .rot{font-size:8px}.pos .quem{font-size:9.5px}}
+
+/* ---- elenco sorteado ---- */
+.timehead{display:flex;align-items:center;gap:12px;margin:24px 0 3px}
+.flag{width:36px;height:25px;border-radius:3px;flex:0 0 auto;
+  box-shadow:0 0 0 1px rgba(255,255,255,.2);transform:skewX(-9deg)}
+.timehead h2{font-size:22px;font-weight:900;font-style:italic;letter-spacing:-.025em;text-transform:uppercase}
+.timehead .yr{color:var(--verde)}
+.conq{color:var(--apagado);font-size:12px;margin-bottom:13px}
+.list{display:grid;gap:5px}
+.pl{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:11px;align-items:center;
+  background:var(--carta);border:1px solid var(--linha);border-radius:8px;padding:11px 14px;
+  text-align:left;width:100%;transition:border-color .12s,background .12s}
+.pl:hover:not(:disabled){border-color:var(--verde);background:#1a2a1e}
+.pl:disabled{opacity:.28;cursor:default}
+.pl .g{font-size:9px;font-weight:900;color:var(--verde);letter-spacing:.08em}
+.pl .nm{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.pl .ps{font-size:11px;color:var(--apagado)}
+.pl .why{font-size:9.5px;color:var(--vermelho);font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+
+/* ---- campanha ---- */
+.match{background:var(--carta);border:1px solid var(--linha);border-radius:10px;padding:13px 15px;margin-bottom:7px;animation:sobe .45s cubic-bezier(.2,.7,.3,1) both}
+.match.vivo{border-color:rgba(123,228,149,.4);box-shadow:0 0 30px rgba(123,228,149,.10)}
+.match .top{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:11px;align-items:center}
+.match .fase{font-size:9px;letter-spacing:.13em;color:var(--apagado);font-weight:900}
+.match .opp{font-weight:900;font-size:16px;font-style:italic;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.match .sc{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;font-style:italic}
+.match .sc.w{color:var(--verde)} .match .sc.l{color:var(--vermelho)} .match .sc.d{color:var(--ouro)}
+.match .clock{font-size:10px;font-weight:900;color:var(--vermelho);font-variant-numeric:tabular-nums;
+  min-width:26px;display:inline-block;text-align:right}
+.match .clock.fim{color:var(--apagado)}
+.ev{border-left:2px solid var(--verde);padding:5px 0 5px 11px;margin-top:7px;font-size:12px;
+  display:flex;gap:9px;align-items:baseline;animation:entraEsq .35s ease-out both}
+.ev.c{border-color:var(--vermelho)}
+.ev .m{color:var(--apagado);font-weight:900;font-variant-numeric:tabular-nums;min-width:28px}
+.ev .who{font-weight:800}
+.speeds{display:flex;gap:5px;flex-wrap:wrap}
+.sp{border:1px solid var(--linha);border-radius:5px;padding:8px 13px;font-size:11px;
+  font-weight:900;color:var(--apagado);text-transform:uppercase;letter-spacing:.06em}
+.sp.on{background:var(--verde);color:#08150c;border-color:var(--verde)}
+
+.final{text-align:center;padding:40px 0 16px}
+.final .big{font-size:clamp(42px,12vw,96px);font-weight:900;font-style:italic;
+  letter-spacing:-.045em;line-height:.9;text-transform:uppercase}
+.final .big.seven{color:var(--verde)}
+.note{color:var(--apagado);font-size:13px;line-height:1.65;margin-top:12px}
+.xi{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,158px),1fr));gap:6px;margin:18px 0}
+.xi .c{background:var(--carta);border:1px solid var(--linha);border-radius:8px;padding:11px 13px}
+.xi .c .nm{font-weight:800;font-size:14px}
+.xi .c .sm{font-size:10.5px;color:var(--apagado);margin-top:2px}
+.xi .c .ov{float:right;font-weight:900;font-style:italic;color:var(--verde);font-variant-numeric:tabular-nums}
+.ovbox{display:flex;align-items:baseline;gap:14px;margin:20px 0 2px}
+.ovbox .v{font-size:60px;font-weight:900;font-style:italic;letter-spacing:-.05em;
+  color:var(--verde);font-variant-numeric:tabular-nums;line-height:1}
+/* ---- opcoes de tatica ---- */
+.campo.mini{max-width:360px;aspect-ratio:3/4.05;margin:14px auto 4px;padding:30px 22px}
+.campo.mini .pos{--d:34px}
+.campo.mini .bola{border-style:dashed}
+.campo.mini .bola b{font-size:13px;color:var(--verde-esc)}
+.campo.mini .rot{font-size:8.5px}
+.campo.mini .quem{display:none}
+.campo.mini.rev{max-width:420px;aspect-ratio:3/4}
+.campo.mini.rev .pos{--d:40px}
+.campo.mini.rev .bola{border-style:solid}
+.campo.mini.rev .quem{display:block;font-size:9.5px}
+.campo.mini.rev .pos.on .bola b{color:#08150c}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,196px),1fr));gap:7px}
+.opt{background:var(--carta);border:1px solid var(--linha);border-radius:9px;padding:13px 15px;
+  text-align:left;transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--verde-esc);transform:translateY(-2px);box-shadow:0 8px 26px rgba(123,228,149,.10)}
+.opt{transition:border-color .18s,background .18s,transform .18s,box-shadow .18s}
+.opt.on{border-color:var(--verde);background:#18291d;box-shadow:0 0 0 1px var(--verde),0 10px 34px rgba(123,228,149,.16)}
+.opt b{display:block;font-size:19px;font-weight:900;font-style:italic;letter-spacing:-.02em}
+.opt.on b{color:var(--verde)}
+.opt span{display:block;font-size:11.5px;color:var(--apagado);margin-top:4px;line-height:1.4}
+.previa{margin-top:18px;padding:14px 16px;border:1px dashed var(--linha);border-radius:9px;
+  font-size:13px;color:var(--apagado);font-weight:600}
+.previa b{font-weight:900;font-style:italic;color:var(--claro)}
+.previa b.up{color:var(--verde)} .previa b.down{color:var(--vermelho)}
+
+rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(--linha);
+  text-align:center;color:var(--apagado);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="aura" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+
+<topo><div class="marca" id="marca"><span>ZEBRA</span></div></topo>
+
+<section id="scr-home">
+  <div class="hero">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="tag" style="position:relative;z-index:2">O jogo de futebol<br>com quem já vestiu a camisa</div>
+    <h1>Monte seu time.<br><em>Ganhe a final.</em></h1>
+    <p class="sub">O dado sorteia um time campeão da história do futebol brasileiro. Você escala um jogador daquele elenco — e o próximo sorteio pode não ser tão generoso. Sete escolhas e uma campanha de sete jogos.</p>
+    <div class="row"><button class="btn" id="go">Jogar agora</button></div>
+  </div>
+  <div class="comofunc">
+    <div><div class="n">01</div><h3>Role o dado</h3><p>Sai um time campeão e o elenco daquele ano.</p></div>
+    <div><div class="n">02</div><h3>Escale um</h3><p>Só um jogador por sorteio, e ele some dos outros elencos.</p></div>
+    <div><div class="n">03</div><h3>Feche os sete</h3><p>Um goleiro, dois defensores, dois meias, dois atacantes.</p></div>
+    <div><div class="n">04</div><h3>Vá até a final</h3><p>Sete jogos contra os próprios times da história.</p></div>
+  </div>
+</section>
+
+<section id="scr-tatica" hidden>
+  <div class="bar"><div><div class="tag">Antes de escalar</div><div class="contador">Tática</div></div></div>
+  <div class="campo mini">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campoPrev"></div>
+  </div>
+  <div class="tag" style="margin:22px 0 9px">Formação</div>
+  <div class="opts" id="forms"></div>
+  <div class="tag" style="margin:24px 0 9px">Postura</div>
+  <div class="opts" id="estilos"></div>
+  <div class="previa" id="previa"></div>
+  <div class="row" style="margin-top:22px"><button class="btn" id="confirmaTat">Começar a escalar</button></div>
+</section>
+
+<section id="scr-draft" hidden>
+  <div class="bar">
+    <div><div class="tag">Seu time · <span id="tatLabel"></span></div><div class="contador" id="picks"></div></div>
+    <div class="row"><button class="btn" id="roll">Rolar o dado</button><button class="btn ghost sm" id="pass">Passar (<span id="passN"></span>)</button></div>
+  </div>
+  <div class="campo">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campo"></div>
+  </div>
+  <div id="teamArea" hidden>
+    <div class="timehead"><span class="flag" id="flag"></span><h2 id="tname"></h2></div>
+    <div class="conq" id="tconq"></div>
+    <div class="list" id="squad"></div>
+  </div>
+</section>
+
+<section id="scr-reveal" hidden>
+  <div class="tag" style="margin-top:26px">Seu time está pronto</div>
+  <div class="ovbox"><div class="v" id="ovTeam"></div><div class="note" style="margin:0">de overall<br>no <b id="ovTat"></b></div></div>
+  <div class="campo mini rev">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campoRev"></div>
+  </div>
+  <div class="xi" id="xi"></div>
+  <div class="row">
+    <button class="btn" id="startCamp">Jogar a campanha</button>
+    <div class="speeds" id="modos2">
+      <button class="sp on" data-modo="auto">Automático</button>
+      <button class="sp" data-modo="manual">Jogo a jogo</button>
+    </div>
+    <div class="speeds" id="speeds2">
+      <button class="sp on" data-sp="1">Normal</button>
+      <button class="sp" data-sp="4">Rápido</button>
+      <button class="sp" data-sp="0">Ultra</button>
+    </div>
+  </div>
+</section>
+
+<section id="scr-camp" hidden>
+  <div class="bar">
+    <div><div class="tag">A campanha</div></div>
+    <div class="row" style="gap:14px">
+      <div class="speeds" id="modos">
+        <button class="sp on" data-modo="auto">Automático</button>
+        <button class="sp" data-modo="manual">Jogo a jogo</button>
+      </div>
+      <div class="speeds">
+        <button class="sp on" data-sp="1">Normal</button>
+        <button class="sp" data-sp="4">Rápido</button>
+        <button class="sp" data-sp="0">Ultra</button>
+      </div>
+    </div>
+  </div>
+  <div id="matches" style="margin-top:16px"></div>
+  <div class="row" id="proxWrap" hidden style="justify-content:center;margin-top:14px">
+    <button class="btn" id="prox">Próximo jogo</button>
+  </div>
+  <div id="verdict" hidden class="final">
+    <div class="tag">Fim da campanha</div>
+    <div class="big" id="vbig"></div>
+    <div class="note" id="vtxt"></div>
+    <div class="row" style="justify-content:center;margin-top:22px"><button class="btn" id="again">Jogar de novo</button></div>
+  </div>
+</section>
+
+<rodape>Zebra · futebol brasileiro de todos os tempos</rodape>
+</div>
+__JS__
+</body>
+</html>

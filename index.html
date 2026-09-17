@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZEBRA — monte seu time com quem já jogou</title>
+<meta name="description" content="O dado sorteia um time campeão da história do futebol brasileiro. Você escala um jogador daquele elenco. Sete escolhas e uma campanha até a final.">
+<meta property="og:title" content="ZEBRA">
+<meta property="og:description" content="Monte seu time com quem já jogou. Sete escolhas, uma campanha, uma final.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0d0a'/><text y='24' x='16' text-anchor='middle' font-size='20' font-weight='900' font-family='sans-serif' fill='%237BE495' font-style='italic'>Z</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+:root{
+  --preto:#0a0d0a; --carvao:#111511; --carta:#151a15; --linha:#232a23;
+  --claro:#eef2ee; --apagado:#8d968d;
+  --verde:#7BE495; --verde-esc:#3f8f56; --vermelho:#ff5a3c; --ouro:#e9c46a;
+  --grama:#16351f;
+}
+html{-webkit-text-size-adjust:100%}
+
+/* ---- luzes de fundo ---- */
+.aura{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aura i{position:absolute;display:block;border-radius:50%;filter:blur(70px)}
+.aura .a{width:70vw;height:70vw;max-width:760px;max-height:760px;left:-18vw;top:-24vw;
+  background:radial-gradient(circle,rgba(123,228,149,.55),rgba(63,143,86,.22) 45%,transparent 70%);animation:deriva 26s ease-in-out infinite}
+.aura .b{width:60vw;height:60vw;max-width:640px;max-height:640px;right:-16vw;top:26vh;
+  background:radial-gradient(circle,rgba(123,228,149,.42),rgba(63,143,86,.18) 45%,transparent 70%);animation:deriva 34s ease-in-out infinite reverse}
+.aura .c{width:120vw;height:46vh;left:-10vw;bottom:-22vh;
+  background:radial-gradient(ellipse at center,rgba(123,228,149,.45),rgba(63,143,86,.18) 40%,transparent 66%);animation:pulsa 12s ease-in-out infinite}
+@keyframes deriva{0%,100%{transform:translate3d(0,0,0) scale(1)}33%{transform:translate3d(6vw,4vh,0) scale(1.1)}66%{transform:translate3d(-4vw,7vh,0) scale(.94)}}
+@keyframes pulsa{0%,100%{opacity:.55}50%{opacity:1}}
+.wrap{position:relative;z-index:1}
+
+/* ---- animacoes ---- */
+@keyframes sobe{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes entraEsq{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes brilha{0%{box-shadow:0 0 0 0 rgba(123,228,149,.55)}70%{box-shadow:0 0 0 16px rgba(123,228,149,0)}100%{box-shadow:0 0 0 0 rgba(123,228,149,0)}}
+@keyframes tremeDado{0%,100%{transform:skewX(-9deg) rotate(0)}25%{transform:skewX(-9deg) rotate(-2.5deg)}75%{transform:skewX(-9deg) rotate(2.5deg)}}
+.anima{animation:sobe .5s cubic-bezier(.2,.7,.3,1) both}
+.anima-1{animation-delay:.06s} .anima-2{animation-delay:.12s} .anima-3{animation-delay:.18s} .anima-4{animation-delay:.24s}
+@media (prefers-reduced-motion:reduce){
+  .anima,.aura i{animation:none!important}
+  *{transition-duration:.01ms!important}
+}
+body{
+  background:var(--preto); color:var(--claro);
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  min-height:100vh; padding:0 16px 40px; overflow-x:hidden;
+}
+.wrap{max-width:900px;margin:0 auto}
+.tag{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--apagado);font-weight:800}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ---- marca ---- */
+.marca{display:inline-block;transform:skewX(-9deg);transition:box-shadow .3s;border:2.5px solid var(--claro);
+  padding:5px 13px 4px;background:var(--preto);box-shadow:4px 4px 0 var(--verde-esc)}
+.marca span{display:block;transform:skewX(9deg);font-weight:900;letter-spacing:.06em;
+  font-size:23px;line-height:1;font-style:italic}
+.marca.g span{font-size:44px}
+topo{display:block;padding:26px 0 0}
+
+/* ---- botoes ---- */
+.btn{background:var(--verde);color:#08150c;font-weight:900;padding:15px 26px;border-radius:6px;
+  font-size:14px;letter-spacing:.04em;text-transform:uppercase;transition:transform .12s,box-shadow .12s;
+  box-shadow:0 0 0 rgba(123,228,149,0)}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 22px rgba(123,228,149,.22)}
+.btn:disabled{background:none;border:1px solid var(--linha);color:var(--apagado);cursor:default;
+  font-weight:700;box-shadow:none;transform:none}
+.btn.ghost{background:none;border:1px solid var(--linha);color:var(--claro)}
+.btn.ghost:hover:not(:disabled){border-color:var(--verde)}
+.btn.sm{padding:10px 16px;font-size:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---- capa ---- */
+#scr-home{padding:30px 0 0}
+.hero{position:relative;border-radius:14px;overflow:hidden;margin-top:26px;
+  background:
+    linear-gradient(to bottom,rgba(10,13,10,.93) 0%,rgba(10,13,10,.55) 45%,rgba(10,13,10,.97) 100%),
+    repeating-linear-gradient(90deg,#132b1a 0 44px,#16351f 44px 88px);
+  border:1px solid var(--linha);padding:44px 28px 92px}
+.hero .glow{position:absolute;left:-12%;right:-12%;bottom:-70px;height:250px;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse 55% 100% at 50% 100%,
+    #a8f0bf 0%, rgba(140,235,170,.78) 18%, rgba(110,215,145,.42) 38%,
+    rgba(63,143,86,.16) 60%, transparent 78%);
+  filter:blur(26px);animation:pulsa 9s ease-in-out infinite}
+.hero::before{content:'';position:absolute;left:50%;bottom:-78px;width:210px;height:210px;
+  border:2px solid rgba(255,255,255,.12);border-radius:50%;transform:translateX(-50%);z-index:0}
+h1{position:relative;z-index:2;font-size:clamp(33px,8.4vw,60px);font-weight:900;letter-spacing:-.035em;line-height:.95;
+  font-style:italic;text-transform:uppercase;position:relative;z-index:1}
+h1 em{font-style:italic;color:var(--verde)}
+.sub{color:#c3ccc3;font-size:14.5px;margin-top:16px;max-width:44ch;line-height:1.55;position:relative;z-index:2}
+.hero .row{margin-top:26px;position:relative;z-index:2}
+
+.comofunc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));
+  gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:12px;
+  overflow:hidden;margin-top:14px}
+.comofunc div{background:var(--carvao);padding:20px 18px;transition:background .25s,transform .25s}
+.comofunc div:hover{background:#17201a;transform:translateY(-3px)}
+.comofunc .n{color:var(--verde);font-weight:900;font-size:13px;font-style:italic}
+.comofunc h3{font-size:13.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:7px 0 6px}
+.comofunc p{font-size:12.5px;color:var(--apagado);line-height:1.5}
+
+/* ---- barra ---- */
+.bar{display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:16px 0;border-bottom:1px solid var(--linha);flex-wrap:wrap;margin-top:22px}
+.contador{font-size:25px;font-weight:900;font-style:italic;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* ---- o campo ---- */
+.campo{position:relative;border:1px solid var(--linha);border-radius:12px;
+  margin:18px auto 8px;max-width:560px;
+  padding:34px 26px;aspect-ratio:3/4;
+  background:repeating-linear-gradient(0deg,#122a19 0 9%,#16351f 9% 18%)}
+.campo .marcacao{position:absolute;inset:11px;border:2px solid rgba(255,255,255,.17);border-radius:4px;pointer-events:none}
+.campo .meio{position:absolute;left:11px;right:11px;top:50%;height:2px;background:rgba(255,255,255,.17);pointer-events:none}
+.campo .circulo{position:absolute;left:50%;top:50%;width:30%;aspect-ratio:1;border:2px solid rgba(255,255,255,.17);
+  border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.campo .area{position:absolute;left:50%;transform:translateX(-50%);width:52%;height:13%;
+  border:2px solid rgba(255,255,255,.17);pointer-events:none}
+.campo .area.b{bottom:11px;border-bottom:0} .campo .area.t{top:11px;border-top:0}
+.linhas{position:relative;height:100%;z-index:1}
+/* a bola fica presa na coordenada; o texto pendura abaixo sem deslocar nada */
+.pos{--d:44px;position:absolute;transform:translate(-50%,-50%);
+  width:var(--d);height:var(--d);text-align:center}
+.bola{width:var(--d);height:var(--d);border-radius:50%;
+  border:2px solid var(--verde-esc);background:rgba(10,13,10,.72);
+  display:flex;align-items:center;justify-content:center;transition:all .2s}
+.pos .rot,.pos .quem{position:absolute;left:50%;transform:translateX(-50%);width:82px}
+.pos.on .bola{border-color:var(--verde);background:var(--verde);box-shadow:0 0 22px rgba(123,228,149,.5)}
+.pos.novo .bola{animation:brilha .9s ease-out}
+.bola b{font-size:17px;font-weight:900;font-style:italic;color:var(--verde);font-variant-numeric:tabular-nums}
+.pos.on .bola b{color:#08150c}
+.pos .rot{top:calc(var(--d) + 3px);font-size:9px;font-weight:900;letter-spacing:.09em;
+  color:rgba(255,255,255,.72);text-shadow:0 1px 4px rgba(0,0,0,.95)}
+.pos .quem{top:calc(var(--d) + 15px);font-size:11px;font-weight:800;line-height:1.15;
+  text-shadow:0 1px 3px rgba(0,0,0,.92);word-break:break-word}
+@media(max-width:560px){.pos{--d:36px}.bola b{font-size:13px}
+  .pos .rot,.pos .quem{width:66px}.pos .rot{font-size:8px}.pos .quem{font-size:9.5px}}
+
+/* ---- elenco sorteado ---- */
+.timehead{display:flex;align-items:center;gap:12px;margin:24px 0 3px}
+.flag{width:36px;height:25px;border-radius:3px;flex:0 0 auto;
+  box-shadow:0 0 0 1px rgba(255,255,255,.2);transform:skewX(-9deg)}
+.timehead h2{font-size:22px;font-weight:900;font-style:italic;letter-spacing:-.025em;text-transform:uppercase}
+.timehead .yr{color:var(--verde)}
+.conq{color:var(--apagado);font-size:12px;margin-bottom:13px}
+.list{display:grid;gap:5px}
+.pl{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:11px;align-items:center;
+  background:var(--carta);border:1px solid var(--linha);border-radius:8px;padding:11px 14px;
+  text-align:left;width:100%;transition:border-color .12s,background .12s}
+.pl:hover:not(:disabled){border-color:var(--verde);background:#1a2a1e}
+.pl:disabled{opacity:.28;cursor:default}
+.pl .g{font-size:9px;font-weight:900;color:var(--verde);letter-spacing:.08em}
+.pl .nm{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.pl .ps{font-size:11px;color:var(--apagado)}
+.pl .why{font-size:9.5px;color:var(--vermelho);font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+
+/* ---- campanha ---- */
+.match{background:var(--carta);border:1px solid var(--linha);border-radius:10px;padding:13px 15px;margin-bottom:7px;animation:sobe .45s cubic-bezier(.2,.7,.3,1) both}
+.match.vivo{border-color:rgba(123,228,149,.4);box-shadow:0 0 30px rgba(123,228,149,.10)}
+.match .top{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:11px;align-items:center}
+.match .fase{font-size:9px;letter-spacing:.13em;color:var(--apagado);font-weight:900}
+.match .opp{font-weight:900;font-size:16px;font-style:italic;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.match .sc{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;font-style:italic}
+.match .sc.w{color:var(--verde)} .match .sc.l{color:var(--vermelho)} .match .sc.d{color:var(--ouro)}
+.match .clock{font-size:10px;font-weight:900;color:var(--vermelho);font-variant-numeric:tabular-nums;
+  min-width:26px;display:inline-block;text-align:right}
+.match .clock.fim{color:var(--apagado)}
+.ev{border-left:2px solid var(--verde);padding:5px 0 5px 11px;margin-top:7px;font-size:12px;
+  display:flex;gap:9px;align-items:baseline;animation:entraEsq .35s ease-out both}
+.ev.c{border-color:var(--vermelho)}
+.ev .m{color:var(--apagado);font-weight:900;font-variant-numeric:tabular-nums;min-width:28px}
+.ev .who{font-weight:800}
+.speeds{display:flex;gap:5px;flex-wrap:wrap}
+.sp{border:1px solid var(--linha);border-radius:5px;padding:8px 13px;font-size:11px;
+  font-weight:900;color:var(--apagado);text-transform:uppercase;letter-spacing:.06em}
+.sp.on{background:var(--verde);color:#08150c;border-color:var(--verde)}
+
+.final{text-align:center;padding:40px 0 16px}
+.final .big{font-size:clamp(42px,12vw,96px);font-weight:900;font-style:italic;
+  letter-spacing:-.045em;line-height:.9;text-transform:uppercase}
+.final .big.seven{color:var(--verde)}
+.note{color:var(--apagado);font-size:13px;line-height:1.65;margin-top:12px}
+.xi{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,158px),1fr));gap:6px;margin:18px 0}
+.xi .c{background:var(--carta);border:1px solid var(--linha);border-radius:8px;padding:11px 13px}
+.xi .c .nm{font-weight:800;font-size:14px}
+.xi .c .sm{font-size:10.5px;color:var(--apagado);margin-top:2px}
+.xi .c .ov{float:right;font-weight:900;font-style:italic;color:var(--verde);font-variant-numeric:tabular-nums}
+.ovbox{display:flex;align-items:baseline;gap:14px;margin:20px 0 2px}
+.ovbox .v{font-size:60px;font-weight:900;font-style:italic;letter-spacing:-.05em;
+  color:var(--verde);font-variant-numeric:tabular-nums;line-height:1}
+/* ---- opcoes de tatica ---- */
+.campo.mini{max-width:360px;aspect-ratio:3/4.05;margin:14px auto 4px;padding:30px 22px}
+.campo.mini .pos{--d:34px}
+.campo.mini .bola{border-style:dashed}
+.campo.mini .bola b{font-size:13px;color:var(--verde-esc)}
+.campo.mini .rot{font-size:8.5px}
+.campo.mini .quem{display:none}
+.campo.mini.rev{max-width:420px;aspect-ratio:3/4}
+.campo.mini.rev .pos{--d:40px}
+.campo.mini.rev .bola{border-style:solid}
+.campo.mini.rev .quem{display:block;font-size:9.5px}
+.campo.mini.rev .pos.on .bola b{color:#08150c}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,196px),1fr));gap:7px}
+.opt{background:var(--carta);border:1px solid var(--linha);border-radius:9px;padding:13px 15px;
+  text-align:left;transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--verde-esc);transform:translateY(-2px);box-shadow:0 8px 26px rgba(123,228,149,.10)}
+.opt{transition:border-color .18s,background .18s,transform .18s,box-shadow .18s}
+.opt.on{border-color:var(--verde);background:#18291d;box-shadow:0 0 0 1px var(--verde),0 10px 34px rgba(123,228,149,.16)}
+.opt b{display:block;font-size:19px;font-weight:900;font-style:italic;letter-spacing:-.02em}
+.opt.on b{color:var(--verde)}
+.opt span{display:block;font-size:11.5px;color:var(--apagado);margin-top:4px;line-height:1.4}
+.previa{margin-top:18px;padding:14px 16px;border:1px dashed var(--linha);border-radius:9px;
+  font-size:13px;color:var(--apagado);font-weight:600}
+.previa b{font-weight:900;font-style:italic;color:var(--claro)}
+.previa b.up{color:var(--verde)} .previa b.down{color:var(--vermelho)}
+
+rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(--linha);
+  text-align:center;color:var(--apagado);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="aura" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+
+<topo><div class="marca" id="marca"><span>ZEBRA</span></div></topo>
+
+<section id="scr-home">
+  <div class="hero">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="tag" style="position:relative;z-index:2">O jogo de futebol<br>com quem já vestiu a camisa</div>
+    <h1>Monte seu time.<br><em>Ganhe a final.</em></h1>
+    <p class="sub">O dado sorteia um time campeão da história do futebol brasileiro. Você escala um jogador daquele elenco — e o próximo sorteio pode não ser tão generoso. Sete escolhas e uma campanha de sete jogos.</p>
+    <div class="row"><button class="btn" id="go">Jogar agora</button></div>
+  </div>
+  <div class="comofunc">
+    <div><div class="n">01</div><h3>Role o dado</h3><p>Sai um time campeão e o elenco daquele ano.</p></div>
+    <div><div class="n">02</div><h3>Escale um</h3><p>Só um jogador por sorteio, e ele some dos outros elencos.</p></div>
+    <div><div class="n">03</div><h3>Feche os sete</h3><p>Um goleiro, dois defensores, dois meias, dois atacantes.</p></div>
+    <div><div class="n">04</div><h3>Vá até a final</h3><p>Sete jogos contra os próprios times da história.</p></div>
+  </div>
+</section>
+
+<section id="scr-tatica" hidden>
+  <div class="bar"><div><div class="tag">Antes de escalar</div><div class="contador">Tática</div></div></div>
+  <div class="campo mini">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campoPrev"></div>
+  </div>
+  <div class="tag" style="margin:22px 0 9px">Formação</div>
+  <div class="opts" id="forms"></div>
+  <div class="tag" style="margin:24px 0 9px">Postura</div>
+  <div class="opts" id="estilos"></div>
+  <div class="previa" id="previa"></div>
+  <div class="row" style="margin-top:22px"><button class="btn" id="confirmaTat">Começar a escalar</button></div>
+</section>
+
+<section id="scr-draft" hidden>
+  <div class="bar">
+    <div><div class="tag">Seu time · <span id="tatLabel"></span></div><div class="contador" id="picks"></div></div>
+    <div class="row"><button class="btn" id="roll">Rolar o dado</button><button class="btn ghost sm" id="pass">Passar (<span id="passN"></span>)</button></div>
+  </div>
+  <div class="campo">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campo"></div>
+  </div>
+  <div id="teamArea" hidden>
+    <div class="timehead"><span class="flag" id="flag"></span><h2 id="tname"></h2></div>
+    <div class="conq" id="tconq"></div>
+    <div class="list" id="squad"></div>
+  </div>
+</section>
+
+<section id="scr-reveal" hidden>
+  <div class="tag" style="margin-top:26px">Seu time está pronto</div>
+  <div class="ovbox"><div class="v" id="ovTeam"></div><div class="note" style="margin:0">de overall<br>no <b id="ovTat"></b></div></div>
+  <div class="campo mini rev">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campoRev"></div>
+  </div>
+  <div class="xi" id="xi"></div>
+  <div class="row">
+    <button class="btn" id="startCamp">Jogar a campanha</button>
+    <div class="speeds" id="modos2">
+      <button class="sp on" data-modo="auto">Automático</button>
+      <button class="sp" data-modo="manual">Jogo a jogo</button>
+    </div>
+    <div class="speeds" id="speeds2">
+      <button class="sp on" data-sp="1">Normal</button>
+      <button class="sp" data-sp="4">Rápido</button>
+      <button class="sp" data-sp="0">Ultra</button>
+    </div>
+  </div>
+</section>
+
+<section id="scr-camp" hidden>
+  <div class="bar">
+    <div><div class="tag">A campanha</div></div>
+    <div class="row" style="gap:14px">
+      <div class="speeds" id="modos">
+        <button class="sp on" data-modo="auto">Automático</button>
+        <button class="sp" data-modo="manual">Jogo a jogo</button>
+      </div>
+      <div class="speeds">
+        <button class="sp on" data-sp="1">Normal</button>
+        <button class="sp" data-sp="4">Rápido</button>
+        <button class="sp" data-sp="0">Ultra</button>
+      </div>
+    </div>
+  </div>
+  <div id="matches" style="margin-top:16px"></div>
+  <div class="row" id="proxWrap" hidden style="justify-content:center;margin-top:14px">
+    <button class="btn" id="prox">Próximo jogo</button>
+  </div>
+  <div id="verdict" hidden class="final">
+    <div class="tag">Fim da campanha</div>
+    <div class="big" id="vbig"></div>
+    <div class="note" id="vtxt"></div>
+    <div class="row" style="justify-content:center;margin-top:22px"><button class="btn" id="again">Jogar de novo</button></div>
+  </div>
+</section>
+
+<rodape>Zebra · futebol brasileiro de todos os tempos</rodape>
+</div>
+<script>
+const DB = {"times":[{"id":"san62","clube":"Santos","ano":1962,"cores":["#111111","#FFFFFF"],"conquista":"Taça Brasil, Libertadores e Mundial","elenco":[{"id":"gilmar","nome":"Gilmar","pos":"Goleiro","grupo":"GOL","over":90},{"id":"lima","nome":"Lima","pos":"Lateral-direito","grupo":"DEF","over":80},{"id":"mauro-ramos","nome":"Mauro Ramos","pos":"Zagueiro","grupo":"DEF","over":86},{"id":"dalmo","nome":"Dalmo","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"calvet","nome":"Calvet","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"zito","nome":"Zito","pos":"Volante","grupo":"MEI","over":88},{"id":"mengalvio","nome":"Mengálvio","pos":"Meia","grupo":"MEI","over":84},{"id":"dorval","nome":"Dorval","pos":"Ponta-direita","grupo":"ATA","over":83},{"id":"coutinho","nome":"Coutinho","pos":"Centroavante","grupo":"ATA","over":92},{"id":"pele","nome":"Pelé","pos":"Atacante","grupo":"ATA","over":99},{"id":"pepe","nome":"Pepe","pos":"Ponta-esquerda","grupo":"ATA","over":90}],"fonte":"CONMEBOL — time campeão da América de 1962"},{"id":"fla19","clube":"Flamengo","ano":2019,"cores":["#C52613","#111111"],"conquista":"Brasileiro e Libertadores","elenco":[{"id":"diego-alves","nome":"Diego Alves","pos":"Goleiro","grupo":"GOL","over":84},{"id":"rafinha","nome":"Rafinha","pos":"Lateral-direito","grupo":"DEF","over":83},{"id":"rodrigo-caio","nome":"Rodrigo Caio","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"pablo-mari","nome":"Pablo Marí","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"filipe-luis","nome":"Filipe Luís","pos":"Lateral-esquerdo","grupo":"DEF","over":85},{"id":"willian-arao","nome":"Willian Arão","pos":"Volante","grupo":"MEI","over":80},{"id":"gerson","nome":"Gerson","pos":"Meia","grupo":"MEI","over":85},{"id":"everton-ribeiro","nome":"Everton Ribeiro","pos":"Meia","grupo":"MEI","over":86},{"id":"arrascaeta","nome":"Arrascaeta","pos":"Meia","grupo":"MEI","over":88},{"id":"bruno-henrique","nome":"Bruno Henrique","pos":"Atacante","grupo":"ATA","over":89},{"id":"gabigol","nome":"Gabigol","pos":"Centroavante","grupo":"ATA","over":90}],"fonte":"Coluna do Fla — escalação da final da Libertadores de 2019"},{"id":"san63","clube":"Santos","ano":1963,"cores":["#111111","#FFFFFF"],"conquista":"Bicampeão da Libertadores e do Mundial, com Pelé lesionado na final","elenco":[{"id":"gilmar","nome":"Gilmar","pos":"Goleiro","grupo":"GOL","over":90},{"id":"ismael","nome":"Ismael","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"mauro-ramos","nome":"Mauro Ramos","pos":"Zagueiro","grupo":"DEF","over":86},{"id":"dalmo","nome":"Dalmo","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"haroldo","nome":"Haroldo","pos":"Volante","grupo":"MEI","over":78},{"id":"lima","nome":"Lima","pos":"Meia","grupo":"MEI","over":80},{"id":"mengalvio","nome":"Mengálvio","pos":"Meia","grupo":"MEI","over":84},{"id":"dorval","nome":"Dorval","pos":"Ponta-direita","grupo":"ATA","over":83},{"id":"coutinho","nome":"Coutinho","pos":"Centroavante","grupo":"ATA","over":92},{"id":"almir","nome":"Almir","pos":"Atacante","grupo":"ATA","over":84},{"id":"pepe","nome":"Pepe","pos":"Ponta-esquerda","grupo":"ATA","over":90}],"fonte":"ogol / Santos FC — escalação da final do Mundial de 1963"},{"id":"fla81","clube":"Flamengo","ano":1981,"cores":["#C52613","#111111"],"conquista":"Libertadores e Mundial","elenco":[{"id":"raul","nome":"Raul","pos":"Goleiro","grupo":"GOL","over":81},{"id":"leandro","nome":"Leandro","pos":"Lateral-direito","grupo":"DEF","over":90},{"id":"mozer","nome":"Mozer","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"marinho","nome":"Marinho","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"junior-fla","nome":"Júnior","pos":"Lateral-esquerdo","grupo":"DEF","over":91},{"id":"andrade","nome":"Andrade","pos":"Volante","grupo":"MEI","over":82},{"id":"adilio","nome":"Adílio","pos":"Meia","grupo":"MEI","over":84},{"id":"zico","nome":"Zico","pos":"Meia","grupo":"MEI","over":97},{"id":"tita","nome":"Tita","pos":"Ponta","grupo":"ATA","over":83},{"id":"lico","nome":"Lico","pos":"Ponta","grupo":"ATA","over":78},{"id":"nunes","nome":"Nunes","pos":"Centroavante","grupo":"ATA","over":85}],"fonte":"Flamengo / Imortais — escalação da final do Mundial de 1981"},{"id":"spfc92","clube":"São Paulo","ano":1992,"cores":["#CC0000","#111111"],"conquista":"Libertadores e Mundial","elenco":[{"id":"zetti","nome":"Zetti","pos":"Goleiro","grupo":"GOL","over":86},{"id":"vitor-spfc","nome":"Vítor","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"adilson-spfc","nome":"Adílson","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"ronaldao","nome":"Ronaldão","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"ronaldo-luis","nome":"Ronaldo Luís","pos":"Lateral-esquerdo","grupo":"DEF","over":76},{"id":"cafu","nome":"Cafu","pos":"Lateral-direito","grupo":"DEF","over":90},{"id":"pintado","nome":"Pintado","pos":"Volante","grupo":"MEI","over":78},{"id":"cerezo","nome":"Toninho Cerezo","pos":"Volante","grupo":"MEI","over":88},{"id":"rai","nome":"Raí","pos":"Meia","grupo":"MEI","over":93},{"id":"palhinha","nome":"Palhinha","pos":"Atacante","grupo":"ATA","over":82},{"id":"muller","nome":"Müller","pos":"Atacante","grupo":"ATA","over":87}],"fonte":"São Paulo FC — escalação da final do Mundial de 1992"},{"id":"pal99","clube":"Palmeiras","ano":1999,"cores":["#006437","#FFFFFF"],"conquista":"Libertadores","elenco":[{"id":"marcos","nome":"Marcos","pos":"Goleiro","grupo":"GOL","over":89},{"id":"arce","nome":"Arce","pos":"Lateral-direito","grupo":"DEF","over":83},{"id":"junior-baiano","nome":"Júnior Baiano","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"roque-junior","nome":"Roque Júnior","pos":"Zagueiro","grupo":"DEF","over":85},{"id":"junior-pal","nome":"Júnior","pos":"Lateral-esquerdo","grupo":"DEF","over":79},{"id":"cesar-sampaio","nome":"César Sampaio","pos":"Volante","grupo":"MEI","over":85},{"id":"rogerio-pal","nome":"Rogério","pos":"Volante","grupo":"MEI","over":76},{"id":"zinho","nome":"Zinho","pos":"Meia","grupo":"MEI","over":85},{"id":"alex-pal","nome":"Alex","pos":"Meia","grupo":"MEI","over":87},{"id":"paulo-nunes","nome":"Paulo Nunes","pos":"Atacante","grupo":"ATA","over":82},{"id":"oseas","nome":"Oséas","pos":"Centroavante","grupo":"ATA","over":80}],"fonte":"Wikipédia / ogol — escalação da final da Libertadores de 1999"},{"id":"san11","clube":"Santos","ano":2011,"cores":["#111111","#FFFFFF"],"conquista":"Libertadores e Paulista","elenco":[{"id":"rafael-san","nome":"Rafael","pos":"Goleiro","grupo":"GOL","over":80},{"id":"danilo-san","nome":"Danilo","pos":"Lateral-direito","grupo":"DEF","over":83},{"id":"edu-dracena","nome":"Edu Dracena","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"durval","nome":"Durval","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"leo-san","nome":"Léo","pos":"Lateral-esquerdo","grupo":"DEF","over":82},{"id":"arouca","nome":"Arouca","pos":"Volante","grupo":"MEI","over":81},{"id":"adriano-san","nome":"Adriano","pos":"Volante","grupo":"MEI","over":78},{"id":"elano","nome":"Elano","pos":"Meia","grupo":"MEI","over":85},{"id":"ganso","nome":"Ganso","pos":"Meia","grupo":"MEI","over":87},{"id":"neymar","nome":"Neymar","pos":"Atacante","grupo":"ATA","over":91},{"id":"ze-eduardo","nome":"Zé Eduardo","pos":"Centroavante","grupo":"ATA","over":77}],"fonte":"ESPN / Wikipédia — escalação da final da Libertadores de 2011"},{"id":"cru03","clube":"Cruzeiro","ano":2003,"cores":["#003C82","#FFFFFF"],"conquista":"Tríplice Coroa: Mineiro, Copa do Brasil e Brasileiro","elenco":[{"id":"gomes","nome":"Gomes","pos":"Goleiro","grupo":"GOL","over":85},{"id":"maurinho-cru","nome":"Maurinho","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"cris","nome":"Cris","pos":"Zagueiro","grupo":"DEF","over":85},{"id":"edu-dracena","nome":"Edu Dracena","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"leandro-cru","nome":"Leandro","pos":"Lateral-esquerdo","grupo":"DEF","over":76},{"id":"maldonado","nome":"Maldonado","pos":"Volante","grupo":"MEI","over":80},{"id":"augusto-recife","nome":"Augusto Recife","pos":"Volante","grupo":"MEI","over":78},{"id":"wendell-cru","nome":"Wendell","pos":"Meia","grupo":"MEI","over":78},{"id":"alex-cru","nome":"Alex","pos":"Meia","grupo":"MEI","over":92},{"id":"aristizabal","nome":"Aristizábal","pos":"Centroavante","grupo":"ATA","over":83},{"id":"deivid","nome":"Deivid","pos":"Centroavante","grupo":"ATA","over":84}],"fonte":"Imortais do Futebol — Cruzeiro 2003"},{"id":"pal20","clube":"Palmeiras","ano":2020,"cores":["#006437","#FFFFFF"],"conquista":"Libertadores, Copa do Brasil e Paulista","elenco":[{"id":"weverton","nome":"Weverton","pos":"Goleiro","grupo":"GOL","over":85},{"id":"marcos-rocha","nome":"Marcos Rocha","pos":"Lateral-direito","grupo":"DEF","over":82},{"id":"gustavo-gomez","nome":"Gustavo Gómez","pos":"Zagueiro","grupo":"DEF","over":86},{"id":"luan-pal","nome":"Luan","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"vina","nome":"Matías Viña","pos":"Lateral-esquerdo","grupo":"DEF","over":80},{"id":"danilo-pal","nome":"Danilo","pos":"Volante","grupo":"MEI","over":83},{"id":"ze-rafael","nome":"Zé Rafael","pos":"Meia","grupo":"MEI","over":80},{"id":"raphael-veiga","nome":"Raphael Veiga","pos":"Meia","grupo":"MEI","over":86},{"id":"rony","nome":"Rony","pos":"Atacante","grupo":"ATA","over":82},{"id":"luiz-adriano","nome":"Luiz Adriano","pos":"Centroavante","grupo":"ATA","over":80},{"id":"gabriel-menino","nome":"Gabriel Menino","pos":"Volante","grupo":"MEI","over":78}],"fonte":"ogol / Palmeiras — escalação da final da Libertadores de 2020"},{"id":"cor12","clube":"Corinthians","ano":2012,"cores":["#111111","#FFFFFF"],"conquista":"Libertadores invicto e Mundial","elenco":[{"id":"cassio","nome":"Cássio","pos":"Goleiro","grupo":"GOL","over":88},{"id":"alessandro","nome":"Alessandro","pos":"Lateral-direito","grupo":"DEF","over":79},{"id":"chicao","nome":"Chicão","pos":"Zagueiro","grupo":"DEF","over":82},{"id":"leandro-castan","nome":"Leandro Castán","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"fabio-santos","nome":"Fábio Santos","pos":"Lateral-esquerdo","grupo":"DEF","over":80},{"id":"ralf","nome":"Ralf","pos":"Volante","grupo":"MEI","over":80},{"id":"paulinho","nome":"Paulinho","pos":"Volante","grupo":"MEI","over":87},{"id":"danilo-cor","nome":"Danilo","pos":"Meia","grupo":"MEI","over":80},{"id":"guerrero","nome":"Paolo Guerrero","pos":"Centroavante","grupo":"ATA","over":85},{"id":"jorge-henrique","nome":"Jorge Henrique","pos":"Atacante","grupo":"ATA","over":77},{"id":"emerson-sheik","nome":"Emerson Sheik","pos":"Atacante","grupo":"ATA","over":84}],"fonte":"Goal / Wikipédia — escalação da final do Mundial de 2012"},{"id":"int06","clube":"Internacional","ano":2006,"cores":["#CC0000","#FFFFFF"],"conquista":"Libertadores e Mundial","elenco":[{"id":"clemer","nome":"Clemer","pos":"Goleiro","grupo":"GOL","over":80},{"id":"ceara-int","nome":"Ceará","pos":"Lateral-direito","grupo":"DEF","over":78},{"id":"indio","nome":"Índio","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"fabiano-eller","nome":"Fabiano Eller","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"rubens-cardoso","nome":"Rubens Cardoso","pos":"Lateral-esquerdo","grupo":"DEF","over":76},{"id":"edinho-int","nome":"Edinho","pos":"Volante","grupo":"MEI","over":77},{"id":"tinga","nome":"Tinga","pos":"Meia","grupo":"MEI","over":82},{"id":"alex-int","nome":"Alex","pos":"Volante","grupo":"MEI","over":78},{"id":"fernandao","nome":"Fernandão","pos":"Centroavante","grupo":"ATA","over":84},{"id":"rafael-sobis","nome":"Rafael Sóbis","pos":"Atacante","grupo":"ATA","over":82},{"id":"iarley","nome":"Iarley","pos":"Meia-atacante","grupo":"ATA","over":81}],"fonte":"Goal / Internacional — escalação da final do Mundial de 2006"},{"id":"cam13","clube":"Atlético-MG","ano":2013,"cores":["#111111","#FFFFFF"],"conquista":"Libertadores e Mineiro","elenco":[{"id":"victor","nome":"Victor","pos":"Goleiro","grupo":"GOL","over":85},{"id":"marcos-rocha","nome":"Marcos Rocha","pos":"Lateral-direito","grupo":"DEF","over":82},{"id":"rever","nome":"Réver","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"leonardo-silva","nome":"Leonardo Silva","pos":"Zagueiro","grupo":"DEF","over":82},{"id":"richarlyson","nome":"Richarlyson","pos":"Lateral-esquerdo","grupo":"DEF","over":78},{"id":"pierre","nome":"Pierre","pos":"Volante","grupo":"MEI","over":78},{"id":"josue-cam","nome":"Josué","pos":"Volante","grupo":"MEI","over":79},{"id":"ronaldinho","nome":"Ronaldinho Gaúcho","pos":"Meia","grupo":"MEI","over":91},{"id":"diego-tardelli","nome":"Diego Tardelli","pos":"Atacante","grupo":"ATA","over":84},{"id":"bernard","nome":"Bernard","pos":"Ponta","grupo":"ATA","over":84},{"id":"jo","nome":"Jô","pos":"Centroavante","grupo":"ATA","over":82}],"fonte":"Goal — escalação da final da Libertadores de 2013"},{"id":"spfc05","clube":"São Paulo","ano":2005,"cores":["#CC0000","#111111"],"conquista":"Libertadores e Mundial","elenco":[{"id":"rogerio-ceni","nome":"Rogério Ceni","pos":"Goleiro","grupo":"GOL","over":91},{"id":"cicinho","nome":"Cicinho","pos":"Lateral-direito","grupo":"DEF","over":83},{"id":"lugano","nome":"Lugano","pos":"Zagueiro","grupo":"DEF","over":86},{"id":"fabao","nome":"Fabão","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"junior-spfc","nome":"Júnior","pos":"Lateral-esquerdo","grupo":"DEF","over":80},{"id":"mineiro","nome":"Mineiro","pos":"Volante","grupo":"MEI","over":81},{"id":"josue-spfc","nome":"Josué","pos":"Volante","grupo":"MEI","over":80},{"id":"danilo-spfc","nome":"Danilo","pos":"Meia","grupo":"MEI","over":79},{"id":"amoroso","nome":"Amoroso","pos":"Atacante","grupo":"ATA","over":85},{"id":"aloisio","nome":"Aloísio","pos":"Atacante","grupo":"ATA","over":79},{"id":"edcarlos","nome":"Edcarlos","pos":"Zagueiro","grupo":"DEF","over":78}],"fonte":"São Paulo FC — escalação da final do Mundial de 2005"},{"id":"pal21","clube":"Palmeiras","ano":2021,"cores":["#006437","#FFFFFF"],"conquista":"Bicampeão da Libertadores","elenco":[{"id":"weverton","nome":"Weverton","pos":"Goleiro","grupo":"GOL","over":85},{"id":"mayke","nome":"Mayke","pos":"Lateral-direito","grupo":"DEF","over":79},{"id":"gustavo-gomez","nome":"Gustavo Gómez","pos":"Zagueiro","grupo":"DEF","over":86},{"id":"luan-pal","nome":"Luan","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"piquerez","nome":"Piquerez","pos":"Lateral-esquerdo","grupo":"DEF","over":82},{"id":"danilo-pal","nome":"Danilo","pos":"Volante","grupo":"MEI","over":83},{"id":"ze-rafael","nome":"Zé Rafael","pos":"Meia","grupo":"MEI","over":80},{"id":"raphael-veiga","nome":"Raphael Veiga","pos":"Meia","grupo":"MEI","over":86},{"id":"dudu","nome":"Dudu","pos":"Ponta","grupo":"ATA","over":84},{"id":"rony","nome":"Rony","pos":"Atacante","grupo":"ATA","over":82},{"id":"gustavo-scarpa","nome":"Gustavo Scarpa","pos":"Meia","grupo":"MEI","over":83}],"fonte":"Wikipédia / ESPN — escalação da final da Libertadores de 2021"},{"id":"fla22","clube":"Flamengo","ano":2022,"cores":["#C52613","#111111"],"conquista":"Libertadores e Copa do Brasil","elenco":[{"id":"santos-gol","nome":"Santos","pos":"Goleiro","grupo":"GOL","over":81},{"id":"rodinei","nome":"Rodinei","pos":"Lateral-direito","grupo":"DEF","over":79},{"id":"david-luiz","nome":"David Luiz","pos":"Zagueiro","grupo":"DEF","over":84},{"id":"leo-pereira","nome":"Léo Pereira","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"filipe-luis","nome":"Filipe Luís","pos":"Lateral-esquerdo","grupo":"DEF","over":85},{"id":"joao-gomes","nome":"João Gomes","pos":"Volante","grupo":"MEI","over":82},{"id":"thiago-maia","nome":"Thiago Maia","pos":"Volante","grupo":"MEI","over":79},{"id":"everton-ribeiro","nome":"Everton Ribeiro","pos":"Meia","grupo":"MEI","over":86},{"id":"arrascaeta","nome":"Arrascaeta","pos":"Meia","grupo":"MEI","over":88},{"id":"gabigol","nome":"Gabigol","pos":"Centroavante","grupo":"ATA","over":90},{"id":"pedro","nome":"Pedro","pos":"Centroavante","grupo":"ATA","over":87}],"fonte":"Wikipédia / ESPN — escalação da final da Libertadores de 2022"},{"id":"gre83","clube":"Grêmio","ano":1983,"cores":["#0D80BF","#111111"],"conquista":"Libertadores e Mundial","elenco":[{"id":"mazaropi","nome":"Mazaropi","pos":"Goleiro","grupo":"GOL","over":83},{"id":"paulo-roberto-gre","nome":"Paulo Roberto","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"baidek","nome":"Baidek","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"de-leon","nome":"De León","pos":"Zagueiro","grupo":"DEF","over":87},{"id":"pc-magalhaes","nome":"P.C. Magalhães","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"china","nome":"China","pos":"Volante","grupo":"MEI","over":78},{"id":"osvaldo-gre","nome":"Osvaldo","pos":"Volante","grupo":"MEI","over":77},{"id":"pc-lima","nome":"P.C. Lima","pos":"Meia","grupo":"MEI","over":77},{"id":"mario-sergio","nome":"Mário Sérgio","pos":"Meia","grupo":"MEI","over":81},{"id":"renato-gaucho","nome":"Renato Gaúcho","pos":"Ponta","grupo":"ATA","over":89},{"id":"tarciso","nome":"Tarciso","pos":"Ponta","grupo":"ATA","over":79}],"fonte":"Goal — escalação da final do Mundial de 1983"},{"id":"gre95","clube":"Grêmio","ano":1995,"cores":["#0D80BF","#111111"],"conquista":"Libertadores","elenco":[{"id":"danrlei","nome":"Danrlei","pos":"Goleiro","grupo":"GOL","over":83},{"id":"arce","nome":"Arce","pos":"Lateral-direito","grupo":"DEF","over":83},{"id":"adilson-gre","nome":"Adílson","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"rivarola","nome":"Rivarola","pos":"Zagueiro","grupo":"DEF","over":76},{"id":"roger-gre","nome":"Roger","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"dinho-gre","nome":"Dinho","pos":"Volante","grupo":"MEI","over":81},{"id":"goiano","nome":"Goiano","pos":"Volante","grupo":"MEI","over":76},{"id":"carlos-miguel","nome":"Carlos Miguel","pos":"Meia","grupo":"MEI","over":77},{"id":"paulo-nunes","nome":"Paulo Nunes","pos":"Atacante","grupo":"ATA","over":82},{"id":"jardel","nome":"Jardel","pos":"Centroavante","grupo":"ATA","over":88},{"id":"arilson","nome":"Arílson","pos":"Meia","grupo":"MEI","over":79}],"fonte":"Imortais do Futebol — Grêmio 1994-1997, time da Libertadores de 95"},{"id":"spfc93","clube":"São Paulo","ano":1993,"cores":["#CC0000","#111111"],"conquista":"Libertadores e Mundial","elenco":[{"id":"zetti","nome":"Zetti","pos":"Goleiro","grupo":"GOL","over":86},{"id":"cafu","nome":"Cafu","pos":"Lateral-direito","grupo":"DEF","over":90},{"id":"valber","nome":"Válber","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"ronaldao","nome":"Ronaldão","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"andre-luiz-spfc","nome":"André Luiz","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"dinho-spfc","nome":"Dinho","pos":"Volante","grupo":"MEI","over":78},{"id":"doriva","nome":"Doriva","pos":"Volante","grupo":"MEI","over":77},{"id":"cerezo","nome":"Toninho Cerezo","pos":"Volante","grupo":"MEI","over":88},{"id":"leonardo-spfc","nome":"Leonardo","pos":"Meia","grupo":"MEI","over":86},{"id":"palhinha","nome":"Palhinha","pos":"Atacante","grupo":"ATA","over":82},{"id":"muller","nome":"Müller","pos":"Atacante","grupo":"ATA","over":87}],"fonte":"São Paulo FC — escalação da final do Mundial de 1993"},{"id":"pal94","clube":"Palmeiras","ano":1994,"cores":["#006437","#FFFFFF"],"conquista":"Brasileiro e Paulista","elenco":[{"id":"velloso","nome":"Velloso","pos":"Goleiro","grupo":"GOL","over":79},{"id":"claudio-pal","nome":"Cláudio","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"antonio-carlos-pal","nome":"Antônio Carlos","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"cleber-pal","nome":"Cléber","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"roberto-carlos","nome":"Roberto Carlos","pos":"Lateral-esquerdo","grupo":"DEF","over":92},{"id":"cesar-sampaio","nome":"César Sampaio","pos":"Volante","grupo":"MEI","over":85},{"id":"mazinho","nome":"Mazinho","pos":"Volante","grupo":"MEI","over":84},{"id":"zinho","nome":"Zinho","pos":"Meia","grupo":"MEI","over":85},{"id":"rivaldo","nome":"Rivaldo","pos":"Meia","grupo":"MEI","over":89},{"id":"edmundo","nome":"Edmundo","pos":"Atacante","grupo":"ATA","over":90},{"id":"evair","nome":"Evair","pos":"Centroavante","grupo":"ATA","over":85}],"fonte":"Goal — escalação da final do Brasileiro de 1994"},{"id":"flu12","clube":"Fluminense","ano":2012,"cores":["#7A1C38","#006437"],"conquista":"Brasileiro","elenco":[{"id":"diego-cavalieri","nome":"Diego Cavalieri","pos":"Goleiro","grupo":"GOL","over":83},{"id":"bruno-flu","nome":"Bruno","pos":"Lateral-direito","grupo":"DEF","over":76},{"id":"gum","nome":"Gum","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"leandro-euzebio","nome":"Leandro Euzébio","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"carlinhos-flu","nome":"Carlinhos","pos":"Lateral-esquerdo","grupo":"DEF","over":78},{"id":"jean-flu","nome":"Jean","pos":"Volante","grupo":"MEI","over":79},{"id":"diguinho","nome":"Diguinho","pos":"Volante","grupo":"MEI","over":76},{"id":"deco","nome":"Deco","pos":"Meia","grupo":"MEI","over":86},{"id":"thiago-neves","nome":"Thiago Neves","pos":"Meia","grupo":"MEI","over":84},{"id":"wellington-nem","nome":"Wellington Nem","pos":"Atacante","grupo":"ATA","over":80},{"id":"fred","nome":"Fred","pos":"Centroavante","grupo":"ATA","over":88}],"fonte":"Campeões do Futebol — elenco e jogo do título de 2012"},{"id":"san02","clube":"Santos","ano":2002,"cores":["#111111","#FFFFFF"],"conquista":"Brasileiro, a geração dos Meninos da Vila","elenco":[{"id":"fabio-costa","nome":"Fábio Costa","pos":"Goleiro","grupo":"GOL","over":81},{"id":"maurinho-san","nome":"Maurinho","pos":"Lateral-direito","grupo":"DEF","over":76},{"id":"alex-san","nome":"Alex","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"andre-luis-san","nome":"André Luís","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"leo-san","nome":"Léo","pos":"Lateral-esquerdo","grupo":"DEF","over":82},{"id":"paulo-almeida","nome":"Paulo Almeida","pos":"Volante","grupo":"MEI","over":76},{"id":"renato-san","nome":"Renato","pos":"Volante","grupo":"MEI","over":82},{"id":"elano","nome":"Elano","pos":"Meia","grupo":"MEI","over":85},{"id":"diego","nome":"Diego","pos":"Meia","grupo":"MEI","over":87},{"id":"robinho","nome":"Robinho","pos":"Atacante","grupo":"ATA","over":89},{"id":"william-san","nome":"William","pos":"Centroavante","grupo":"ATA","over":77}],"fonte":"Santos FC / Imortais — escalação da final do Brasileiro de 2002"},{"id":"cor15","clube":"Corinthians","ano":2015,"cores":["#111111","#FFFFFF"],"conquista":"Brasileiro dominante","elenco":[{"id":"cassio","nome":"Cássio","pos":"Goleiro","grupo":"GOL","over":88},{"id":"fagner","nome":"Fagner","pos":"Lateral-direito","grupo":"DEF","over":82},{"id":"felipe-cor","nome":"Felipe","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"gil","nome":"Gil","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"uendel","nome":"Uendel","pos":"Lateral-esquerdo","grupo":"DEF","over":78},{"id":"ralf","nome":"Ralf","pos":"Volante","grupo":"MEI","over":80},{"id":"jadson","nome":"Jadson","pos":"Meia","grupo":"MEI","over":84},{"id":"elias","nome":"Elias","pos":"Volante","grupo":"MEI","over":83},{"id":"renato-augusto","nome":"Renato Augusto","pos":"Meia","grupo":"MEI","over":87},{"id":"malcom","nome":"Malcom","pos":"Ponta","grupo":"ATA","over":80},{"id":"vagner-love","nome":"Vagner Love","pos":"Centroavante","grupo":"ATA","over":83}],"fonte":"Todo Poderoso Timão / Lance — time base do Brasileiro de 2015"},{"id":"cam21","clube":"Atlético-MG","ano":2021,"cores":["#111111","#FFFFFF"],"conquista":"Brasileiro, Copa do Brasil e Mineiro","elenco":[{"id":"everson","nome":"Everson","pos":"Goleiro","grupo":"GOL","over":83},{"id":"mariano","nome":"Mariano","pos":"Lateral-direito","grupo":"DEF","over":79},{"id":"junior-alonso","nome":"Júnior Alonso","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"nathan-silva","nome":"Nathan Silva","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"arana","nome":"Guilherme Arana","pos":"Lateral-esquerdo","grupo":"DEF","over":85},{"id":"jair-cam","nome":"Jair","pos":"Volante","grupo":"MEI","over":80},{"id":"allan-cam","nome":"Allan","pos":"Volante","grupo":"MEI","over":80},{"id":"nacho-fernandez","nome":"Nacho Fernández","pos":"Meia","grupo":"MEI","over":85},{"id":"zaracho","nome":"Zaracho","pos":"Meia","grupo":"MEI","over":81},{"id":"hulk","nome":"Hulk","pos":"Atacante","grupo":"ATA","over":89},{"id":"keno","nome":"Keno","pos":"Ponta","grupo":"ATA","over":83}],"fonte":"Imortais do Futebol / Atlético — time base de 2021"},{"id":"cru13","clube":"Cruzeiro","ano":2013,"cores":["#003C82","#FFFFFF"],"conquista":"Brasileiro","elenco":[{"id":"fabio","nome":"Fábio","pos":"Goleiro","grupo":"GOL","over":87},{"id":"ceara-cru","nome":"Ceará","pos":"Lateral-direito","grupo":"DEF","over":78},{"id":"dede","nome":"Dedé","pos":"Zagueiro","grupo":"DEF","over":85},{"id":"bruno-rodrigo","nome":"Bruno Rodrigo","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"egidio","nome":"Egídio","pos":"Lateral-esquerdo","grupo":"DEF","over":79},{"id":"nilton","nome":"Nilton","pos":"Volante","grupo":"MEI","over":79},{"id":"lucas-silva","nome":"Lucas Silva","pos":"Volante","grupo":"MEI","over":82},{"id":"everton-ribeiro","nome":"Everton Ribeiro","pos":"Meia","grupo":"MEI","over":86},{"id":"ricardo-goulart","nome":"Ricardo Goulart","pos":"Meia","grupo":"MEI","over":85},{"id":"dagoberto","nome":"Dagoberto","pos":"Atacante","grupo":"ATA","over":80},{"id":"borges","nome":"Borges","pos":"Centroavante","grupo":"ATA","over":80}],"fonte":"Wikipédia / Edição dos Campeões — elenco do Brasileiro de 2013 (nomes-chave conferidos, XI não confirmado)"},{"id":"cru14","clube":"Cruzeiro","ano":2014,"cores":["#003C82","#FFFFFF"],"conquista":"Bicampeão Brasileiro","elenco":[{"id":"fabio","nome":"Fábio","pos":"Goleiro","grupo":"GOL","over":87},{"id":"ceara-cru","nome":"Ceará","pos":"Lateral-direito","grupo":"DEF","over":78},{"id":"dede","nome":"Dedé","pos":"Zagueiro","grupo":"DEF","over":85},{"id":"manoel","nome":"Manoel","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"egidio","nome":"Egídio","pos":"Lateral-esquerdo","grupo":"DEF","over":79},{"id":"henrique-cru","nome":"Henrique","pos":"Volante","grupo":"MEI","over":80},{"id":"lucas-silva","nome":"Lucas Silva","pos":"Volante","grupo":"MEI","over":82},{"id":"everton-ribeiro","nome":"Everton Ribeiro","pos":"Meia","grupo":"MEI","over":86},{"id":"ricardo-goulart","nome":"Ricardo Goulart","pos":"Meia","grupo":"MEI","over":85},{"id":"marcelo-moreno","nome":"Marcelo Moreno","pos":"Centroavante","grupo":"ATA","over":82},{"id":"willian-cru","nome":"Willian","pos":"Atacante","grupo":"ATA","over":80}],"fonte":"Wikipédia — elenco do Brasileiro de 2014 (nomes-chave conferidos, XI não confirmado)"},{"id":"int10","clube":"Internacional","ano":2010,"cores":["#CC0000","#FFFFFF"],"conquista":"Libertadores","elenco":[{"id":"renan-int","nome":"Renan","pos":"Goleiro","grupo":"GOL","over":79},{"id":"nei","nome":"Nei","pos":"Lateral-direito","grupo":"DEF","over":76},{"id":"bolivar","nome":"Bolívar","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"indio","nome":"Índio","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"kleber-int","nome":"Kléber","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"guinazu","nome":"Guiñazú","pos":"Volante","grupo":"MEI","over":82},{"id":"tinga","nome":"Tinga","pos":"Volante","grupo":"MEI","over":82},{"id":"dalessandro","nome":"D'Alessandro","pos":"Meia","grupo":"MEI","over":89},{"id":"sandro-int","nome":"Sandro","pos":"Volante","grupo":"MEI","over":80},{"id":"rafael-sobis","nome":"Rafael Sóbis","pos":"Atacante","grupo":"ATA","over":82},{"id":"taison","nome":"Taison","pos":"Ponta","grupo":"ATA","over":82}],"fonte":"ogol — escalação da final da Libertadores de 2010"},{"id":"flu23","clube":"Fluminense","ano":2023,"cores":["#7A1C38","#006437"],"conquista":"Libertadores e Carioca","elenco":[{"id":"fabio","nome":"Fábio","pos":"Goleiro","grupo":"GOL","over":87},{"id":"samuel-xavier","nome":"Samuel Xavier","pos":"Lateral-direito","grupo":"DEF","over":79},{"id":"marlon-flu","nome":"Marlon","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"felipe-melo","nome":"Felipe Melo","pos":"Zagueiro","grupo":"DEF","over":80},{"id":"marcelo","nome":"Marcelo","pos":"Lateral-esquerdo","grupo":"DEF","over":84},{"id":"andre-flu","nome":"André","pos":"Volante","grupo":"MEI","over":85},{"id":"lima-flu","nome":"Lima","pos":"Volante","grupo":"MEI","over":78},{"id":"ganso","nome":"Ganso","pos":"Meia","grupo":"MEI","over":87},{"id":"jhon-arias","nome":"Jhon Arias","pos":"Ponta","grupo":"ATA","over":85},{"id":"keno","nome":"Keno","pos":"Ponta","grupo":"ATA","over":83},{"id":"german-cano","nome":"Germán Cano","pos":"Centroavante","grupo":"ATA","over":87}],"fonte":"Wikipédia / ESPN — escalação da final da Libertadores de 2023"},{"id":"bot24","clube":"Botafogo","ano":2024,"cores":["#111111","#FFFFFF"],"conquista":"Libertadores e Brasileiro","elenco":[{"id":"john-bot","nome":"John","pos":"Goleiro","grupo":"GOL","over":83},{"id":"vitinho-bot","nome":"Vitinho","pos":"Lateral-direito","grupo":"DEF","over":78},{"id":"adryelson","nome":"Adryelson","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"barboza","nome":"Barboza","pos":"Zagueiro","grupo":"DEF","over":82},{"id":"alex-telles","nome":"Alex Telles","pos":"Lateral-esquerdo","grupo":"DEF","over":82},{"id":"marlon-freitas","nome":"Marlon Freitas","pos":"Volante","grupo":"MEI","over":80},{"id":"gregore","nome":"Gregore","pos":"Volante","grupo":"MEI","over":79},{"id":"almada","nome":"Thiago Almada","pos":"Meia","grupo":"MEI","over":86},{"id":"luiz-henrique","nome":"Luiz Henrique","pos":"Ponta","grupo":"ATA","over":87},{"id":"savarino","nome":"Savarino","pos":"Ponta","grupo":"ATA","over":82},{"id":"igor-jesus","nome":"Igor Jesus","pos":"Centroavante","grupo":"ATA","over":82}],"fonte":"Wikipédia / CNN — escalação da final da Libertadores de 2024"},{"id":"san10","clube":"Santos","ano":2010,"cores":["#111111","#FFFFFF"],"conquista":"Copa do Brasil e Paulista","elenco":[{"id":"rafael-san","nome":"Rafael","pos":"Goleiro","grupo":"GOL","over":80},{"id":"para","nome":"Pará","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"edu-dracena","nome":"Edu Dracena","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"durval","nome":"Durval","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"alex-sandro","nome":"Alex Sandro","pos":"Lateral-esquerdo","grupo":"DEF","over":80},{"id":"arouca","nome":"Arouca","pos":"Volante","grupo":"MEI","over":81},{"id":"wesley-san","nome":"Wesley","pos":"Volante","grupo":"MEI","over":78},{"id":"ganso","nome":"Ganso","pos":"Meia","grupo":"MEI","over":87},{"id":"neymar","nome":"Neymar","pos":"Atacante","grupo":"ATA","over":91},{"id":"robinho","nome":"Robinho","pos":"Atacante","grupo":"ATA","over":89},{"id":"andre-san","nome":"André","pos":"Centroavante","grupo":"ATA","over":80}],"fonte":"CBF / Santos FC — escalação da final da Copa do Brasil de 2010"},{"id":"bot62","clube":"Botafogo","ano":1962,"cores":["#111111","#FFFFFF"],"conquista":"Carioca e Rio-São Paulo, o time de Garrincha","fonte":"Imortais do Futebol / Mundo Botafogo — time base de 1962","elenco":[{"id":"manga","nome":"Manga","pos":"Goleiro","grupo":"GOL","over":85},{"id":"paulistinha","nome":"Paulistinha","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"tome","nome":"Tomé","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"ze-maria-bot","nome":"Zé Maria","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"nilton-santos","nome":"Nilton Santos","pos":"Lateral-esquerdo","grupo":"DEF","over":91},{"id":"airton-bot","nome":"Airton","pos":"Volante","grupo":"MEI","over":77},{"id":"pampolini","nome":"Pampolini","pos":"Volante","grupo":"MEI","over":76},{"id":"didi","nome":"Didi","pos":"Meia","grupo":"MEI","over":92},{"id":"garrincha","nome":"Garrincha","pos":"Ponta-direita","grupo":"ATA","over":97},{"id":"quarentinha","nome":"Quarentinha","pos":"Centroavante","grupo":"ATA","over":84},{"id":"zagallo","nome":"Zagallo","pos":"Ponta-esquerda","grupo":"ATA","over":85}]},{"id":"vas98","clube":"Vasco","ano":1998,"cores":["#111111","#FFFFFF"],"conquista":"Libertadores","fonte":"Goal — escalação da final da Libertadores de 1998","elenco":[{"id":"carlos-germano","nome":"Carlos Germano","pos":"Goleiro","grupo":"GOL","over":83},{"id":"vagner-vas","nome":"Vágner","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"odvan","nome":"Odvan","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"mauro-galvao","nome":"Mauro Galvão","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"felipe-vas","nome":"Felipe","pos":"Lateral-esquerdo","grupo":"DEF","over":84},{"id":"luisinho-vas","nome":"Luisinho","pos":"Volante","grupo":"MEI","over":77},{"id":"nasa","nome":"Nasa","pos":"Volante","grupo":"MEI","over":78},{"id":"juninho-pernambucano","nome":"Juninho Pernambucano","pos":"Meia","grupo":"MEI","over":88},{"id":"pedrinho-vas","nome":"Pedrinho","pos":"Meia","grupo":"MEI","over":81},{"id":"donizete","nome":"Donizete Pantera","pos":"Atacante","grupo":"ATA","over":82},{"id":"luizao","nome":"Luizão","pos":"Centroavante","grupo":"ATA","over":83}]},{"id":"cor83","clube":"Corinthians","ano":1983,"cores":["#111111","#FFFFFF"],"conquista":"Paulista, o time da Democracia Corintiana","fonte":"Imortais do Futebol — Corinthians 1982-1984","elenco":[{"id":"solito","nome":"Solito","pos":"Goleiro","grupo":"GOL","over":78},{"id":"alfinete","nome":"Alfinete","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"mauro-cor","nome":"Mauro","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"juninho-cor","nome":"Juninho","pos":"Zagueiro","grupo":"DEF","over":76},{"id":"wladimir","nome":"Wladimir","pos":"Lateral-esquerdo","grupo":"DEF","over":82},{"id":"zenon","nome":"Zenon","pos":"Meia","grupo":"MEI","over":81},{"id":"paulinho-cor83","nome":"Paulinho","pos":"Volante","grupo":"MEI","over":77},{"id":"biro-biro","nome":"Biro-Biro","pos":"Meia","grupo":"MEI","over":81},{"id":"socrates","nome":"Sócrates","pos":"Meia","grupo":"MEI","over":93},{"id":"ataliba","nome":"Ataliba","pos":"Atacante","grupo":"ATA","over":78},{"id":"casagrande","nome":"Casagrande","pos":"Centroavante","grupo":"ATA","over":85}]},{"id":"int76","clube":"Internacional","ano":1976,"cores":["#CC0000","#FFFFFF"],"conquista":"Bicampeão Brasileiro","fonte":"Internacional / Imortais do Futebol — time base de 1976","elenco":[{"id":"manga","nome":"Manga","pos":"Goleiro","grupo":"GOL","over":85},{"id":"claudio-int","nome":"Cláudio","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"figueroa","nome":"Figueroa","pos":"Zagueiro","grupo":"DEF","over":89},{"id":"herminio","nome":"Hermínio","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"vacaria","nome":"Vacaria","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"carpegiani","nome":"Paulo César Carpegiani","pos":"Volante","grupo":"MEI","over":84},{"id":"cacapava","nome":"Caçapava","pos":"Volante","grupo":"MEI","over":79},{"id":"falcao","nome":"Falcão","pos":"Meia","grupo":"MEI","over":92},{"id":"valdomiro","nome":"Valdomiro","pos":"Ponta-direita","grupo":"ATA","over":83},{"id":"flavio-int","nome":"Flávio","pos":"Centroavante","grupo":"ATA","over":80},{"id":"lula-int","nome":"Lula","pos":"Ponta-esquerda","grupo":"ATA","over":78}]},{"id":"cru66","clube":"Cruzeiro","ano":1966,"cores":["#003C82","#FFFFFF"],"conquista":"Taça Brasil, batendo o Santos de Pelé na final","fonte":"Cruzeiropédia / O Tempo — escalação da final da Taça Brasil","elenco":[{"id":"raul-cru","nome":"Raul","pos":"Goleiro","grupo":"GOL","over":82},{"id":"pedro-paulo","nome":"Pedro Paulo","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"william-cru","nome":"William","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"procopio","nome":"Procópio","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"neco","nome":"Neco","pos":"Lateral-esquerdo","grupo":"DEF","over":76},{"id":"piazza","nome":"Piazza","pos":"Volante","grupo":"MEI","over":85},{"id":"dirceu-lopes","nome":"Dirceu Lopes","pos":"Meia","grupo":"MEI","over":88},{"id":"tostao","nome":"Tostão","pos":"Meia-atacante","grupo":"MEI","over":94},{"id":"natal","nome":"Natal","pos":"Ponta-direita","grupo":"ATA","over":79},{"id":"evaldo","nome":"Evaldo","pos":"Centroavante","grupo":"ATA","over":79},{"id":"hilton-oliveira","nome":"Hilton Oliveira","pos":"Ponta-esquerda","grupo":"ATA","over":78}]},{"id":"pal73","clube":"Palmeiras","ano":1973,"cores":["#006437","#FFFFFF"],"conquista":"Brasileiro, a Segunda Academia","fonte":"Palmeiras / Imortais do Futebol — a Segunda Academia","elenco":[{"id":"leao","nome":"Leão","pos":"Goleiro","grupo":"GOL","over":89},{"id":"eurico","nome":"Eurico","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"luis-pereira","nome":"Luís Pereira","pos":"Zagueiro","grupo":"DEF","over":86},{"id":"alfredo-pal","nome":"Alfredo","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"zeca-pal","nome":"Zeca","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"dudu-pal73","nome":"Dudu","pos":"Volante","grupo":"MEI","over":83},{"id":"ademir-da-guia","nome":"Ademir da Guia","pos":"Meia","grupo":"MEI","over":92},{"id":"edu-pal","nome":"Edu","pos":"Ponta-esquerda","grupo":"ATA","over":81},{"id":"leivinha","nome":"Leivinha","pos":"Atacante","grupo":"ATA","over":84},{"id":"cesar-pal","nome":"César","pos":"Centroavante","grupo":"ATA","over":82},{"id":"nei-pal","nome":"Nei","pos":"Ponta-direita","grupo":"ATA","over":78}]},{"id":"cor98","clube":"Corinthians","ano":1998,"cores":["#111111","#FFFFFF"],"conquista":"Bicampeão Brasileiro","fonte":"Imortais do Futebol — Corinthians 1998-2000","elenco":[{"id":"nei-cor","nome":"Nei","pos":"Goleiro","grupo":"GOL","over":79},{"id":"indio-cor","nome":"Índio","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"batata","nome":"Batata","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"gamarra","nome":"Gamarra","pos":"Zagueiro","grupo":"DEF","over":84},{"id":"sylvinho","nome":"Sylvinho","pos":"Lateral-esquerdo","grupo":"DEF","over":82},{"id":"vampeta","nome":"Vampeta","pos":"Volante","grupo":"MEI","over":83},{"id":"rincon","nome":"Rincón","pos":"Volante","grupo":"MEI","over":85},{"id":"marcelinho-carioca","nome":"Marcelinho Carioca","pos":"Meia","grupo":"MEI","over":87},{"id":"ricardinho-cor","nome":"Ricardinho","pos":"Meia","grupo":"MEI","over":82},{"id":"edilson-cor","nome":"Edílson","pos":"Atacante","grupo":"ATA","over":84},{"id":"didi-cor","nome":"Didi","pos":"Centroavante","grupo":"ATA","over":78}]},{"id":"gre17","clube":"Grêmio","ano":2017,"cores":["#0D80BF","#111111"],"conquista":"Libertadores","fonte":"Wikipédia / ogol — escalação da final da Libertadores de 2017","elenco":[{"id":"grohe","nome":"Marcelo Grohe","pos":"Goleiro","grupo":"GOL","over":84},{"id":"edilson-gre","nome":"Edílson","pos":"Lateral-direito","grupo":"DEF","over":78},{"id":"geromel","nome":"Geromel","pos":"Zagueiro","grupo":"DEF","over":85},{"id":"kannemann","nome":"Kannemann","pos":"Zagueiro","grupo":"DEF","over":82},{"id":"bruno-cortez","nome":"Bruno Cortez","pos":"Lateral-esquerdo","grupo":"DEF","over":78},{"id":"jailson-gre","nome":"Jailson","pos":"Volante","grupo":"MEI","over":79},{"id":"arthur","nome":"Arthur","pos":"Volante","grupo":"MEI","over":85},{"id":"ramiro","nome":"Ramiro","pos":"Meia","grupo":"MEI","over":79},{"id":"fernandinho-gre","nome":"Fernandinho","pos":"Ponta","grupo":"MEI","over":80},{"id":"luan-gre","nome":"Luan","pos":"Atacante","grupo":"ATA","over":87},{"id":"cicero","nome":"Cícero","pos":"Atacante","grupo":"ATA","over":79}]},{"id":"spfc07","clube":"São Paulo","ano":2007,"cores":["#CC0000","#111111"],"conquista":"Penta Brasileiro, com recorde de defesa","fonte":"São Paulo FC — escalação do título de 2007","elenco":[{"id":"rogerio-ceni","nome":"Rogério Ceni","pos":"Goleiro","grupo":"GOL","over":91},{"id":"andre-dias","nome":"André Dias","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"miranda","nome":"Miranda","pos":"Zagueiro","grupo":"DEF","over":85},{"id":"breno","nome":"Breno","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"junior-spfc","nome":"Júnior","pos":"Lateral-esquerdo","grupo":"DEF","over":80},{"id":"hernanes","nome":"Hernanes","pos":"Meia","grupo":"MEI","over":85},{"id":"richarlyson","nome":"Richarlyson","pos":"Volante","grupo":"MEI","over":78},{"id":"jorge-wagner","nome":"Jorge Wagner","pos":"Meia","grupo":"MEI","over":80},{"id":"leandro-spfc","nome":"Leandro","pos":"Meia","grupo":"MEI","over":77},{"id":"aloisio","nome":"Aloísio","pos":"Atacante","grupo":"ATA","over":79},{"id":"dagoberto","nome":"Dagoberto","pos":"Centroavante","grupo":"ATA","over":80}]},{"id":"bot95","clube":"Botafogo","ano":1995,"cores":["#111111","#FFFFFF"],"conquista":"Brasileiro, com Túlio artilheiro","fonte":"Goal — escalação da final do Brasileiro de 1995","elenco":[{"id":"wagner-bot","nome":"Wágner","pos":"Goleiro","grupo":"GOL","over":78},{"id":"wilson-goiano","nome":"Wilson Goiano","pos":"Lateral-direito","grupo":"DEF","over":76},{"id":"wilson-gottardo","nome":"Wilson Gottardo","pos":"Zagueiro","grupo":"DEF","over":79},{"id":"goncalves","nome":"Gonçalves","pos":"Zagueiro","grupo":"DEF","over":81},{"id":"andre-silva-bot","nome":"André Silva","pos":"Lateral-esquerdo","grupo":"DEF","over":76},{"id":"leandro-bot","nome":"Leandro","pos":"Volante","grupo":"MEI","over":77},{"id":"jamir","nome":"Jamir","pos":"Volante","grupo":"MEI","over":77},{"id":"beto-bot","nome":"Beto","pos":"Meia","grupo":"MEI","over":78},{"id":"sergio-manoel","nome":"Sérgio Manoel","pos":"Meia","grupo":"MEI","over":78},{"id":"donizete","nome":"Donizete Pantera","pos":"Atacante","grupo":"ATA","over":82},{"id":"tulio","nome":"Túlio","pos":"Centroavante","grupo":"ATA","over":88}]},{"id":"spfc86","clube":"São Paulo","ano":1986,"cores":["#CC0000","#111111"],"conquista":"Brasileiro, com Careca e Müller","fonte":"São Paulo FC — escalação da final do Brasileiro de 1986","elenco":[{"id":"gilmar-rinaldi","nome":"Gilmar","pos":"Goleiro","grupo":"GOL","over":82},{"id":"fonseca","nome":"Fonseca","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"wagner-basilio","nome":"Wágner Basílio","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"dario-pereyra","nome":"Dario Pereyra","pos":"Zagueiro","grupo":"DEF","over":82},{"id":"nelsinho","nome":"Nelsinho","pos":"Lateral-esquerdo","grupo":"DEF","over":78},{"id":"bernardo","nome":"Bernardo","pos":"Volante","grupo":"MEI","over":77},{"id":"pita","nome":"Pita","pos":"Meia","grupo":"MEI","over":80},{"id":"silas","nome":"Silas","pos":"Meia","grupo":"MEI","over":83},{"id":"muller","nome":"Müller","pos":"Atacante","grupo":"ATA","over":87},{"id":"careca","nome":"Careca","pos":"Centroavante","grupo":"ATA","over":90},{"id":"sidnei","nome":"Sidnei","pos":"Ponta","grupo":"ATA","over":77}]},{"id":"gua78","clube":"Guarani","ano":1978,"cores":["#006B3F","#FFFFFF"],"conquista":"Brasileiro, o único campeão do interior","fonte":"Imortais do Futebol / Guarani — escalação da final do Brasileiro de 1978","elenco":[{"id":"neneca","nome":"Neneca","pos":"Goleiro","grupo":"GOL","over":79},{"id":"mauro-cabecao","nome":"Mauro Cabeção","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"gomes-gua","nome":"Gomes","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"edson-gua","nome":"Édson","pos":"Zagueiro","grupo":"DEF","over":76},{"id":"miranda-gua","nome":"Miranda","pos":"Lateral-esquerdo","grupo":"DEF","over":76},{"id":"ze-carlos-gua","nome":"Zé Carlos","pos":"Volante","grupo":"MEI","over":78},{"id":"manguinha","nome":"Manguinha","pos":"Volante","grupo":"MEI","over":77},{"id":"renato-gua","nome":"Renato","pos":"Meia","grupo":"MEI","over":82},{"id":"capitao","nome":"Capitão","pos":"Ponta","grupo":"ATA","over":78},{"id":"careca","nome":"Careca","pos":"Centroavante","grupo":"ATA","over":90},{"id":"bozo","nome":"Bozó","pos":"Ponta","grupo":"ATA","over":78}]},{"id":"cor85","clube":"Coritiba","ano":1985,"cores":["#00873E","#FFFFFF"],"conquista":"Brasileiro, o primeiro título do Paraná","fonte":"Imortais do Futebol / Gazeta do Povo — escalação da final do Brasileiro de 1985","elenco":[{"id":"rafael-cor","nome":"Rafael","pos":"Goleiro","grupo":"GOL","over":80},{"id":"andre-cor","nome":"André","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"gomes-cor","nome":"Gomes","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"heraldo","nome":"Heraldo","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"dida-cor","nome":"Dida","pos":"Lateral-esquerdo","grupo":"DEF","over":78},{"id":"almir-cor","nome":"Almir","pos":"Volante","grupo":"MEI","over":77},{"id":"marildo","nome":"Marildo","pos":"Volante","grupo":"MEI","over":77},{"id":"tobi","nome":"Tóbi","pos":"Meia","grupo":"MEI","over":79},{"id":"lela","nome":"Lela","pos":"Ponta","grupo":"ATA","over":79},{"id":"indio-cor","nome":"Índio","pos":"Centroavante","grupo":"ATA","over":81},{"id":"edson-cor","nome":"Édson","pos":"Ponta","grupo":"ATA","over":78}]},{"id":"spt87","clube":"Sport","ano":1987,"cores":["#C8102E","#111111"],"conquista":"Brasileiro","fonte":"Sport Recife — escalação da final do Brasileiro de 1987","elenco":[{"id":"flavio-spt","nome":"Flávio","pos":"Goleiro","grupo":"GOL","over":79},{"id":"betao","nome":"Betão","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"estevam","nome":"Estevam","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"marco-antonio-spt","nome":"Marco Antônio","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"ze-carlos-macae","nome":"Zé Carlos Macaé","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"rogerio-spt","nome":"Rogério","pos":"Volante","grupo":"MEI","over":77},{"id":"ribamar","nome":"Ribamar","pos":"Volante","grupo":"MEI","over":80},{"id":"zico-spt","nome":"Zico","pos":"Meia","grupo":"MEI","over":79},{"id":"robertinho-spt","nome":"Robertinho","pos":"Ponta","grupo":"ATA","over":78},{"id":"nando-spt","nome":"Nando","pos":"Centroavante","grupo":"ATA","over":79},{"id":"neco-spt","nome":"Neco","pos":"Ponta","grupo":"ATA","over":78}]},{"id":"bah88","clube":"Bahia","ano":1988,"cores":["#0057B8","#FFFFFF"],"conquista":"Brasileiro","fonte":"Imortais do Futebol / Campeões do Futebol — escalação da final do Brasileiro de 1988","elenco":[{"id":"ronaldo-bah","nome":"Ronaldo","pos":"Goleiro","grupo":"GOL","over":80},{"id":"tarantini","nome":"Tarantini","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"joao-marcelo","nome":"João Marcelo","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"claudir","nome":"Claudir","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"edinho-bah","nome":"Edinho","pos":"Lateral-esquerdo","grupo":"DEF","over":77},{"id":"paulo-rodrigues","nome":"Paulo Rodrigues","pos":"Volante","grupo":"MEI","over":78},{"id":"ze-carlos-bah","nome":"Zé Carlos","pos":"Meia","grupo":"MEI","over":79},{"id":"bobo","nome":"Bobô","pos":"Meia","grupo":"MEI","over":84},{"id":"osmar-bah","nome":"Osmar","pos":"Ponta","grupo":"ATA","over":77},{"id":"charles-bah","nome":"Charles","pos":"Centroavante","grupo":"ATA","over":82},{"id":"marquinhos-bah","nome":"Marquinhos","pos":"Ponta","grupo":"ATA","over":77}]},{"id":"flu84","clube":"Fluminense","ano":1984,"cores":["#7A1C38","#006437"],"conquista":"Brasileiro, o time do Casal 20","fonte":"Fluminense / Imortais do Futebol — time base do Brasileiro de 1984","elenco":[{"id":"paulo-victor","nome":"Paulo Victor","pos":"Goleiro","grupo":"GOL","over":79},{"id":"aldo-flu","nome":"Aldo","pos":"Lateral-direito","grupo":"DEF","over":77},{"id":"duilio","nome":"Duílio","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"ricardo-gomes","nome":"Ricardo Gomes","pos":"Zagueiro","grupo":"DEF","over":83},{"id":"branco","nome":"Branco","pos":"Lateral-esquerdo","grupo":"DEF","over":85},{"id":"jandir","nome":"Jandir","pos":"Volante","grupo":"MEI","over":77},{"id":"deley","nome":"Deley","pos":"Volante","grupo":"MEI","over":79},{"id":"romerito","nome":"Romerito","pos":"Meia","grupo":"MEI","over":86},{"id":"assis","nome":"Assis","pos":"Meia","grupo":"MEI","over":82},{"id":"washington-flu","nome":"Washington","pos":"Centroavante","grupo":"ATA","over":80},{"id":"tato","nome":"Tato","pos":"Atacante","grupo":"ATA","over":79}]},{"id":"cap01","clube":"Atlético-PR","ano":2001,"cores":["#E30613","#111111"],"conquista":"Brasileiro, o primeiro título do clube","fonte":"Imortais do Futebol / Campeões do Futebol — time base do Brasileiro de 2001","elenco":[{"id":"flavio-cap","nome":"Flávio","pos":"Goleiro","grupo":"GOL","over":79},{"id":"gustavo-cap","nome":"Gustavo","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"nem","nome":"Nem","pos":"Zagueiro","grupo":"DEF","over":78},{"id":"rogerio-correa","nome":"Rogério Corrêa","pos":"Zagueiro","grupo":"DEF","over":77},{"id":"alessandro","nome":"Alessandro","pos":"Lateral-direito","grupo":"DEF","over":79},{"id":"fabiano-cap","nome":"Fabiano","pos":"Lateral-esquerdo","grupo":"DEF","over":78},{"id":"cocito","nome":"Cocito","pos":"Volante","grupo":"MEI","over":77},{"id":"kleberson","nome":"Kléberson","pos":"Volante","grupo":"MEI","over":82},{"id":"adriano-cap","nome":"Adriano","pos":"Meia","grupo":"MEI","over":79},{"id":"kleber-cap","nome":"Kléber","pos":"Atacante","grupo":"ATA","over":81},{"id":"alex-mineiro","nome":"Alex Mineiro","pos":"Centroavante","grupo":"ATA","over":84}]}]};
+
+/* ---------- regras ---------- */
+const PTS_CLASSIFICA = 4;
+const PASSES = 3;
+const ROT = {GOL:'GOL',DEF:'DEF',MEI:'MEI',ATA:'ATA'};
+
+/* DEF-MEI-ATA, sempre 1 goleiro. atk mexe no que você faz, def no que você toma. */
+const P = (g,rot,x,y) => ({g,rot,x,y});
+/* y: 8 = ataque adversario, 92 = proprio gol. x: 0 esquerda, 100 direita */
+const FORMACOES = [
+  {n:'4-4-2', d:4,m:4,a:2, txt:'O padrão. Equilíbrio sem luxo.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','MD',86,42), P('MEI','VOL',62,52), P('MEI','VOL',38,52), P('MEI','ME',14,42),
+    P('ATA','ATA',62,18), P('ATA','ATA',38,18)]},
+
+  {n:'4-3-3', d:4,m:3,a:3, txt:'Três na frente, meio curto.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','VOL',50,58), P('MEI','MEI',70,42), P('MEI','MEI',30,42),
+    P('ATA','PD',82,20), P('ATA','CA',50,14), P('ATA','PE',18,20)]},
+
+  {n:'4-2-4', d:4,m:2,a:4, txt:'O esquema do Brasil de 58 e 62. Ataque total.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','VOL',62,49), P('MEI','MEI',38,49),
+    P('ATA','PD',86,24), P('ATA','CA',62,14), P('ATA','CA',38,14), P('ATA','PE',14,24)]},
+
+  {n:'3-5-2', d:3,m:5,a:2, txt:'Domínio de meio-campo, zaga exposta.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ZAG',70,77), P('DEF','ZAG',50,77), P('DEF','ZAG',30,77),
+    P('MEI','ALA',90,46), P('MEI','VOL',64,58), P('MEI','MEI',50,42), P('MEI','VOL',36,58), P('MEI','ALA',10,46),
+    P('ATA','ATA',62,17), P('ATA','ATA',38,17)]},
+
+  {n:'5-3-2', d:5,m:3,a:2, txt:'Ferrolho. Difícil de furar, difícil de criar.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ALA',89,60), P('DEF','ZAG',68,79), P('DEF','ZAG',50,79), P('DEF','ZAG',32,79), P('DEF','ALA',11,60),
+    P('MEI','VOL',50,54), P('MEI','MEI',70,40), P('MEI','MEI',30,40),
+    P('ATA','ATA',62,17), P('ATA','ATA',38,17)]},
+
+  {n:'3-4-3', d:3,m:4,a:3, txt:'Ousado dos dois lados.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ZAG',70,77), P('DEF','ZAG',50,77), P('DEF','ZAG',30,77),
+    P('MEI','ALA',88,48), P('MEI','VOL',62,56), P('MEI','VOL',38,56), P('MEI','ALA',12,48),
+    P('ATA','PD',80,19), P('ATA','CA',50,13), P('ATA','PE',20,19)]},
+
+  {n:'4-5-1', d:4,m:5,a:1, txt:'Meio lotado, um homem só na frente.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','MD',89,44), P('MEI','VOL',63,56), P('MEI','MEI',50,38), P('MEI','VOL',37,56), P('MEI','ME',11,44),
+    P('ATA','CA',50,14)]},
+
+  {n:'5-4-1', d:5,m:4,a:1, txt:'Retranca. Joga pelo empate.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ALA',89,60), P('DEF','ZAG',68,79), P('DEF','ZAG',50,79), P('DEF','ZAG',32,79), P('DEF','ALA',11,60),
+    P('MEI','MD',82,44), P('MEI','VOL',60,54), P('MEI','VOL',40,54), P('MEI','ME',18,44),
+    P('ATA','CA',50,14)]},
+];
+const ESTILOS = [
+  {n:'Defensivo',   k:'def', atk:0.92, sof:0.90, txt:'Segura o resultado.'},
+  {n:'Equilibrado', k:'eq',  atk:1.00, sof:1.00, txt:'Sem inclinação.'},
+  {n:'Ofensivo',    k:'ofe', atk:1.10, sof:1.10, txt:'Vai pra cima e se expõe.'},
+];
+/* o rotulo e ilustrativo: quem encaixa na vaga e qualquer jogador do grupo */
+
+const modAtaque = () => (1 + (S.form.a - 3) * 0.09) * S.estilo.atk;
+const modDefesa = () => (1 - (S.form.d - 4) * 0.09 - (S.form.m - 4) * 0.02) * S.estilo.sof;
+
+let S;
+function novoJogo(form, estilo){
+  const modoEscolhido = document.querySelector('.sp[data-modo].on')?.dataset.modo || 'auto';
+  const velEscolhida  = +(document.querySelector('.sp[data-sp].on')?.dataset.sp ?? 1);
+  S = { passes:PASSES, slots:[], usados:new Set(), sorteados:new Set(),
+        atual:null, vel:velEscolhida, modo:modoEscolhido, ultimo:-1, form, estilo };
+  S.slots = form.pos.map(p => ({grupo:p.g, rot:p.rot, x:p.x, y:p.y, jog:null}));
+}
+const vagasDe = g => S.slots.filter(s=>s.grupo===g && !s.jog).length;
+const completo = () => S.slots.every(s=>s.jog);
+
+function bloqueio(p){
+  if (S.usados.has(p.id)) return 'já escalado';
+  if (!vagasDe(p.grupo)) return ROT[p.grupo] + ' cheio';
+  return null;
+}
+const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
+
+/* ---------- telas ---------- */
+const $ = id => document.getElementById(id);
+const mostra = id => {
+  ['scr-home','scr-tatica','scr-draft','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
+  const el = $(id);
+  el.classList.remove('anima'); void el.offsetWidth; el.classList.add('anima');
+};
+
+/* ---------- tática ---------- */
+let escolhaForm = FORMACOES[0], escolhaEst = ESTILOS[1];
+function pintaTatica(){
+  $('forms').innerHTML = FORMACOES.map((f,i)=>
+    `<button class="opt${f===escolhaForm?' on':''}" data-f="${i}">
+       <b>${f.n}</b><span>${f.txt}</span></button>`).join('');
+  $('estilos').innerHTML = ESTILOS.map((e,i)=>
+    `<button class="opt${e===escolhaEst?' on':''}" data-e="${i}">
+       <b>${e.n}</b><span>${e.txt}</span></button>`).join('');
+  $('forms').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ escolhaForm=FORMACOES[+b.dataset.f]; pintaTatica(); });
+  $('estilos').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ escolhaEst=ESTILOS[+b.dataset.e]; pintaTatica(); });
+  previaCampo(escolhaForm);
+  const a = (1+(escolhaForm.a-3)*0.09)*escolhaEst.atk;
+  const d = (1-(escolhaForm.d-4)*0.09-(escolhaForm.m-4)*0.02)*escolhaEst.sof;
+  $('previa').innerHTML =
+    `Ataque <b class="${a>1.02?'up':a<0.98?'down':''}">${a>1.02?'+':''}${Math.round((a-1)*100)}%</b>` +
+    ` · Gols sofridos <b class="${d>1.02?'down':d<0.98?'up':''}">${d>1.02?'+':''}${Math.round((d-1)*100)}%</b>`;
+}
+
+/* ---------- campo ---------- */
+function desenhaCampo(alvo, pontos, mostrarOver){
+  alvo.innerHTML = pontos.map(p=>
+    `<div class="pos${p.jog?' on':''}${p.novo?' novo':''}" style="left:${p.x}%;top:${p.y}%">
+       <div class="bola"><b>${p.jog ? (mostrarOver ? p.jog.over : '✓') : '+'}</b></div>
+       <div class="rot">${p.rot}</div>
+       <div class="quem">${p.jog ? p.jog.nome : ''}</div>
+     </div>`).join('');
+}
+const previaCampo = f => desenhaCampo($('campoPrev'), f.pos.map(p=>({rot:p.rot, x:p.x, y:p.y})));
+function pintaSlots(){
+  desenhaCampo($('campo'), S.slots.map((s,i)=>
+    ({rot:s.rot, x:s.x, y:s.y, jog:s.jog, novo:i===S.ultimo})), false);
+}
+function pintaBarra(){
+  $('picks').textContent = S.slots.filter(s=>s.jog).length + '/' + S.slots.length;
+  $('passN').textContent = S.passes;
+  $('pass').disabled = S.passes === 0 || !S.atual;
+  $('tatLabel').textContent = S.form.n + ' · ' + S.estilo.n;
+}
+function pintaElenco(){
+  const t = S.atual;
+  $('teamArea').hidden = !t;
+  if (!t){ $('squad').innerHTML = ''; return; }
+  $('flag').style.background = `linear-gradient(105deg,${t.cores[0]} 0 50%,${t.cores[1]} 50% 100%)`;
+  $('tname').innerHTML = `${t.clube} <span class="yr">${t.ano}</span>`;
+  $('tconq').textContent = t.conquista;
+  const ta = $('teamArea');
+  ta.classList.remove('anima'); void ta.offsetWidth; ta.classList.add('anima');
+  $('squad').innerHTML = t.elenco.map((p,i)=>{
+    const b = bloqueio(p);
+    return `<button class="pl" data-i="${i}" ${b?'disabled':''}>
+      <span class="g">${ROT[p.grupo]}</span>
+      <span><span class="nm">${p.nome}</span><br><span class="ps">${p.pos}</span></span>
+      <span class="why">${b||''}</span>
+    </button>`;
+  }).join('');
+  $('squad').querySelectorAll('.pl').forEach(b=>b.onclick=()=>escala(t.elenco[+b.dataset.i]));
+}
+function pinta(){
+  pintaBarra(); pintaSlots(); pintaElenco();
+  const r = $('roll');
+  r.disabled = !!S.atual;
+  r.textContent = S.atual ? 'Escolha um jogador abaixo' : 'Rolar o dado';
+}
+
+function rolar(){
+  if (completo()) return;
+  let livres = DB.times.filter(t=>!S.sorteados.has(t.id) && temEscolha(t));
+  if (!livres.length){ S.sorteados.clear(); livres = DB.times.filter(temEscolha); }
+  if (!livres.length){
+    S.atual = null; pinta();
+    $('roll').textContent = 'Sem jogador disponível'; $('roll').disabled = true;
+    return;
+  }
+  S.atual = livres[Math.floor(Math.random()*livres.length)];
+  S.sorteados.add(S.atual.id);
+  const m = $('marca');
+  if (m){ m.style.animation='none'; void m.offsetWidth; m.style.animation='tremeDado .45s ease-in-out'; }
+  pinta();
+}
+function escala(p){
+  if (bloqueio(p)) return;
+  const s = S.slots.find(s=>s.grupo===p.grupo && !s.jog);
+  s.jog = {...p, de:`${S.atual.clube} ${S.atual.ano}`};
+  S.ultimo = S.slots.indexOf(s);
+  S.usados.add(p.id);
+  S.atual = null;
+  pinta();
+  if (completo()) revelar(); else rolar();
+}
+
+$('go').onclick = () => { mostra('scr-tatica'); pintaTatica(); };
+$('confirmaTat').onclick = () => {
+  novoJogo(escolhaForm, escolhaEst);
+  mostra('scr-draft'); pinta(); rolar();
+};
+$('roll').onclick = rolar;
+$('pass').onclick = () => { if(S.passes>0 && S.atual){ S.passes--; S.atual=null; pinta(); rolar(); } };
+
+/* ---------- revelação ---------- */
+async function revelar(){
+  const xi = S.slots.map(s=>s.jog);
+  S.over = Math.round(xi.reduce((a,p)=>a+p.over,0)/xi.length);
+  $('ovTat').textContent = S.form.n + ' · ' + S.estilo.n;
+  $('xi').innerHTML = xi.map(p=>`<div class="c"><span class="ov">${p.over}</span><div class="nm">${p.nome}</div><div class="sm">${ROT[p.grupo]} · ${p.de}</div></div>`).join('');
+  const pontos = S.slots.map(s=>({rot:s.rot, x:s.x, y:s.y, jog:s.jog}));
+  desenhaCampo($('campoRev'), pontos, false);
+  $('ovTeam').textContent = '··';
+  mostra('scr-reveal');
+
+  const rapido = S.vel === 0;
+  const bolas = [...$('campoRev').querySelectorAll('.pos')];
+  for (let i = 0; i < bolas.length; i++){
+    if (!rapido) await sleep(105);
+    bolas[i].querySelector('.bola b').textContent = pontos[i].jog.over;
+    bolas[i].classList.add('novo');
+  }
+  if (!rapido) await sleep(260);
+  const alvo = S.over;
+  if (rapido){ $('ovTeam').textContent = alvo; return; }
+  /* conta por tempo, nao por quadro: se a aba perder o foco o numero
+     ainda chega no valor certo em vez de congelar no meio */
+  const DUR = 620, t0 = performance.now();
+  const sobe = agora => {
+    const p = Math.min(1, (agora - t0) / DUR);
+    $('ovTeam').textContent = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(sobe); else $('ovTeam').textContent = alvo;
+  };
+  requestAnimationFrame(sobe);
+  setTimeout(()=>{ $('ovTeam').textContent = alvo; }, DUR + 120);
+}
+
+/* ---------- simulação ---------- */
+const poisson = l => { let k=0,p=1,L=Math.exp(-l); do{k++;p*=Math.random()}while(p>L); return k-1; };
+const MEDIA_BASE = 82.5, ESTICA = 2.2;
+const forca = time => {
+  const m = time.elenco.reduce((s,p)=>s+p.over,0) / time.elenco.length;
+  return MEDIA_BASE + (m - MEDIA_BASE) * ESTICA;
+};
+function marcador(xi){
+  const peso = p => p.over * ({ATA:6,MEI:3,DEF:1,GOL:0}[p.grupo]);
+  const tot = xi.reduce((s,p)=>s+peso(p),0);
+  let r = Math.random()*tot;
+  for (const p of xi){ r -= peso(p); if (r<=0) return p.nome; }
+  return xi[xi.length-1].nome;
+}
+function simula(meuXi, meuOv, opp){
+  const of = forca(opp);
+  const lam = (dif,mod) => Math.min(8, 1.35*Math.exp(dif/8)*mod);
+  let a = Math.min(9, poisson(lam(meuOv-of, modAtaque())));
+  let b = Math.min(9, poisson(lam(of-meuOv, modDefesa())));
+  const ev = [];
+  const min = () => 1 + Math.floor(Math.random()*90);
+  for (let i=0;i<a;i++) ev.push({m:min(), meu:true,  who:marcador(meuXi)});
+  for (let i=0;i<b;i++) ev.push({m:min(), meu:false, who:marcador(opp.elenco)});
+  ev.sort((x,y)=>x.m-y.m);
+  return {a,b,ev,of};
+}
+function penaltis(meuOv, of){
+  let a=0,b=0;
+  for(let i=0;i<5;i++){ if(Math.random() < .70 + (meuOv-of)/200) a++; if(Math.random() < .70 + (of-meuOv)/200) b++; }
+  while(a===b){ const x=Math.random()<.72, y=Math.random()<.72; if(x)a++; if(y)b++; }
+  return [a,b];
+}
+
+const FASES = ['Grupos','Grupos','Grupos','Oitavas','Quartas','Semifinal','Final'];
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+async function campanha(){
+  mostra('scr-camp');
+  const xi = S.slots.map(s=>s.jog);
+  const pool = DB.times.slice().sort(()=>Math.random()-.5).sort((x,y)=>forca(x)-forca(y));
+  const escolhidos = [];
+  for (let i=0;i<7;i++){
+    const faixa = Math.floor(pool.length * (i+1)/8);
+    const idx = Math.min(pool.length-1, faixa + Math.floor(Math.random()*3));
+    escolhidos.push(pool.splice(idx,1)[0]);
+  }
+  const box = $('matches'); box.innerHTML = '';
+  let saldoPro = 0, saldoContra = 0, eliminado = false, campeao = false, pontos = 0;
+
+  for (let i=0;i<7;i++){
+    const opp = escolhidos[i], fase = FASES[i], mata = i>=3;
+    const el = document.createElement('div');
+    el.className = 'match';
+    el.innerHTML = `<div class="top">
+        <div class="fase">${fase.toUpperCase()}</div>
+        <div class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</div>
+        <div><span class="sc d">0 – 0</span> <span class="clock">0'</span></div>
+      </div><div class="evs"></div>`;
+    box.appendChild(el);
+    const sc = el.querySelector('.sc'), ck = el.querySelector('.clock'), evs = el.querySelector('.evs');
+    el.classList.add('vivo');
+    const r = simula(xi, S.over, opp);
+    let a=0,b=0,k=0;
+    const stepAgora = () => S.vel===0 ? 0 : Math.round(55/S.vel);
+
+    for (let m=1;m<=90;m++){
+      while (k<r.ev.length && r.ev[k].m===m){
+        const e = r.ev[k++];
+        if (e.meu) a++; else b++;
+        sc.textContent = `${a} – ${b}`;
+        const d = document.createElement('div');
+        d.className = 'ev' + (e.meu?'':' c');
+        d.innerHTML = `<span class="m">${e.m}'</span><span class="who">${e.who}</span>`;
+        evs.appendChild(d);
+      }
+      sc.className = 'sc ' + (a>b?'w':a<b?'l':'d');
+      const st = stepAgora();
+      ck.textContent = m + "'";
+      if (st) await sleep(st);
+    }
+    ck.textContent = "90'"; ck.classList.add('fim');
+    el.classList.remove('vivo');
+    saldoPro += a; saldoContra += b;
+
+    if (!mata){
+      pontos += a>b ? 3 : a===b ? 1 : 0;
+      if (i===2){
+        const passou = pontos >= PTS_CLASSIFICA;
+        const d = document.createElement('div');
+        d.className = 'ev' + (passou?'':' c');
+        d.innerHTML = `<span class="m">${pontos}pt</span><span class="who">${passou?'Classificado para as oitavas':'Eliminado na fase de grupos'}</span>`;
+        evs.appendChild(d);
+        if (!passou){ eliminado = 'fase de grupos'; break; }
+      }
+    }
+    if (mata && a===b){
+      const [pa,pb] = penaltis(S.over, r.of);
+      const d = document.createElement('div');
+      d.className = 'ev' + (pa>pb?'':' c');
+      d.innerHTML = `<span class="m">PEN</span><span class="who">${pa} x ${pb} nos pênaltis</span>`;
+      evs.appendChild(d);
+      sc.className = 'sc ' + (pa>pb?'w':'l');
+      if (pb>pa){ eliminado = fase; break; }
+    } else if (mata && a<b){ eliminado = fase; break; }
+    if (i===6 && !eliminado) campeao = true;
+    if (i < 6 && !eliminado){
+      if (S.modo === 'manual') await esperaProximo();
+      else { const pausa = stepAgora(); if (pausa) await sleep(pausa*4); }
+    }
+  }
+
+  const v = $('verdict'); v.hidden = false;
+  let goleada = null;
+  for (const el of box.querySelectorAll('.sc')){
+    const [x,y] = el.textContent.split('–').map(n=>+n.trim());
+    if (x > y && (!goleada || x-y > goleada.d || (x-y === goleada.d && x > goleada.x)))
+      goleada = {x, y, d:x-y};
+  }
+  const onde = String(eliminado);
+  $('vbig').textContent = campeao ? 'CAMPEÃO'
+    : onde === 'fase de grupos' ? 'CAIU NOS GRUPOS' : 'CAIU NAS ' + onde.toUpperCase();
+  $('vbig').className = 'big' + (campeao ? ' seven' : '');
+  $('vtxt').innerHTML = `Time de <b>${S.over}</b> de overall, no <b>${S.form.n}</b> ${S.estilo.n.toLowerCase()}.<br>
+    ${saldoPro} gols marcados, ${saldoContra} sofridos.
+    ${goleada ? `<br>Maior goleada: <b style="color:var(--verde)">${goleada.x} a ${goleada.y}</b>.` : ''}`;
+  v.scrollIntoView({behavior:'smooth'});
+}
+function esperaProximo(){
+  return new Promise(resolve=>{
+    const w = $('proxWrap'), b = $('prox');
+    w.hidden = false;
+    w.scrollIntoView({behavior:'smooth', block:'nearest'});
+    b.onclick = () => { w.hidden = true; b.onclick = null; resolve(); };
+  });
+}
+document.querySelectorAll('.sp[data-modo]').forEach(b=>b.onclick=()=>{
+  const v = b.dataset.modo;
+  if (S) S.modo = v;
+  document.querySelectorAll('.sp[data-modo]').forEach(x=>x.classList.toggle('on', x.dataset.modo === v));
+});
+$('startCamp').onclick = campanha;
+$('again').onclick = () => location.reload();
+document.querySelectorAll('.sp[data-sp]').forEach(b=>b.onclick=()=>{
+  const v = +b.dataset.sp;
+  if (S) S.vel = v;
+  document.querySelectorAll('.sp[data-sp]').forEach(x=>x.classList.toggle('on', +x.dataset.sp === v));
+});
+</script>
+
+</body>
+</html>

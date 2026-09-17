@@ -1,0 +1,376 @@
+<script>
+const DB = __DADOS__;
+
+/* ---------- regras ---------- */
+const PTS_CLASSIFICA = 4;
+const PASSES = 3;
+const ROT = {GOL:'GOL',DEF:'DEF',MEI:'MEI',ATA:'ATA'};
+
+/* DEF-MEI-ATA, sempre 1 goleiro. atk mexe no que você faz, def no que você toma. */
+const P = (g,rot,x,y) => ({g,rot,x,y});
+/* y: 8 = ataque adversario, 92 = proprio gol. x: 0 esquerda, 100 direita */
+const FORMACOES = [
+  {n:'4-4-2', d:4,m:4,a:2, txt:'O padrão. Equilíbrio sem luxo.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','MD',86,42), P('MEI','VOL',62,52), P('MEI','VOL',38,52), P('MEI','ME',14,42),
+    P('ATA','ATA',62,18), P('ATA','ATA',38,18)]},
+
+  {n:'4-3-3', d:4,m:3,a:3, txt:'Três na frente, meio curto.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','VOL',50,58), P('MEI','MEI',70,42), P('MEI','MEI',30,42),
+    P('ATA','PD',82,20), P('ATA','CA',50,14), P('ATA','PE',18,20)]},
+
+  {n:'4-2-4', d:4,m:2,a:4, txt:'O esquema do Brasil de 58 e 62. Ataque total.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','VOL',62,49), P('MEI','MEI',38,49),
+    P('ATA','PD',86,24), P('ATA','CA',62,14), P('ATA','CA',38,14), P('ATA','PE',14,24)]},
+
+  {n:'3-5-2', d:3,m:5,a:2, txt:'Domínio de meio-campo, zaga exposta.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ZAG',70,77), P('DEF','ZAG',50,77), P('DEF','ZAG',30,77),
+    P('MEI','ALA',90,46), P('MEI','VOL',64,58), P('MEI','MEI',50,42), P('MEI','VOL',36,58), P('MEI','ALA',10,46),
+    P('ATA','ATA',62,17), P('ATA','ATA',38,17)]},
+
+  {n:'5-3-2', d:5,m:3,a:2, txt:'Ferrolho. Difícil de furar, difícil de criar.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ALA',89,60), P('DEF','ZAG',68,79), P('DEF','ZAG',50,79), P('DEF','ZAG',32,79), P('DEF','ALA',11,60),
+    P('MEI','VOL',50,54), P('MEI','MEI',70,40), P('MEI','MEI',30,40),
+    P('ATA','ATA',62,17), P('ATA','ATA',38,17)]},
+
+  {n:'3-4-3', d:3,m:4,a:3, txt:'Ousado dos dois lados.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ZAG',70,77), P('DEF','ZAG',50,77), P('DEF','ZAG',30,77),
+    P('MEI','ALA',88,48), P('MEI','VOL',62,56), P('MEI','VOL',38,56), P('MEI','ALA',12,48),
+    P('ATA','PD',80,19), P('ATA','CA',50,13), P('ATA','PE',20,19)]},
+
+  {n:'4-5-1', d:4,m:5,a:1, txt:'Meio lotado, um homem só na frente.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','MD',89,44), P('MEI','VOL',63,56), P('MEI','MEI',50,38), P('MEI','VOL',37,56), P('MEI','ME',11,44),
+    P('ATA','CA',50,14)]},
+
+  {n:'5-4-1', d:5,m:4,a:1, txt:'Retranca. Joga pelo empate.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ALA',89,60), P('DEF','ZAG',68,79), P('DEF','ZAG',50,79), P('DEF','ZAG',32,79), P('DEF','ALA',11,60),
+    P('MEI','MD',82,44), P('MEI','VOL',60,54), P('MEI','VOL',40,54), P('MEI','ME',18,44),
+    P('ATA','CA',50,14)]},
+];
+const ESTILOS = [
+  {n:'Defensivo',   k:'def', atk:0.92, sof:0.90, txt:'Segura o resultado.'},
+  {n:'Equilibrado', k:'eq',  atk:1.00, sof:1.00, txt:'Sem inclinação.'},
+  {n:'Ofensivo',    k:'ofe', atk:1.10, sof:1.10, txt:'Vai pra cima e se expõe.'},
+];
+/* o rotulo e ilustrativo: quem encaixa na vaga e qualquer jogador do grupo */
+
+const modAtaque = () => (1 + (S.form.a - 3) * 0.09) * S.estilo.atk;
+const modDefesa = () => (1 - (S.form.d - 4) * 0.09 - (S.form.m - 4) * 0.02) * S.estilo.sof;
+
+let S;
+function novoJogo(form, estilo){
+  const modoEscolhido = document.querySelector('.sp[data-modo].on')?.dataset.modo || 'auto';
+  const velEscolhida  = +(document.querySelector('.sp[data-sp].on')?.dataset.sp ?? 1);
+  S = { passes:PASSES, slots:[], usados:new Set(), sorteados:new Set(),
+        atual:null, vel:velEscolhida, modo:modoEscolhido, ultimo:-1, form, estilo };
+  S.slots = form.pos.map(p => ({grupo:p.g, rot:p.rot, x:p.x, y:p.y, jog:null}));
+}
+const vagasDe = g => S.slots.filter(s=>s.grupo===g && !s.jog).length;
+const completo = () => S.slots.every(s=>s.jog);
+
+function bloqueio(p){
+  if (S.usados.has(p.id)) return 'já escalado';
+  if (!vagasDe(p.grupo)) return ROT[p.grupo] + ' cheio';
+  return null;
+}
+const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
+
+/* ---------- telas ---------- */
+const $ = id => document.getElementById(id);
+const mostra = id => {
+  ['scr-home','scr-tatica','scr-draft','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
+  const el = $(id);
+  el.classList.remove('anima'); void el.offsetWidth; el.classList.add('anima');
+};
+
+/* ---------- tática ---------- */
+let escolhaForm = FORMACOES[0], escolhaEst = ESTILOS[1];
+function pintaTatica(){
+  $('forms').innerHTML = FORMACOES.map((f,i)=>
+    `<button class="opt${f===escolhaForm?' on':''}" data-f="${i}">
+       <b>${f.n}</b><span>${f.txt}</span></button>`).join('');
+  $('estilos').innerHTML = ESTILOS.map((e,i)=>
+    `<button class="opt${e===escolhaEst?' on':''}" data-e="${i}">
+       <b>${e.n}</b><span>${e.txt}</span></button>`).join('');
+  $('forms').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ escolhaForm=FORMACOES[+b.dataset.f]; pintaTatica(); });
+  $('estilos').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ escolhaEst=ESTILOS[+b.dataset.e]; pintaTatica(); });
+  previaCampo(escolhaForm);
+  const a = (1+(escolhaForm.a-3)*0.09)*escolhaEst.atk;
+  const d = (1-(escolhaForm.d-4)*0.09-(escolhaForm.m-4)*0.02)*escolhaEst.sof;
+  $('previa').innerHTML =
+    `Ataque <b class="${a>1.02?'up':a<0.98?'down':''}">${a>1.02?'+':''}${Math.round((a-1)*100)}%</b>` +
+    ` · Gols sofridos <b class="${d>1.02?'down':d<0.98?'up':''}">${d>1.02?'+':''}${Math.round((d-1)*100)}%</b>`;
+}
+
+/* ---------- campo ---------- */
+function desenhaCampo(alvo, pontos, mostrarOver){
+  alvo.innerHTML = pontos.map(p=>
+    `<div class="pos${p.jog?' on':''}${p.novo?' novo':''}" style="left:${p.x}%;top:${p.y}%">
+       <div class="bola"><b>${p.jog ? (mostrarOver ? p.jog.over : '✓') : '+'}</b></div>
+       <div class="rot">${p.rot}</div>
+       <div class="quem">${p.jog ? p.jog.nome : ''}</div>
+     </div>`).join('');
+}
+const previaCampo = f => desenhaCampo($('campoPrev'), f.pos.map(p=>({rot:p.rot, x:p.x, y:p.y})));
+function pintaSlots(){
+  desenhaCampo($('campo'), S.slots.map((s,i)=>
+    ({rot:s.rot, x:s.x, y:s.y, jog:s.jog, novo:i===S.ultimo})), false);
+}
+function pintaBarra(){
+  $('picks').textContent = S.slots.filter(s=>s.jog).length + '/' + S.slots.length;
+  $('passN').textContent = S.passes;
+  $('pass').disabled = S.passes === 0 || !S.atual;
+  $('tatLabel').textContent = S.form.n + ' · ' + S.estilo.n;
+}
+function pintaElenco(){
+  const t = S.atual;
+  $('teamArea').hidden = !t;
+  if (!t){ $('squad').innerHTML = ''; return; }
+  $('flag').style.background = `linear-gradient(105deg,${t.cores[0]} 0 50%,${t.cores[1]} 50% 100%)`;
+  $('tname').innerHTML = `${t.clube} <span class="yr">${t.ano}</span>`;
+  $('tconq').textContent = t.conquista;
+  const ta = $('teamArea');
+  ta.classList.remove('anima'); void ta.offsetWidth; ta.classList.add('anima');
+  $('squad').innerHTML = t.elenco.map((p,i)=>{
+    const b = bloqueio(p);
+    return `<button class="pl" data-i="${i}" ${b?'disabled':''}>
+      <span class="g">${ROT[p.grupo]}</span>
+      <span><span class="nm">${p.nome}</span><br><span class="ps">${p.pos}</span></span>
+      <span class="why">${b||''}</span>
+    </button>`;
+  }).join('');
+  $('squad').querySelectorAll('.pl').forEach(b=>b.onclick=()=>escala(t.elenco[+b.dataset.i]));
+}
+function pinta(){
+  pintaBarra(); pintaSlots(); pintaElenco();
+  const r = $('roll');
+  r.disabled = !!S.atual;
+  r.textContent = S.atual ? 'Escolha um jogador abaixo' : 'Rolar o dado';
+}
+
+function rolar(){
+  if (completo()) return;
+  let livres = DB.times.filter(t=>!S.sorteados.has(t.id) && temEscolha(t));
+  if (!livres.length){ S.sorteados.clear(); livres = DB.times.filter(temEscolha); }
+  if (!livres.length){
+    S.atual = null; pinta();
+    $('roll').textContent = 'Sem jogador disponível'; $('roll').disabled = true;
+    return;
+  }
+  S.atual = livres[Math.floor(Math.random()*livres.length)];
+  S.sorteados.add(S.atual.id);
+  const m = $('marca');
+  if (m){ m.style.animation='none'; void m.offsetWidth; m.style.animation='tremeDado .45s ease-in-out'; }
+  pinta();
+}
+function escala(p){
+  if (bloqueio(p)) return;
+  const s = S.slots.find(s=>s.grupo===p.grupo && !s.jog);
+  s.jog = {...p, de:`${S.atual.clube} ${S.atual.ano}`};
+  S.ultimo = S.slots.indexOf(s);
+  S.usados.add(p.id);
+  S.atual = null;
+  pinta();
+  if (completo()) revelar(); else rolar();
+}
+
+$('go').onclick = () => { mostra('scr-tatica'); pintaTatica(); };
+$('confirmaTat').onclick = () => {
+  novoJogo(escolhaForm, escolhaEst);
+  mostra('scr-draft'); pinta(); rolar();
+};
+$('roll').onclick = rolar;
+$('pass').onclick = () => { if(S.passes>0 && S.atual){ S.passes--; S.atual=null; pinta(); rolar(); } };
+
+/* ---------- revelação ---------- */
+async function revelar(){
+  const xi = S.slots.map(s=>s.jog);
+  S.over = Math.round(xi.reduce((a,p)=>a+p.over,0)/xi.length);
+  $('ovTat').textContent = S.form.n + ' · ' + S.estilo.n;
+  $('xi').innerHTML = xi.map(p=>`<div class="c"><span class="ov">${p.over}</span><div class="nm">${p.nome}</div><div class="sm">${ROT[p.grupo]} · ${p.de}</div></div>`).join('');
+  const pontos = S.slots.map(s=>({rot:s.rot, x:s.x, y:s.y, jog:s.jog}));
+  desenhaCampo($('campoRev'), pontos, false);
+  $('ovTeam').textContent = '··';
+  mostra('scr-reveal');
+
+  const rapido = S.vel === 0;
+  const bolas = [...$('campoRev').querySelectorAll('.pos')];
+  for (let i = 0; i < bolas.length; i++){
+    if (!rapido) await sleep(105);
+    bolas[i].querySelector('.bola b').textContent = pontos[i].jog.over;
+    bolas[i].classList.add('novo');
+  }
+  if (!rapido) await sleep(260);
+  const alvo = S.over;
+  if (rapido){ $('ovTeam').textContent = alvo; return; }
+  /* conta por tempo, nao por quadro: se a aba perder o foco o numero
+     ainda chega no valor certo em vez de congelar no meio */
+  const DUR = 620, t0 = performance.now();
+  const sobe = agora => {
+    const p = Math.min(1, (agora - t0) / DUR);
+    $('ovTeam').textContent = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(sobe); else $('ovTeam').textContent = alvo;
+  };
+  requestAnimationFrame(sobe);
+  setTimeout(()=>{ $('ovTeam').textContent = alvo; }, DUR + 120);
+}
+
+/* ---------- simulação ---------- */
+const poisson = l => { let k=0,p=1,L=Math.exp(-l); do{k++;p*=Math.random()}while(p>L); return k-1; };
+const MEDIA_BASE = 82.5, ESTICA = 2.2;
+const forca = time => {
+  const m = time.elenco.reduce((s,p)=>s+p.over,0) / time.elenco.length;
+  return MEDIA_BASE + (m - MEDIA_BASE) * ESTICA;
+};
+function marcador(xi){
+  const peso = p => p.over * ({ATA:6,MEI:3,DEF:1,GOL:0}[p.grupo]);
+  const tot = xi.reduce((s,p)=>s+peso(p),0);
+  let r = Math.random()*tot;
+  for (const p of xi){ r -= peso(p); if (r<=0) return p.nome; }
+  return xi[xi.length-1].nome;
+}
+function simula(meuXi, meuOv, opp){
+  const of = forca(opp);
+  const lam = (dif,mod) => Math.min(8, 1.35*Math.exp(dif/8)*mod);
+  let a = Math.min(9, poisson(lam(meuOv-of, modAtaque())));
+  let b = Math.min(9, poisson(lam(of-meuOv, modDefesa())));
+  const ev = [];
+  const min = () => 1 + Math.floor(Math.random()*90);
+  for (let i=0;i<a;i++) ev.push({m:min(), meu:true,  who:marcador(meuXi)});
+  for (let i=0;i<b;i++) ev.push({m:min(), meu:false, who:marcador(opp.elenco)});
+  ev.sort((x,y)=>x.m-y.m);
+  return {a,b,ev,of};
+}
+function penaltis(meuOv, of){
+  let a=0,b=0;
+  for(let i=0;i<5;i++){ if(Math.random() < .70 + (meuOv-of)/200) a++; if(Math.random() < .70 + (of-meuOv)/200) b++; }
+  while(a===b){ const x=Math.random()<.72, y=Math.random()<.72; if(x)a++; if(y)b++; }
+  return [a,b];
+}
+
+const FASES = ['Grupos','Grupos','Grupos','Oitavas','Quartas','Semifinal','Final'];
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+async function campanha(){
+  mostra('scr-camp');
+  const xi = S.slots.map(s=>s.jog);
+  const pool = DB.times.slice().sort(()=>Math.random()-.5).sort((x,y)=>forca(x)-forca(y));
+  const escolhidos = [];
+  for (let i=0;i<7;i++){
+    const faixa = Math.floor(pool.length * (i+1)/8);
+    const idx = Math.min(pool.length-1, faixa + Math.floor(Math.random()*3));
+    escolhidos.push(pool.splice(idx,1)[0]);
+  }
+  const box = $('matches'); box.innerHTML = '';
+  let saldoPro = 0, saldoContra = 0, eliminado = false, campeao = false, pontos = 0;
+
+  for (let i=0;i<7;i++){
+    const opp = escolhidos[i], fase = FASES[i], mata = i>=3;
+    const el = document.createElement('div');
+    el.className = 'match';
+    el.innerHTML = `<div class="top">
+        <div class="fase">${fase.toUpperCase()}</div>
+        <div class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</div>
+        <div><span class="sc d">0 – 0</span> <span class="clock">0'</span></div>
+      </div><div class="evs"></div>`;
+    box.appendChild(el);
+    const sc = el.querySelector('.sc'), ck = el.querySelector('.clock'), evs = el.querySelector('.evs');
+    el.classList.add('vivo');
+    const r = simula(xi, S.over, opp);
+    let a=0,b=0,k=0;
+    const stepAgora = () => S.vel===0 ? 0 : Math.round(55/S.vel);
+
+    for (let m=1;m<=90;m++){
+      while (k<r.ev.length && r.ev[k].m===m){
+        const e = r.ev[k++];
+        if (e.meu) a++; else b++;
+        sc.textContent = `${a} – ${b}`;
+        const d = document.createElement('div');
+        d.className = 'ev' + (e.meu?'':' c');
+        d.innerHTML = `<span class="m">${e.m}'</span><span class="who">${e.who}</span>`;
+        evs.appendChild(d);
+      }
+      sc.className = 'sc ' + (a>b?'w':a<b?'l':'d');
+      const st = stepAgora();
+      ck.textContent = m + "'";
+      if (st) await sleep(st);
+    }
+    ck.textContent = "90'"; ck.classList.add('fim');
+    el.classList.remove('vivo');
+    saldoPro += a; saldoContra += b;
+
+    if (!mata){
+      pontos += a>b ? 3 : a===b ? 1 : 0;
+      if (i===2){
+        const passou = pontos >= PTS_CLASSIFICA;
+        const d = document.createElement('div');
+        d.className = 'ev' + (passou?'':' c');
+        d.innerHTML = `<span class="m">${pontos}pt</span><span class="who">${passou?'Classificado para as oitavas':'Eliminado na fase de grupos'}</span>`;
+        evs.appendChild(d);
+        if (!passou){ eliminado = 'fase de grupos'; break; }
+      }
+    }
+    if (mata && a===b){
+      const [pa,pb] = penaltis(S.over, r.of);
+      const d = document.createElement('div');
+      d.className = 'ev' + (pa>pb?'':' c');
+      d.innerHTML = `<span class="m">PEN</span><span class="who">${pa} x ${pb} nos pênaltis</span>`;
+      evs.appendChild(d);
+      sc.className = 'sc ' + (pa>pb?'w':'l');
+      if (pb>pa){ eliminado = fase; break; }
+    } else if (mata && a<b){ eliminado = fase; break; }
+    if (i===6 && !eliminado) campeao = true;
+    if (i < 6 && !eliminado){
+      if (S.modo === 'manual') await esperaProximo();
+      else { const pausa = stepAgora(); if (pausa) await sleep(pausa*4); }
+    }
+  }
+
+  const v = $('verdict'); v.hidden = false;
+  let goleada = null;
+  for (const el of box.querySelectorAll('.sc')){
+    const [x,y] = el.textContent.split('–').map(n=>+n.trim());
+    if (x > y && (!goleada || x-y > goleada.d || (x-y === goleada.d && x > goleada.x)))
+      goleada = {x, y, d:x-y};
+  }
+  const onde = String(eliminado);
+  $('vbig').textContent = campeao ? 'CAMPEÃO'
+    : onde === 'fase de grupos' ? 'CAIU NOS GRUPOS' : 'CAIU NAS ' + onde.toUpperCase();
+  $('vbig').className = 'big' + (campeao ? ' seven' : '');
+  $('vtxt').innerHTML = `Time de <b>${S.over}</b> de overall, no <b>${S.form.n}</b> ${S.estilo.n.toLowerCase()}.<br>
+    ${saldoPro} gols marcados, ${saldoContra} sofridos.
+    ${goleada ? `<br>Maior goleada: <b style="color:var(--verde)">${goleada.x} a ${goleada.y}</b>.` : ''}`;
+  v.scrollIntoView({behavior:'smooth'});
+}
+function esperaProximo(){
+  return new Promise(resolve=>{
+    const w = $('proxWrap'), b = $('prox');
+    w.hidden = false;
+    w.scrollIntoView({behavior:'smooth', block:'nearest'});
+    b.onclick = () => { w.hidden = true; b.onclick = null; resolve(); };
+  });
+}
+document.querySelectorAll('.sp[data-modo]').forEach(b=>b.onclick=()=>{
+  const v = b.dataset.modo;
+  if (S) S.modo = v;
+  document.querySelectorAll('.sp[data-modo]').forEach(x=>x.classList.toggle('on', x.dataset.modo === v));
+});
+$('startCamp').onclick = campanha;
+$('again').onclick = () => location.reload();
+document.querySelectorAll('.sp[data-sp]').forEach(b=>b.onclick=()=>{
+  const v = +b.dataset.sp;
+  if (S) S.vel = v;
+  document.querySelectorAll('.sp[data-sp]').forEach(x=>x.classList.toggle('on', +x.dataset.sp === v));
+});
+</script>

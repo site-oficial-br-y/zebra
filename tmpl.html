@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZEBRA — monte seu time com quem já jogou</title>
+<meta name="description" content="O dado sorteia um time campeão da história do futebol brasileiro. Você escala um jogador daquele elenco. Sete escolhas e uma campanha até a final.">
+<meta property="og:title" content="ZEBRA">
+<meta property="og:description" content="Monte seu time com quem já jogou. Sete escolhas, uma campanha, uma final.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0d0a'/><text y='24' x='16' text-anchor='middle' font-size='20' font-weight='900' font-family='sans-serif' fill='%237BE495' font-style='italic'>Z</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+:root{
+  --preto:#0a0d0a; --carvao:#111511; --carta:#151a15; --linha:#232a23;
+  --claro:#eef2ee; --apagado:#8d968d;
+  --verde:#7BE495; --verde-esc:#3f8f56; --vermelho:#ff5a3c; --ouro:#e9c46a;
+  --grama:#16351f;
+}
+html{-webkit-text-size-adjust:100%}
+
+/* ---- luzes de fundo ---- */
+.aura{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aura i{position:absolute;display:block;border-radius:50%;filter:blur(70px)}
+.aura .a{width:70vw;height:70vw;max-width:760px;max-height:760px;left:-18vw;top:-24vw;
+  background:radial-gradient(circle,rgba(123,228,149,.55),rgba(63,143,86,.22) 45%,transparent 70%);animation:deriva 26s ease-in-out infinite}
+.aura .b{width:60vw;height:60vw;max-width:640px;max-height:640px;right:-16vw;top:26vh;
+  background:radial-gradient(circle,rgba(123,228,149,.42),rgba(63,143,86,.18) 45%,transparent 70%);animation:deriva 34s ease-in-out infinite reverse}
+.aura .c{width:120vw;height:46vh;left:-10vw;bottom:-22vh;
+  background:radial-gradient(ellipse at center,rgba(123,228,149,.45),rgba(63,143,86,.18) 40%,transparent 66%);animation:pulsa 12s ease-in-out infinite}
+@keyframes deriva{0%,100%{transform:translate3d(0,0,0) scale(1)}33%{transform:translate3d(6vw,4vh,0) scale(1.1)}66%{transform:translate3d(-4vw,7vh,0) scale(.94)}}
+@keyframes pulsa{0%,100%{opacity:.55}50%{opacity:1}}
+.wrap{position:relative;z-index:1}
+
+/* ---- animacoes ---- */
+@keyframes sobe{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes entraEsq{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes brilha{0%{box-shadow:0 0 0 0 rgba(123,228,149,.55)}70%{box-shadow:0 0 0 16px rgba(123,228,149,0)}100%{box-shadow:0 0 0 0 rgba(123,228,149,0)}}
+@keyframes tremeDado{0%,100%{transform:skewX(-9deg) rotate(0)}25%{transform:skewX(-9deg) rotate(-2.5deg)}75%{transform:skewX(-9deg) rotate(2.5deg)}}
+.anima{animation:sobe .5s cubic-bezier(.2,.7,.3,1) both}
+.anima-1{animation-delay:.06s} .anima-2{animation-delay:.12s} .anima-3{animation-delay:.18s} .anima-4{animation-delay:.24s}
+@media (prefers-reduced-motion:reduce){
+  .anima,.aura i{animation:none!important}
+  *{transition-duration:.01ms!important}
+}
+body{
+  background:var(--preto); color:var(--claro);
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  min-height:100vh; padding:0 16px 40px; overflow-x:hidden;
+}
+.wrap{max-width:900px;margin:0 auto}
+.tag{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--apagado);font-weight:800}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ---- marca ---- */
+.marca{display:inline-block;transform:skewX(-9deg);transition:box-shadow .3s;border:2.5px solid var(--claro);
+  padding:5px 13px 4px;background:var(--preto);box-shadow:4px 4px 0 var(--verde-esc)}
+.marca span{display:block;transform:skewX(9deg);font-weight:900;letter-spacing:.06em;
+  font-size:23px;line-height:1;font-style:italic}
+.marca.g span{font-size:44px}
+topo{display:block;padding:26px 0 0}
+
+/* ---- botoes ---- */
+.btn{background:var(--verde);color:#08150c;font-weight:900;padding:15px 26px;border-radius:6px;
+  font-size:14px;letter-spacing:.04em;text-transform:uppercase;transition:transform .12s,box-shadow .12s;
+  box-shadow:0 0 0 rgba(123,228,149,0)}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 22px rgba(123,228,149,.22)}
+.btn:disabled{background:none;border:1px solid var(--linha);color:var(--apagado);cursor:default;
+  font-weight:700;box-shadow:none;transform:none}
+.btn.ghost{background:none;border:1px solid var(--linha);color:var(--claro)}
+.btn.ghost:hover:not(:disabled){border-color:var(--verde)}
+.btn.sm{padding:10px 16px;font-size:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---- capa ---- */
+#scr-home{padding:30px 0 0}
+.hero{position:relative;border-radius:14px;overflow:hidden;margin-top:26px;
+  background:
+    linear-gradient(to bottom,rgba(10,13,10,.93) 0%,rgba(10,13,10,.55) 45%,rgba(10,13,10,.97) 100%),
+    repeating-linear-gradient(90deg,#132b1a 0 44px,#16351f 44px 88px);
+  border:1px solid var(--linha);padding:44px 28px 92px}
+.hero .glow{position:absolute;left:-12%;right:-12%;bottom:-70px;height:250px;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse 55% 100% at 50% 100%,
+    #a8f0bf 0%, rgba(140,235,170,.78) 18%, rgba(110,215,145,.42) 38%,
+    rgba(63,143,86,.16) 60%, transparent 78%);
+  filter:blur(26px);animation:pulsa 9s ease-in-out infinite}
+.hero::before{content:'';position:absolute;left:50%;bottom:-78px;width:210px;height:210px;
+  border:2px solid rgba(255,255,255,.12);border-radius:50%;transform:translateX(-50%);z-index:0}
+h1{position:relative;z-index:2;font-size:clamp(33px,8.4vw,60px);font-weight:900;letter-spacing:-.035em;line-height:.95;
+  font-style:italic;text-transform:uppercase;position:relative;z-index:1}
+h1 em{font-style:italic;color:var(--verde)}
+.sub{color:#c3ccc3;font-size:14.5px;margin-top:16px;max-width:44ch;line-height:1.55;position:relative;z-index:2}
+.hero .row{margin-top:26px;position:relative;z-index:2}
+
+.comofunc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));
+  gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:12px;
+  overflow:hidden;margin-top:14px}
+.comofunc div{background:var(--carvao);padding:20px 18px;transition:background .25s,transform .25s}
+.comofunc div:hover{background:#17201a;transform:translateY(-3px)}
+.comofunc .n{color:var(--verde);font-weight:900;font-size:13px;font-style:italic}
+.comofunc h3{font-size:13.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:7px 0 6px}
+.comofunc p{font-size:12.5px;color:var(--apagado);line-height:1.5}
+
+/* ---- barra ---- */
+.bar{display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:16px 0;border-bottom:1px solid var(--linha);flex-wrap:wrap;margin-top:22px}
+.contador{font-size:25px;font-weight:900;font-style:italic;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* ---- o campo ---- */
+.campo{position:relative;border:1px solid var(--linha);border-radius:12px;
+  margin:18px auto 8px;max-width:560px;
+  padding:34px 26px;aspect-ratio:3/4;
+  background:repeating-linear-gradient(0deg,#122a19 0 9%,#16351f 9% 18%)}
+.campo .marcacao{position:absolute;inset:11px;border:2px solid rgba(255,255,255,.17);border-radius:4px;pointer-events:none}
+.campo .meio{position:absolute;left:11px;right:11px;top:50%;height:2px;background:rgba(255,255,255,.17);pointer-events:none}
+.campo .circulo{position:absolute;left:50%;top:50%;width:30%;aspect-ratio:1;border:2px solid rgba(255,255,255,.17);
+  border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.campo .area{position:absolute;left:50%;transform:translateX(-50%);width:52%;height:13%;
+  border:2px solid rgba(255,255,255,.17);pointer-events:none}
+.campo .area.b{bottom:11px;border-bottom:0} .campo .area.t{top:11px;border-top:0}
+.linhas{position:relative;height:100%;z-index:1}
+/* a bola fica presa na coordenada; o texto pendura abaixo sem deslocar nada */
+.pos{--d:44px;position:absolute;transform:translate(-50%,-50%);
+  width:var(--d);height:var(--d);text-align:center}
+.bola{width:var(--d);height:var(--d);border-radius:50%;
+  border:2px solid var(--verde-esc);background:rgba(10,13,10,.72);
+  display:flex;align-items:center;justify-content:center;transition:all .2s}
+.pos .rot,.pos .quem{position:absolute;left:50%;transform:translateX(-50%);width:82px}
+.pos.on .bola{border-color:var(--verde);background:var(--verde);box-shadow:0 0 22px rgba(123,228,149,.5)}
+.pos.novo .bola{animation:brilha .9s ease-out}
+.bola b{font-size:17px;font-weight:900;font-style:italic;color:var(--verde);font-variant-numeric:tabular-nums}
+.pos.on .bola b{color:#08150c}
+.pos .rot{top:calc(var(--d) + 3px);font-size:9px;font-weight:900;letter-spacing:.09em;
+  color:rgba(255,255,255,.72);text-shadow:0 1px 4px rgba(0,0,0,.95)}
+.pos .quem{top:calc(var(--d) + 15px);font-size:11px;font-weight:800;line-height:1.15;
+  text-shadow:0 1px 3px rgba(0,0,0,.92);word-break:break-word}
+@media(max-width:560px){.pos{--d:36px}.bola b{font-size:13px}
+  .pos .rot,.pos .quem{width:66px}.pos .rot{font-size:8px}.pos .quem{font-size:9.5px}}
+
+/* ---- elenco sorteado ---- */
+.timehead{display:flex;align-items:center;gap:12px;margin:24px 0 3px}
+.flag{width:36px;height:25px;border-radius:3px;flex:0 0 auto;
+  box-shadow:0 0 0 1px rgba(255,255,255,.2);transform:skewX(-9deg)}
+.timehead h2{font-size:22px;font-weight:900;font-style:italic;letter-spacing:-.025em;text-transform:uppercase}
+.timehead .yr{color:var(--verde)}
+.conq{color:var(--apagado);font-size:12px;margin-bottom:13px}
+.list{display:grid;gap:5px}
+.pl{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:11px;align-items:center;
+  background:var(--carta);border:1px solid var(--linha);border-radius:8px;padding:11px 14px;
+  text-align:left;width:100%;transition:border-color .12s,background .12s}
+.pl:hover:not(:disabled){border-color:var(--verde);background:#1a2a1e}
+.pl:disabled{opacity:.28;cursor:default}
+.pl .g{font-size:9px;font-weight:900;color:var(--verde);letter-spacing:.08em}
+.pl .nm{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.pl .ps{font-size:11px;color:var(--apagado)}
+.pl .why{font-size:9.5px;color:var(--vermelho);font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+
+/* ---- campanha ---- */
+.match{background:var(--carta);border:1px solid var(--linha);border-radius:10px;padding:13px 15px;margin-bottom:7px;animation:sobe .45s cubic-bezier(.2,.7,.3,1) both}
+.match.vivo{border-color:rgba(123,228,149,.4);box-shadow:0 0 30px rgba(123,228,149,.10)}
+.match .top{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:11px;align-items:center}
+.match .fase{font-size:9px;letter-spacing:.13em;color:var(--apagado);font-weight:900}
+.match .opp{font-weight:900;font-size:16px;font-style:italic;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.match .sc{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;font-style:italic}
+.match .sc.w{color:var(--verde)} .match .sc.l{color:var(--vermelho)} .match .sc.d{color:var(--ouro)}
+.match .clock{font-size:10px;font-weight:900;color:var(--vermelho);font-variant-numeric:tabular-nums;
+  min-width:26px;display:inline-block;text-align:right}
+.match .clock.fim{color:var(--apagado)}
+.ev{border-left:2px solid var(--verde);padding:5px 0 5px 11px;margin-top:7px;font-size:12px;
+  display:flex;gap:9px;align-items:baseline;animation:entraEsq .35s ease-out both}
+.ev.c{border-color:var(--vermelho)}
+.ev .m{color:var(--apagado);font-weight:900;font-variant-numeric:tabular-nums;min-width:28px}
+.ev .who{font-weight:800}
+.speeds{display:flex;gap:5px;flex-wrap:wrap}
+.sp{border:1px solid var(--linha);border-radius:5px;padding:8px 13px;font-size:11px;
+  font-weight:900;color:var(--apagado);text-transform:uppercase;letter-spacing:.06em}
+.sp.on{background:var(--verde);color:#08150c;border-color:var(--verde)}
+
+.final{text-align:center;padding:40px 0 16px}
+.final .big{font-size:clamp(42px,12vw,96px);font-weight:900;font-style:italic;
+  letter-spacing:-.045em;line-height:.9;text-transform:uppercase}
+.final .big.seven{color:var(--verde)}
+.note{color:var(--apagado);font-size:13px;line-height:1.65;margin-top:12px}
+.xi{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,158px),1fr));gap:6px;margin:18px 0}
+.xi .c{background:var(--carta);border:1px solid var(--linha);border-radius:8px;padding:11px 13px}
+.xi .c .nm{font-weight:800;font-size:14px}
+.xi .c .sm{font-size:10.5px;color:var(--apagado);margin-top:2px}
+.xi .c .ov{float:right;font-weight:900;font-style:italic;color:var(--verde);font-variant-numeric:tabular-nums}
+.ovbox{display:flex;align-items:baseline;gap:14px;margin:20px 0 2px}
+.ovbox .v{font-size:60px;font-weight:900;font-style:italic;letter-spacing:-.05em;
+  color:var(--verde);font-variant-numeric:tabular-nums;line-height:1}
+/* ---- opcoes de tatica ---- */
+.campo.mini{max-width:360px;aspect-ratio:3/4.05;margin:14px auto 4px;padding:30px 22px}
+.campo.mini .pos{--d:34px}
+.campo.mini .bola{border-style:dashed}
+.campo.mini .bola b{font-size:13px;color:var(--verde-esc)}
+.campo.mini .rot{font-size:8.5px}
+.campo.mini .quem{display:none}
+.campo.mini.rev{max-width:420px;aspect-ratio:3/4}
+.campo.mini.rev .pos{--d:40px}
+.campo.mini.rev .bola{border-style:solid}
+.campo.mini.rev .quem{display:block;font-size:9.5px}
+.campo.mini.rev .pos.on .bola b{color:#08150c}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,196px),1fr));gap:7px}
+.opt{background:var(--carta);border:1px solid var(--linha);border-radius:9px;padding:13px 15px;
+  text-align:left;transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--verde-esc);transform:translateY(-2px);box-shadow:0 8px 26px rgba(123,228,149,.10)}
+.opt{transition:border-color .18s,background .18s,transform .18s,box-shadow .18s}
+.opt.on{border-color:var(--verde);background:#18291d;box-shadow:0 0 0 1px var(--verde),0 10px 34px rgba(123,228,149,.16)}
+.opt b{display:block;font-size:19px;font-weight:900;font-style:italic;letter-spacing:-.02em}
+.opt.on b{color:var(--verde)}
+.opt span{display:block;font-size:11.5px;color:var(--apagado);margin-top:4px;line-height:1.4}
+.previa{margin-top:18px;padding:14px 16px;border:1px dashed var(--linha);border-radius:9px;
+  font-size:13px;color:var(--apagado);font-weight:600}
+.previa b{font-weight:900;font-style:italic;color:var(--claro)}
+.previa b.up{color:var(--verde)} .previa b.down{color:var(--vermelho)}
+
+rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(--linha);
+  text-align:center;color:var(--apagado);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="aura" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+
+<topo><div class="marca" id="marca"><span>ZEBRA</span></div></topo>
+
+<section id="scr-home">
+  <div class="hero">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="tag" style="position:relative;z-index:2">O jogo de futebol<br>com quem já vestiu a camisa</div>
+    <h1>Monte seu time.<br><em>Ganhe a final.</em></h1>
+    <p class="sub">O dado sorteia um time campeão da história do futebol brasileiro. Você escala um jogador daquele elenco — e o próximo sorteio pode não ser tão generoso. Sete escolhas e uma campanha de sete jogos.</p>
+    <div class="row"><button class="btn" id="go">Jogar agora</button></div>
+  </div>
+  <div class="comofunc">
+    <div><div class="n">01</div><h3>Role o dado</h3><p>Sai um time campeão e o elenco daquele ano.</p></div>
+    <div><div class="n">02</div><h3>Escale um</h3><p>Só um jogador por sorteio, e ele some dos outros elencos.</p></div>
+    <div><div class="n">03</div><h3>Feche os sete</h3><p>Um goleiro, dois defensores, dois meias, dois atacantes.</p></div>
+    <div><div class="n">04</div><h3>Vá até a final</h3><p>Sete jogos contra os próprios times da história.</p></div>
+  </div>
+</section>
+
+<section id="scr-tatica" hidden>
+  <div class="bar"><div><div class="tag">Antes de escalar</div><div class="contador">Tática</div></div></div>
+  <div class="campo mini">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campoPrev"></div>
+  </div>
+  <div class="tag" style="margin:22px 0 9px">Formação</div>
+  <div class="opts" id="forms"></div>
+  <div class="tag" style="margin:24px 0 9px">Postura</div>
+  <div class="opts" id="estilos"></div>
+  <div class="previa" id="previa"></div>
+  <div class="row" style="margin-top:22px"><button class="btn" id="confirmaTat">Começar a escalar</button></div>
+</section>
+
+<section id="scr-draft" hidden>
+  <div class="bar">
+    <div><div class="tag">Seu time · <span id="tatLabel"></span></div><div class="contador" id="picks"></div></div>
+    <div class="row"><button class="btn" id="roll">Rolar o dado</button><button class="btn ghost sm" id="pass">Passar (<span id="passN"></span>)</button></div>
+  </div>
+  <div class="campo">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campo"></div>
+  </div>
+  <div id="teamArea" hidden>
+    <div class="timehead"><span class="flag" id="flag"></span><h2 id="tname"></h2></div>
+    <div class="conq" id="tconq"></div>
+    <div class="list" id="squad"></div>
+  </div>
+</section>
+
+<section id="scr-reveal" hidden>
+  <div class="tag" style="margin-top:26px">Seu time está pronto</div>
+  <div class="ovbox"><div class="v" id="ovTeam"></div><div class="note" style="margin:0">de overall<br>no <b id="ovTat"></b></div></div>
+  <div class="campo mini rev">
+    <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+    <div class="area t"></div><div class="area b"></div>
+    <div class="linhas" id="campoRev"></div>
+  </div>
+  <div class="xi" id="xi"></div>
+  <div class="row">
+    <button class="btn" id="startCamp">Jogar a campanha</button>
+    <div class="speeds" id="modos2">
+      <button class="sp on" data-modo="auto">Automático</button>
+      <button class="sp" data-modo="manual">Jogo a jogo</button>
+    </div>
+    <div class="speeds" id="speeds2">
+      <button class="sp on" data-sp="1">Normal</button>
+      <button class="sp" data-sp="4">Rápido</button>
+      <button class="sp" data-sp="0">Ultra</button>
+    </div>
+  </div>
+</section>
+
+<section id="scr-camp" hidden>
+  <div class="bar">
+    <div><div class="tag">A campanha</div></div>
+    <div class="row" style="gap:14px">
+      <div class="speeds" id="modos">
+        <button class="sp on" data-modo="auto">Automático</button>
+        <button class="sp" data-modo="manual">Jogo a jogo</button>
+      </div>
+      <div class="speeds">
+        <button class="sp on" data-sp="1">Normal</button>
+        <button class="sp" data-sp="4">Rápido</button>
+        <button class="sp" data-sp="0">Ultra</button>
+      </div>
+    </div>
+  </div>
+  <div id="matches" style="margin-top:16px"></div>
+  <div class="row" id="proxWrap" hidden style="justify-content:center;margin-top:14px">
+    <button class="btn" id="prox">Próximo jogo</button>
+  </div>
+  <div id="verdict" hidden class="final">
+    <div class="tag">Fim da campanha</div>
+    <div class="big" id="vbig"></div>
+    <div class="note" id="vtxt"></div>
+    <div class="row" style="justify-content:center;margin-top:22px"><button class="btn" id="again">Jogar de novo</button></div>
+  </div>
+</section>
+
+<rodape>Zebra · futebol brasileiro de todos os tempos</rodape>
+</div>
+<script>
+const DB = __DADOS__;
+
+/* ---------- regras ---------- */
+const PTS_CLASSIFICA = 4;
+const PASSES = 3;
+const ROT = {GOL:'GOL',DEF:'DEF',MEI:'MEI',ATA:'ATA'};
+
+/* DEF-MEI-ATA, sempre 1 goleiro. atk mexe no que você faz, def no que você toma. */
+const P = (g,rot,x,y) => ({g,rot,x,y});
+/* y: 8 = ataque adversario, 92 = proprio gol. x: 0 esquerda, 100 direita */
+const FORMACOES = [
+  {n:'4-4-2', d:4,m:4,a:2, txt:'O padrão. Equilíbrio sem luxo.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','MD',86,42), P('MEI','VOL',62,52), P('MEI','VOL',38,52), P('MEI','ME',14,42),
+    P('ATA','ATA',62,18), P('ATA','ATA',38,18)]},
+
+  {n:'4-3-3', d:4,m:3,a:3, txt:'Três na frente, meio curto.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','VOL',50,58), P('MEI','MEI',70,42), P('MEI','MEI',30,42),
+    P('ATA','PD',82,20), P('ATA','CA',50,14), P('ATA','PE',18,20)]},
+
+  {n:'4-2-4', d:4,m:2,a:4, txt:'O esquema do Brasil de 58 e 62. Ataque total.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','VOL',62,49), P('MEI','MEI',38,49),
+    P('ATA','PD',86,24), P('ATA','CA',62,14), P('ATA','CA',38,14), P('ATA','PE',14,24)]},
+
+  {n:'3-5-2', d:3,m:5,a:2, txt:'Domínio de meio-campo, zaga exposta.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ZAG',70,77), P('DEF','ZAG',50,77), P('DEF','ZAG',30,77),
+    P('MEI','ALA',90,46), P('MEI','VOL',64,58), P('MEI','MEI',50,42), P('MEI','VOL',36,58), P('MEI','ALA',10,46),
+    P('ATA','ATA',62,17), P('ATA','ATA',38,17)]},
+
+  {n:'5-3-2', d:5,m:3,a:2, txt:'Ferrolho. Difícil de furar, difícil de criar.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ALA',89,60), P('DEF','ZAG',68,79), P('DEF','ZAG',50,79), P('DEF','ZAG',32,79), P('DEF','ALA',11,60),
+    P('MEI','VOL',50,54), P('MEI','MEI',70,40), P('MEI','MEI',30,40),
+    P('ATA','ATA',62,17), P('ATA','ATA',38,17)]},
+
+  {n:'3-4-3', d:3,m:4,a:3, txt:'Ousado dos dois lados.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ZAG',70,77), P('DEF','ZAG',50,77), P('DEF','ZAG',30,77),
+    P('MEI','ALA',88,48), P('MEI','VOL',62,56), P('MEI','VOL',38,56), P('MEI','ALA',12,48),
+    P('ATA','PD',80,19), P('ATA','CA',50,13), P('ATA','PE',20,19)]},
+
+  {n:'4-5-1', d:4,m:5,a:1, txt:'Meio lotado, um homem só na frente.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','LD',86,66), P('DEF','ZAG',63,76), P('DEF','ZAG',37,76), P('DEF','LE',14,66),
+    P('MEI','MD',89,44), P('MEI','VOL',63,56), P('MEI','MEI',50,38), P('MEI','VOL',37,56), P('MEI','ME',11,44),
+    P('ATA','CA',50,14)]},
+
+  {n:'5-4-1', d:5,m:4,a:1, txt:'Retranca. Joga pelo empate.', pos:[
+    P('GOL','GOL',50,90),
+    P('DEF','ALA',89,60), P('DEF','ZAG',68,79), P('DEF','ZAG',50,79), P('DEF','ZAG',32,79), P('DEF','ALA',11,60),
+    P('MEI','MD',82,44), P('MEI','VOL',60,54), P('MEI','VOL',40,54), P('MEI','ME',18,44),
+    P('ATA','CA',50,14)]},
+];
+const ESTILOS = [
+  {n:'Defensivo',   k:'def', atk:0.92, sof:0.90, txt:'Segura o resultado.'},
+  {n:'Equilibrado', k:'eq',  atk:1.00, sof:1.00, txt:'Sem inclinação.'},
+  {n:'Ofensivo',    k:'ofe', atk:1.10, sof:1.10, txt:'Vai pra cima e se expõe.'},
+];
+/* o rotulo e ilustrativo: quem encaixa na vaga e qualquer jogador do grupo */
+
+const modAtaque = () => (1 + (S.form.a - 3) * 0.09) * S.estilo.atk;
+const modDefesa = () => (1 - (S.form.d - 4) * 0.09 - (S.form.m - 4) * 0.02) * S.estilo.sof;
+
+let S;
+function novoJogo(form, estilo){
+  const modoEscolhido = document.querySelector('.sp[data-modo].on')?.dataset.modo || 'auto';
+  const velEscolhida  = +(document.querySelector('.sp[data-sp].on')?.dataset.sp ?? 1);
+  S = { passes:PASSES, slots:[], usados:new Set(), sorteados:new Set(),
+        atual:null, vel:velEscolhida, modo:modoEscolhido, ultimo:-1, form, estilo };
+  S.slots = form.pos.map(p => ({grupo:p.g, rot:p.rot, x:p.x, y:p.y, jog:null}));
+}
+const vagasDe = g => S.slots.filter(s=>s.grupo===g && !s.jog).length;
+const completo = () => S.slots.every(s=>s.jog);
+
+function bloqueio(p){
+  if (S.usados.has(p.id)) return 'já escalado';
+  if (!vagasDe(p.grupo)) return ROT[p.grupo] + ' cheio';
+  return null;
+}
+const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
+
+/* ---------- telas ---------- */
+const $ = id => document.getElementById(id);
+const mostra = id => {
+  ['scr-home','scr-tatica','scr-draft','scr-reveal','scr-camp'].forEach(x => $(x).hidden = x !== id);
+  const el = $(id);
+  el.classList.remove('anima'); void el.offsetWidth; el.classList.add('anima');
+};
+
+/* ---------- tática ---------- */
+let escolhaForm = FORMACOES[0], escolhaEst = ESTILOS[1];
+function pintaTatica(){
+  $('forms').innerHTML = FORMACOES.map((f,i)=>
+    `<button class="opt${f===escolhaForm?' on':''}" data-f="${i}">
+       <b>${f.n}</b><span>${f.txt}</span></button>`).join('');
+  $('estilos').innerHTML = ESTILOS.map((e,i)=>
+    `<button class="opt${e===escolhaEst?' on':''}" data-e="${i}">
+       <b>${e.n}</b><span>${e.txt}</span></button>`).join('');
+  $('forms').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ escolhaForm=FORMACOES[+b.dataset.f]; pintaTatica(); });
+  $('estilos').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ escolhaEst=ESTILOS[+b.dataset.e]; pintaTatica(); });
+  previaCampo(escolhaForm);
+  const a = (1+(escolhaForm.a-3)*0.09)*escolhaEst.atk;
+  const d = (1-(escolhaForm.d-4)*0.09-(escolhaForm.m-4)*0.02)*escolhaEst.sof;
+  $('previa').innerHTML =
+    `Ataque <b class="${a>1.02?'up':a<0.98?'down':''}">${a>1.02?'+':''}${Math.round((a-1)*100)}%</b>` +
+    ` · Gols sofridos <b class="${d>1.02?'down':d<0.98?'up':''}">${d>1.02?'+':''}${Math.round((d-1)*100)}%</b>`;
+}
+
+/* ---------- campo ---------- */
+function desenhaCampo(alvo, pontos, mostrarOver){
+  alvo.innerHTML = pontos.map(p=>
+    `<div class="pos${p.jog?' on':''}${p.novo?' novo':''}" style="left:${p.x}%;top:${p.y}%">
+       <div class="bola"><b>${p.jog ? (mostrarOver ? p.jog.over : '✓') : '+'}</b></div>
+       <div class="rot">${p.rot}</div>
+       <div class="quem">${p.jog ? p.jog.nome : ''}</div>
+     </div>`).join('');
+}
+const previaCampo = f => desenhaCampo($('campoPrev'), f.pos.map(p=>({rot:p.rot, x:p.x, y:p.y})));
+function pintaSlots(){
+  desenhaCampo($('campo'), S.slots.map((s,i)=>
+    ({rot:s.rot, x:s.x, y:s.y, jog:s.jog, novo:i===S.ultimo})), false);
+}
+function pintaBarra(){
+  $('picks').textContent = S.slots.filter(s=>s.jog).length + '/' + S.slots.length;
+  $('passN').textContent = S.passes;
+  $('pass').disabled = S.passes === 0 || !S.atual;
+  $('tatLabel').textContent = S.form.n + ' · ' + S.estilo.n;
+}
+function pintaElenco(){
+  const t = S.atual;
+  $('teamArea').hidden = !t;
+  if (!t){ $('squad').innerHTML = ''; return; }
+  $('flag').style.background = `linear-gradient(105deg,${t.cores[0]} 0 50%,${t.cores[1]} 50% 100%)`;
+  $('tname').innerHTML = `${t.clube} <span class="yr">${t.ano}</span>`;
+  $('tconq').textContent = t.conquista;
+  const ta = $('teamArea');
+  ta.classList.remove('anima'); void ta.offsetWidth; ta.classList.add('anima');
+  $('squad').innerHTML = t.elenco.map((p,i)=>{
+    const b = bloqueio(p);
+    return `<button class="pl" data-i="${i}" ${b?'disabled':''}>
+      <span class="g">${ROT[p.grupo]}</span>
+      <span><span class="nm">${p.nome}</span><br><span class="ps">${p.pos}</span></span>
+      <span class="why">${b||''}</span>
+    </button>`;
+  }).join('');
+  $('squad').querySelectorAll('.pl').forEach(b=>b.onclick=()=>escala(t.elenco[+b.dataset.i]));
+}
+function pinta(){
+  pintaBarra(); pintaSlots(); pintaElenco();
+  const r = $('roll');
+  r.disabled = !!S.atual;
+  r.textContent = S.atual ? 'Escolha um jogador abaixo' : 'Rolar o dado';
+}
+
+function rolar(){
+  if (completo()) return;
+  let livres = DB.times.filter(t=>!S.sorteados.has(t.id) && temEscolha(t));
+  if (!livres.length){ S.sorteados.clear(); livres = DB.times.filter(temEscolha); }
+  if (!livres.length){
+    S.atual = null; pinta();
+    $('roll').textContent = 'Sem jogador disponível'; $('roll').disabled = true;
+    return;
+  }
+  S.atual = livres[Math.floor(Math.random()*livres.length)];
+  S.sorteados.add(S.atual.id);
+  const m = $('marca');
+  if (m){ m.style.animation='none'; void m.offsetWidth; m.style.animation='tremeDado .45s ease-in-out'; }
+  pinta();
+}
+function escala(p){
+  if (bloqueio(p)) return;
+  const s = S.slots.find(s=>s.grupo===p.grupo && !s.jog);
+  s.jog = {...p, de:`${S.atual.clube} ${S.atual.ano}`};
+  S.ultimo = S.slots.indexOf(s);
+  S.usados.add(p.id);
+  S.atual = null;
+  pinta();
+  if (completo()) revelar(); else rolar();
+}
+
+$('go').onclick = () => { mostra('scr-tatica'); pintaTatica(); };
+$('confirmaTat').onclick = () => {
+  novoJogo(escolhaForm, escolhaEst);
+  mostra('scr-draft'); pinta(); rolar();
+};
+$('roll').onclick = rolar;
+$('pass').onclick = () => { if(S.passes>0 && S.atual){ S.passes--; S.atual=null; pinta(); rolar(); } };
+
+/* ---------- revelação ---------- */
+async function revelar(){
+  const xi = S.slots.map(s=>s.jog);
+  S.over = Math.round(xi.reduce((a,p)=>a+p.over,0)/xi.length);
+  $('ovTat').textContent = S.form.n + ' · ' + S.estilo.n;
+  $('xi').innerHTML = xi.map(p=>`<div class="c"><span class="ov">${p.over}</span><div class="nm">${p.nome}</div><div class="sm">${ROT[p.grupo]} · ${p.de}</div></div>`).join('');
+  const pontos = S.slots.map(s=>({rot:s.rot, x:s.x, y:s.y, jog:s.jog}));
+  desenhaCampo($('campoRev'), pontos, false);
+  $('ovTeam').textContent = '··';
+  mostra('scr-reveal');
+
+  const rapido = S.vel === 0;
+  const bolas = [...$('campoRev').querySelectorAll('.pos')];
+  for (let i = 0; i < bolas.length; i++){
+    if (!rapido) await sleep(105);
+    bolas[i].querySelector('.bola b').textContent = pontos[i].jog.over;
+    bolas[i].classList.add('novo');
+  }
+  if (!rapido) await sleep(260);
+  const alvo = S.over;
+  if (rapido){ $('ovTeam').textContent = alvo; return; }
+  /* conta por tempo, nao por quadro: se a aba perder o foco o numero
+     ainda chega no valor certo em vez de congelar no meio */
+  const DUR = 620, t0 = performance.now();
+  const sobe = agora => {
+    const p = Math.min(1, (agora - t0) / DUR);
+    $('ovTeam').textContent = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(sobe); else $('ovTeam').textContent = alvo;
+  };
+  requestAnimationFrame(sobe);
+  setTimeout(()=>{ $('ovTeam').textContent = alvo; }, DUR + 120);
+}
+
+/* ---------- simulação ---------- */
+const poisson = l => { let k=0,p=1,L=Math.exp(-l); do{k++;p*=Math.random()}while(p>L); return k-1; };
+const MEDIA_BASE = 82.5, ESTICA = 2.2;
+const forca = time => {
+  const m = time.elenco.reduce((s,p)=>s+p.over,0) / time.elenco.length;
+  return MEDIA_BASE + (m - MEDIA_BASE) * ESTICA;
+};
+function marcador(xi){
+  const peso = p => p.over * ({ATA:6,MEI:3,DEF:1,GOL:0}[p.grupo]);
+  const tot = xi.reduce((s,p)=>s+peso(p),0);
+  let r = Math.random()*tot;
+  for (const p of xi){ r -= peso(p); if (r<=0) return p.nome; }
+  return xi[xi.length-1].nome;
+}
+function simula(meuXi, meuOv, opp){
+  const of = forca(opp);
+  const lam = (dif,mod) => Math.min(8, 1.35*Math.exp(dif/8)*mod);
+  let a = Math.min(9, poisson(lam(meuOv-of, modAtaque())));
+  let b = Math.min(9, poisson(lam(of-meuOv, modDefesa())));
+  const ev = [];
+  const min = () => 1 + Math.floor(Math.random()*90);
+  for (let i=0;i<a;i++) ev.push({m:min(), meu:true,  who:marcador(meuXi)});
+  for (let i=0;i<b;i++) ev.push({m:min(), meu:false, who:marcador(opp.elenco)});
+  ev.sort((x,y)=>x.m-y.m);
+  return {a,b,ev,of};
+}
+function penaltis(meuOv, of){
+  let a=0,b=0;
+  for(let i=0;i<5;i++){ if(Math.random() < .70 + (meuOv-of)/200) a++; if(Math.random() < .70 + (of-meuOv)/200) b++; }
+  while(a===b){ const x=Math.random()<.72, y=Math.random()<.72; if(x)a++; if(y)b++; }
+  return [a,b];
+}
+
+const FASES = ['Grupos','Grupos','Grupos','Oitavas','Quartas','Semifinal','Final'];
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+async function campanha(){
+  mostra('scr-camp');
+  const xi = S.slots.map(s=>s.jog);
+  const pool = DB.times.slice().sort(()=>Math.random()-.5).sort((x,y)=>forca(x)-forca(y));
+  const escolhidos = [];
+  for (let i=0;i<7;i++){
+    const faixa = Math.floor(pool.length * (i+1)/8);
+    const idx = Math.min(pool.length-1, faixa + Math.floor(Math.random()*3));
+    escolhidos.push(pool.splice(idx,1)[0]);
+  }
+  const box = $('matches'); box.innerHTML = '';
+  let saldoPro = 0, saldoContra = 0, eliminado = false, campeao = false, pontos = 0;
+
+  for (let i=0;i<7;i++){
+    const opp = escolhidos[i], fase = FASES[i], mata = i>=3;
+    const el = document.createElement('div');
+    el.className = 'match';
+    el.innerHTML = `<div class="top">
+        <div class="fase">${fase.toUpperCase()}</div>
+        <div class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</div>
+        <div><span class="sc d">0 – 0</span> <span class="clock">0'</span></div>
+      </div><div class="evs"></div>`;
+    box.appendChild(el);
+    const sc = el.querySelector('.sc'), ck = el.querySelector('.clock'), evs = el.querySelector('.evs');
+    el.classList.add('vivo');
+    const r = simula(xi, S.over, opp);
+    let a=0,b=0,k=0;
+    const stepAgora = () => S.vel===0 ? 0 : Math.round(55/S.vel);
+
+    for (let m=1;m<=90;m++){
+      while (k<r.ev.length && r.ev[k].m===m){
+        const e = r.ev[k++];
+        if (e.meu) a++; else b++;
+        sc.textContent = `${a} – ${b}`;
+        const d = document.createElement('div');
+        d.className = 'ev' + (e.meu?'':' c');
+        d.innerHTML = `<span class="m">${e.m}'</span><span class="who">${e.who}</span>`;
+        evs.appendChild(d);
+      }
+      sc.className = 'sc ' + (a>b?'w':a<b?'l':'d');
+      const st = stepAgora();
+      ck.textContent = m + "'";
+      if (st) await sleep(st);
+    }
+    ck.textContent = "90'"; ck.classList.add('fim');
+    el.classList.remove('vivo');
+    saldoPro += a; saldoContra += b;
+
+    if (!mata){
+      pontos += a>b ? 3 : a===b ? 1 : 0;
+      if (i===2){
+        const passou = pontos >= PTS_CLASSIFICA;
+        const d = document.createElement('div');
+        d.className = 'ev' + (passou?'':' c');
+        d.innerHTML = `<span class="m">${pontos}pt</span><span class="who">${passou?'Classificado para as oitavas':'Eliminado na fase de grupos'}</span>`;
+        evs.appendChild(d);
+        if (!passou){ eliminado = 'fase de grupos'; break; }
+      }
+    }
+    if (mata && a===b){
+      const [pa,pb] = penaltis(S.over, r.of);
+      const d = document.createElement('div');
+      d.className = 'ev' + (pa>pb?'':' c');
+      d.innerHTML = `<span class="m">PEN</span><span class="who">${pa} x ${pb} nos pênaltis</span>`;
+      evs.appendChild(d);
+      sc.className = 'sc ' + (pa>pb?'w':'l');
+      if (pb>pa){ eliminado = fase; break; }
+    } else if (mata && a<b){ eliminado = fase; break; }
+    if (i===6 && !eliminado) campeao = true;
+    if (i < 6 && !eliminado){
+      if (S.modo === 'manual') await esperaProximo();
+      else { const pausa = stepAgora(); if (pausa) await sleep(pausa*4); }
+    }
+  }
+
+  const v = $('verdict'); v.hidden = false;
+  let goleada = null;
+  for (const el of box.querySelectorAll('.sc')){
+    const [x,y] = el.textContent.split('–').map(n=>+n.trim());
+    if (x > y && (!goleada || x-y > goleada.d || (x-y === goleada.d && x > goleada.x)))
+      goleada = {x, y, d:x-y};
+  }
+  const onde = String(eliminado);
+  $('vbig').textContent = campeao ? 'CAMPEÃO'
+    : onde === 'fase de grupos' ? 'CAIU NOS GRUPOS' : 'CAIU NAS ' + onde.toUpperCase();
+  $('vbig').className = 'big' + (campeao ? ' seven' : '');
+  $('vtxt').innerHTML = `Time de <b>${S.over}</b> de overall, no <b>${S.form.n}</b> ${S.estilo.n.toLowerCase()}.<br>
+    ${saldoPro} gols marcados, ${saldoContra} sofridos.
+    ${goleada ? `<br>Maior goleada: <b style="color:var(--verde)">${goleada.x} a ${goleada.y}</b>.` : ''}`;
+  v.scrollIntoView({behavior:'smooth'});
+}
+function esperaProximo(){
+  return new Promise(resolve=>{
+    const w = $('proxWrap'), b = $('prox');
+    w.hidden = false;
+    w.scrollIntoView({behavior:'smooth', block:'nearest'});
+    b.onclick = () => { w.hidden = true; b.onclick = null; resolve(); };
+  });
+}
+document.querySelectorAll('.sp[data-modo]').forEach(b=>b.onclick=()=>{
+  const v = b.dataset.modo;
+  if (S) S.modo = v;
+  document.querySelectorAll('.sp[data-modo]').forEach(x=>x.classList.toggle('on', x.dataset.modo === v));
+});
+$('startCamp').onclick = campanha;
+$('again').onclick = () => location.reload();
+document.querySelectorAll('.sp[data-sp]').forEach(b=>b.onclick=()=>{
+  const v = +b.dataset.sp;
+  if (S) S.vel = v;
+  document.querySelectorAll('.sp[data-sp]').forEach(x=>x.classList.toggle('on', +x.dataset.sp === v));
+});
+</script>
+
+</body>
+</html>
