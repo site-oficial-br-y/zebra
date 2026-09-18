@@ -368,6 +368,94 @@ h1 em{font-style:italic;color:var(--verde)}
   filter:saturate(.62) brightness(.92);transition:filter .3s}
 .hero:hover .pais svg{filter:saturate(1) brightness(1)}
 
+/* ---- duelo local: passagem de aparelho e pênaltis na mão ---- */
+.passe{min-height:calc(100dvh - 90px);display:flex;flex-direction:column;justify-content:center}
+.passe .cima{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--apagado);font-weight:800}
+.passe .n{font-family:var(--display);font-size:13vw;font-weight:900;font-style:italic;
+  letter-spacing:-.04em;line-height:.92;margin:18px 0 0}
+.passe .n small{display:block;font-size:9vw;color:var(--apagado)}
+.passe .num{display:block;font-size:40vw;line-height:.78;color:var(--verde);letter-spacing:-.08em;
+  text-shadow:0 0 70px rgba(123,228,149,.35)}
+@media(min-width:560px){.passe .n{font-size:66px}.passe .n small{font-size:44px}.passe .num{font-size:210px}}
+.passe .aviso{margin-top:26px;font-size:14.5px;line-height:1.55;color:var(--apagado);max-width:320px}
+.passe .aviso b{color:var(--claro);font-weight:800}
+.passe .feito{display:flex;gap:10px;align-items:flex-start;margin-top:22px;padding:13px 15px;
+  border:1px solid var(--linha);border-radius:9px;background:var(--carta);font-size:12.5px;
+  color:var(--apagado);line-height:1.6}
+.passe .feito .ok{color:var(--verde);font-weight:900;flex:none}
+.passe .feito b{color:var(--claro);font-weight:800}
+.passe .num{margin-top:.22em}
+.passe .tit{font-family:var(--display);font-size:16vw;font-weight:900;font-style:italic;
+  letter-spacing:-.05em;line-height:.95;margin:18px 0 0;color:var(--verde);max-width:8ch;
+  text-shadow:0 0 70px rgba(123,228,149,.3)}
+@media(min-width:560px){.passe .tit{font-size:82px}}
+.passe .btn{margin-top:28px}
+
+.duelo{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;
+  border:1px solid var(--linha);border-radius:12px;background:var(--carta);padding:16px 14px;
+  margin-top:14px;text-align:center}
+.duelo .lado .q{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+  color:var(--apagado)}
+.duelo .lado .o{font-family:var(--display);font-size:32px;font-weight:900;font-style:italic;
+  line-height:1;margin-top:5px}
+.duelo .lado .f{font-size:10px;color:var(--apagado);margin-top:5px;letter-spacing:.06em}
+.duelo .vs{font-family:var(--display);font-size:16px;font-style:italic;color:var(--apagado)}
+.duelo .lado.g .o{color:var(--verde)}
+
+.pen{max-width:460px;margin:0 auto;text-align:center;padding-top:6px}
+.pen .tag{font-size:10px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;
+  color:var(--apagado)}
+.pen-t{font-family:var(--display);font-size:34px;font-weight:900;font-style:italic;
+  letter-spacing:-.03em;line-height:1.05;margin-top:10px;transition:color .2s}
+.pen-t.g{color:var(--verde)} .pen-t.r{color:var(--vermelho)}
+.pen-s{font-size:13px;color:var(--apagado);margin-top:7px;line-height:1.5;min-height:20px}
+
+.setas{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:22px}
+.setas.ouro .st .a{color:var(--ouro)}
+.st{aspect-ratio:1/1.12;border:1.5px solid var(--linha);border-radius:12px;background:var(--carta);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;cursor:pointer;
+  color:inherit;font-family:inherit;transition:transform .12s ease,border-color .12s ease}
+.st:hover{border-color:var(--verde-esc)}
+.st:active{transform:scale(.96)}
+.st .a{font-size:44px;line-height:1;color:var(--verde-esc)}
+.st .l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--apagado)}
+
+.palco{position:relative;height:310px;display:grid;place-items:center;margin-top:10px;
+  cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.alvo{position:absolute;width:74px;height:74px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#fff,#dfe6df 42%,#9fb0a2);
+  box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 -8px 16px rgba(0,0,0,.22);
+  animation:pulsaBola 2.2s ease-in-out infinite}
+.alvo::after{content:'';position:absolute;inset:-9px;border-radius:50%;
+  border:1.5px dashed rgba(255,255,255,.2)}
+@keyframes girar{to{transform:rotate(360deg)}}
+@keyframes bate{0%{transform:scale(1)}40%{transform:scale(1.28);opacity:.5}100%{transform:scale(1.6);opacity:0}}
+@keyframes pulsaBola{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+.flash{position:absolute;border-radius:50%;pointer-events:none;
+  border:3px solid var(--claro);animation:bate .45s ease-out forwards}
+.voltas{display:flex;gap:6px;justify-content:center;margin-top:2px}
+.volta{display:block;width:22px;height:4px;border-radius:2px;background:var(--linha)}
+.volta.usada{background:var(--verde-esc)}
+.volta.agora{background:var(--verde);box-shadow:0 0 10px rgba(123,228,149,.7)}
+#penAnel{position:absolute;border-radius:50%;animation:girar 2.2s linear infinite;
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 9px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 9px));
+  background:conic-gradient(from 210deg,#2f6f45,#7BE495,#d9ffe6,#7BE495,#2f6f45)}
+#penAnel.perto{background:conic-gradient(from 0deg,#8dffb0,#eaffef,#7BE495,#fff,#8dffb0);
+  box-shadow:0 0 54px rgba(123,228,149,.75),0 0 110px rgba(123,228,149,.3);
+  animation-duration:.7s}
+
+.pen-placar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:24px;
+  border-top:1px solid var(--linha);padding-top:16px}
+.pen-placar .nm{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;
+  color:var(--apagado)}
+.pen-placar .pts{display:flex;gap:5px;justify-content:center;margin-top:9px}
+.pen-placar .p{display:block;width:13px;height:13px;border-radius:50%;
+  border:1.5px solid var(--linha)}
+.pen-placar .p.gol{background:var(--verde);border-color:var(--verde);
+  box-shadow:0 0 12px rgba(123,228,149,.55)}
+.pen-placar .p.erro{background:var(--vermelho);border-color:var(--vermelho);opacity:.75}
+
 /* ---- aviso e porteiro entre competições ---- */
 .aviso-vaga{display:flex;align-items:center;gap:14px;margin-top:14px;padding:18px 18px;
   border-radius:12px;border:1px solid var(--verde-esc);background:rgba(123,228,149,.07)}
@@ -462,6 +550,10 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo.atual .faixa{background:var(--ouro)}
 .modo.atual .selo{color:var(--ouro)}
 .modo.atual:hover{border-color:var(--ouro)}
+.modo.local{grid-column:1/-1}
+.modo.local .faixa{background:linear-gradient(180deg,var(--claro),var(--verde-esc))}
+.modo.local .selo{color:var(--claro)}
+.modo.local:hover{border-color:var(--claro)}
 
 /* ---- conta e ranking ---- */
 .topo-linha{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:26px 0 0}
@@ -628,14 +720,57 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
       <div class="pe"><span><b>21</b> jogos</span><span><b>4</b> taças possíveis</span>
         <span>Sem trocar ninguém</span></div>
     </button>
+    <button class="modo local" data-base="local">
+      <span class="faixa"></span>
+      <span class="selo">Dois jogadores · um aparelho</span>
+      <h3>Duelo<br>local</h3>
+      <p>Cada um monta os seus onze escondido do outro, o aparelho passa de mão,
+         e os dois times se enfrentam. Empatou, vai para os pênaltis na mão:
+         você escolhe o canto e acerta o tempo da batida.</p>
+      <div class="pe"><span><b>2</b> jogadores</span><span><b>1</b> partida</span>
+        <span>Pênaltis no dedo</span></div>
+    </button>
   </div>
   <p class="dica" style="margin-top:20px;text-align:left;max-width:520px">
-    Os três modos contam para o mesmo ranking.</p>
+    Os três primeiros contam para o mesmo ranking. O duelo local fica entre vocês dois
+    e não entra na classificação.</p>
+</section>
+
+<section id="scr-passe" hidden>
+  <div class="passe">
+    <div class="cima" id="passeCima">Passe o celular</div>
+    <div class="n" id="passeN"><small id="passeVez">Vez do</small><span class="num" id="passeNum">1</span></div>
+    <div class="tit" id="passeTitulo" hidden></div>
+    <div class="aviso" id="passeAviso"></div>
+    <div class="feito" id="passeFeito" hidden></div>
+    <button class="btn" id="passeOk">Estou com o celular</button>
+  </div>
+</section>
+
+<section id="scr-pen" hidden>
+  <div class="pen">
+    <div class="tag">Pênaltis</div>
+    <div class="pen-t" id="penTitulo">Pênaltis</div>
+    <div class="pen-s" id="penSub"></div>
+
+    <div class="setas" id="penLados" hidden>
+      <button class="st" data-d="E"><span class="a">&larr;</span><span class="l">Esquerda</span></button>
+      <button class="st" data-d="M"><span class="a">&uarr;</span><span class="l">Meio</span></button>
+      <button class="st" data-d="D"><span class="a">&rarr;</span><span class="l">Direita</span></button>
+    </div>
+
+    <div id="penPalcoWrap" hidden>
+      <div class="palco" id="penPalco"><div class="alvo"></div><div id="penAnel"></div></div>
+      <div class="voltas" id="penVoltas"></div>
+    </div>
+
+    <div class="pen-placar" id="penPlacar"></div>
+  </div>
 </section>
 
 <section id="scr-jogo" hidden>
   <div class="contexto">
-    <div class="quem">Seu time · <b id="tatLabel"></b></div>
+    <div class="quem"><span id="tatQuem">Seu time</span> · <b id="tatLabel"></b></div>
     <div class="contador" id="picks"></div>
   </div>
 
