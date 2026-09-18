@@ -368,6 +368,23 @@ h1 em{font-style:italic;color:var(--verde)}
   filter:saturate(.62) brightness(.92);transition:filter .3s}
 .hero:hover .pais svg{filter:saturate(1) brightness(1)}
 
+/* ---- aviso e porteiro entre competições ---- */
+.aviso-vaga{display:flex;align-items:center;gap:14px;margin-top:14px;padding:18px 18px;
+  border-radius:12px;border:1px solid var(--verde-esc);background:rgba(123,228,149,.07)}
+.aviso-vaga.nao{border-color:var(--vermelho);background:rgba(255,90,60,.07)}
+.aviso-vaga .ico{font-size:26px;line-height:1;flex:none}
+.aviso-vaga .t{font-family:var(--display);font-size:20px;font-weight:900;font-style:italic;
+  text-transform:uppercase;letter-spacing:-.01em;line-height:1.1;color:var(--verde)}
+.aviso-vaga.nao .t{color:var(--vermelho)}
+.aviso-vaga .s{font-size:12.5px;color:var(--apagado);margin-top:4px;line-height:1.5}
+.porteiro{margin:26px 0 6px;padding:24px 20px;border:1px dashed var(--linha);
+  border-radius:12px;text-align:center}
+.porteiro .pt{font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  font-weight:800;color:var(--apagado)}
+.porteiro .pn{font-family:var(--display);font-size:34px;font-weight:900;font-style:italic;
+  text-transform:uppercase;letter-spacing:-.03em;line-height:1;margin:8px 0 18px}
+.porteiro .btn{display:inline-block;width:auto;padding:16px 34px}
+
 /* ---- cabeçalho de cada competição, dentro da temporada ---- */
 .fase-cab{display:flex;align-items:baseline;gap:12px;margin:26px 0 4px;
   padding-bottom:9px;border-bottom:1px solid var(--linha)}
@@ -1517,6 +1534,35 @@ const FASES_MATA = ['Oitavas','Quartas','Semifinal','Final'];
    ficar perto de metade da chave, como na competição de verdade. */
 const CONTINENTE = () => DB.sul.concat(DB.sul).concat(DB.sul).concat(DB.atuais);
 
+/* Entre competições o jogo para e espera o clique, mesmo no automático:
+   começar a Libertadores sem o jogador perceber tira o peso da conquista. */
+function esperaCompeticao(nome, chamada){
+  return new Promise(resolve => {
+    const el = document.createElement('div');
+    el.className = 'porteiro';
+    el.innerHTML = `<div class="pt">${chamada}</div><div class="pn">${nome}</div>`;
+    const b = document.createElement('button');
+    b.className = 'btn';
+    b.textContent = 'Começar';
+    el.appendChild(b);
+    $('matches').appendChild(el);
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    b.onclick = () => { el.remove(); resolve(); };
+  });
+}
+
+function avisoVaga(posicao, classificou){
+  const el = document.createElement('div');
+  el.className = 'aviso-vaga' + (classificou ? '' : ' nao');
+  el.innerHTML = `<span class="ico">${classificou ? '🏆' : '✕'}</span>
+    <div><div class="t">${classificou ? 'Classificado para a Libertadores' : 'Sem vaga na Libertadores'}</div>
+    <div class="s">${posicao}º lugar no Brasileirão.
+      ${classificou ? 'O G-' + TEMP.vagaLiberta + ' leva à América.'
+                    : 'Precisava terminar entre os ' + TEMP.vagaLiberta + ' primeiros.'}</div></div>`;
+  $('matches').appendChild(el);
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
 function cabecalhoTemp(titulo, sub){
   const h = document.createElement('div');
   h.className = 'fase-cab';
@@ -1634,30 +1680,26 @@ async function temporada(){
   $('matches').innerHTML = '';
   const tacas = [];
 
+  await esperaCompeticao('Brasileirão', 'A temporada começa');
   const br = await disputaBrasileirao(xi);
   if (br.posicao === 1) tacas.push('Brasileirão');
-  await entreJogos();
 
+  const temVaga = br.posicao <= TEMP.vagaLiberta;
+  avisoVaga(br.posicao, temVaga);
+
+  await esperaCompeticao('Copa do Brasil', 'Próxima competição');
   const copa = await disputaMataMata(xi, 'Copa do Brasil', TEMP.copa, FASES_MATA);
   if (copa.campeao) tacas.push('Copa do Brasil');
-  await entreJogos();
 
   let libertou = false;
-  if (br.posicao <= TEMP.vagaLiberta){
+  if (temVaga){
+    await esperaCompeticao('Libertadores', 'Você tem vaga');
     const lib = await disputaLibertadores(xi);
     if (lib.campeao){ tacas.push('Libertadores'); libertou = true; }
-  } else {
-    const h = cabecalhoTemp('Libertadores', 'sem vaga');
-    h.classList.add('sem');
-    const d = document.createElement('div');
-    d.className = 'dica';
-    d.style.textAlign = 'left';
-    d.textContent = `${br.posicao}º no Brasileirão: precisava terminar entre os ${TEMP.vagaLiberta} primeiros.`;
-    $('matches').appendChild(d);
   }
 
   if (libertou){
-    await entreJogos();
+    await esperaCompeticao('Mundial', 'Campeão da América');
     const mun = await disputaMundial(xi);
     if (mun.campeao) tacas.push('Mundial');
   }
