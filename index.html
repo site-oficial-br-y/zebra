@@ -948,8 +948,12 @@ const mostra = id => {
 /* ---------- base em jogo ---------- */
 /* Os dois modos usam a mesma mecânica; só muda de onde os elencos saem. */
 const BASES = {
-  lendas: { nome:'Lendas', elencos: DB.times },
-  atuais: { nome:'Brasileirão 2026', elencos: DB.atuais },
+  // O esticador abre a distância entre os times: as médias de elenco ficam
+  // todas coladas e sem ele o dado decidiria tudo. A base de 2026 já nasce
+  // mais espalhada, então estica menos — com 2.2 o Flamengo abria 18 pontos
+  // para a Chapecoense e saíam placares de 9 a 0.
+  lendas: { nome:'Lendas', elencos: DB.times,  estica: 2.2 },
+  atuais: { nome:'Brasileirão 2026', elencos: DB.atuais, estica: 1.5 },
 };
 let BASE = 'lendas';
 const elencos = () => BASES[BASE].elencos;
@@ -1116,10 +1120,10 @@ async function revelar(){
 
 /* ---------- simulação ---------- */
 const poisson = l => { let k=0,p=1,L=Math.exp(-l); do{k++;p*=Math.random()}while(p>L); return k-1; };
-const MEDIA_BASE = 82.5, ESTICA = 2.2;
+const MEDIA_BASE = 82.5;
 const forca = time => {
   const m = time.elenco.reduce((s,p)=>s+p.over,0) / time.elenco.length;
-  return MEDIA_BASE + (m - MEDIA_BASE) * ESTICA;
+  return MEDIA_BASE + (m - MEDIA_BASE) * BASES[BASE].estica;
 };
 function marcador(xi){
   const peso = p => p.over * ({ATA:6,MEI:3,DEF:1,GOL:0}[p.grupo]);
@@ -1130,9 +1134,11 @@ function marcador(xi){
 }
 function simula(meuXi, meuOv, opp){
   const of = forca(opp);
-  const lam = (dif,mod) => Math.min(8, 1.35*Math.exp(dif/8)*mod);
-  let a = Math.min(9, poisson(lam(meuOv-of, modAtaque())));
-  let b = Math.min(9, poisson(lam(of-meuOv, modDefesa())));
+  // dividir por 8 fazia a média de gols explodir: 15 pontos de diferença
+  // já pediam 8 gols. Com 16 o placar fica na casa do futebol de verdade.
+  const lam = (dif,mod) => Math.min(3.6, 1.35*Math.exp(dif/16)*mod);
+  let a = Math.min(6, poisson(lam(meuOv-of, modAtaque())));
+  let b = Math.min(6, poisson(lam(of-meuOv, modDefesa())));
   const ev = [];
   const min = () => 1 + Math.floor(Math.random()*90);
   for (let i=0;i<a;i++) ev.push({m:min(), meu:true,  who:marcador(meuXi)});
