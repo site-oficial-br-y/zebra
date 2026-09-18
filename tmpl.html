@@ -377,6 +377,29 @@ h1 em{font-style:italic;color:var(--verde)}
   font-weight:800;color:var(--apagado)}
 .fase-cab.sem .ft{color:var(--apagado)}
 
+/* ---- tabela do Brasileirão ---- */
+.tabela-wrap{border:1px solid var(--linha);border-radius:12px;overflow:hidden;
+  background:var(--carvao);margin-top:14px}
+.tabela-cab{display:flex;justify-content:space-between;align-items:baseline;
+  padding:14px 15px;border-bottom:1px solid var(--linha);
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+  color:var(--apagado)}
+.tabela-cab .sua{font-family:var(--display);font-size:16px;font-style:italic;
+  letter-spacing:0;color:var(--verde)}
+.tabela{width:100%;border-collapse:collapse;font-size:13px}
+.tabela td{padding:7px 10px;border-bottom:1px solid rgba(35,42,35,.6)}
+.tabela tr:last-child td{border-bottom:0}
+.tabela .p{width:34px;color:var(--apagado);font-weight:900;font-style:italic;
+  font-size:11px;text-align:center}
+.tabela .c{display:flex;align-items:center;gap:8px;font-weight:700}
+.tabela .pt{width:44px;text-align:right;font-variant-numeric:tabular-nums;font-weight:800}
+.tabela tr.eu td{background:rgba(123,228,149,.09);font-weight:900}
+.tabela tr.eu .c{color:var(--verde)}
+.tabela tr.campeao .p{color:var(--ouro)}
+.tabela tr.liberta .p{color:var(--verde)}
+.tabela tr.z4 .p{color:var(--vermelho)}
+.tabela tr.z4 .c{opacity:.6}
+
 /* ---- competições da temporada ---- */
 .torneios{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;
   background:var(--linha);border:1px solid var(--linha);border-radius:12px;
@@ -1506,19 +1529,43 @@ async function disputaBrasileirao(xi){
     r.evs.appendChild(d);
     if (i < advs.length - 1) await entreJogos();
   }
-  // os outros do campeonato: média de 1,35 ponto por jogo, com variação
-  const rivais = [];
-  for (let i = 0; i < 19; i++){
-    let p = 0;
-    for (let r = 0; r < TEMP.brasileirao; r++){
-      const x = Math.random();
-      p += x < .30 ? 3 : x < .55 ? 1 : 0;
-    }
-    rivais.push(p);
-  }
-  rivais.sort((a,b) => b-a);
-  const posicao = rivais.filter(p => p > pontos).length + 1;
+  // Os outros do campeonato pontuam conforme a própria força: antes era
+  // sorteio puro e a Chapecoense podia terminar na frente do Flamengo.
+  const media = elencos().reduce((s,t) => s + forca(t), 0) / elencos().length;
+  const tabela = elencos()
+    .filter(t => t !== advs[0])
+    .slice(0, 19)
+    .map(t => {
+      const chance = Math.max(.10, Math.min(.55, .30 + (forca(t) - media) / 40));
+      let p = 0;
+      for (let r = 0; r < TEMP.brasileirao; r++){
+        const x = Math.random();
+        p += x < chance ? 3 : x < chance + .27 ? 1 : 0;
+      }
+      return { nome: t.clube, pts: p, cores: t.cores };
+    });
+  tabela.push({ nome: 'Seu time', pts: pontos, eu: true, cores: ['#7BE495','#0a0d0a'] });
+  tabela.sort((a,b) => b.pts - a.pts || (a.eu ? -1 : b.eu ? 1 : 0));
+  const posicao = tabela.findIndex(t => t.eu) + 1;
+  desenhaTabela(tabela, posicao);
   return { pontos, posicao, gp, gc };
+}
+
+function desenhaTabela(tabela, posicao){
+  const zona = i => i === 0 ? 'campeao' : i < TEMP.vagaLiberta ? 'liberta'
+    : i >= tabela.length - 4 ? 'z4' : '';
+  const el = document.createElement('div');
+  el.className = 'tabela-wrap';
+  el.innerHTML = `<div class="tabela-cab"><span>Classificação final</span>
+      <span class="sua">${posicao}º lugar</span></div>
+    <table class="tabela"><tbody>` + tabela.map((t,i) => `
+      <tr class="${t.eu ? 'eu' : ''} ${zona(i)}">
+        <td class="p">${i+1}</td>
+        <td class="c"><span class="flag" style="width:18px;height:13px;background:linear-gradient(105deg,${t.cores[0]} 0 50%,${t.cores[1]} 50% 100%)"></span>${t.nome}</td>
+        <td class="pt">${t.pts}</td>
+      </tr>`).join('') + '</tbody></table>';
+  $('matches').appendChild(el);
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
 async function disputaMataMata(xi, nome, quantos, faseNomes, comCabecalho = true){
