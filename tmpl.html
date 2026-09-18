@@ -715,8 +715,8 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
       <span class="selo">Times atuais · o ano inteiro</span>
       <h3>Temporada</h3>
       <p>Um time só, o ano todo: Brasileirão, Copa do Brasil e, se terminar no
-         G-6, a Libertadores. Ganhando a América, vem o Mundial contra
-         uma lenda da história.</p>
+         G-6, a Libertadores. Ganhando a América, vem o Mundial contra um
+         campeão europeu sorteado, do Chelsea de 2025 ao Real de 2022.</p>
       <div class="pe"><span><b>21</b> jogos</span><span><b>4</b> taças possíveis</span>
         <span>Sem trocar ninguém</span></div>
     </button>
@@ -2094,13 +2094,12 @@ async function disputaLibertadores(xi){
 /* O campeão da América encara o melhor elenco da história do jogo.
    É o único lugar em que os dois modos se cruzam. */
 async function disputaMundial(xi){
-  const lenda = DB.times.slice().sort((a,b) => {
-    const m = t => t.elenco.reduce((s,p)=>s+p.over,0)/11;
-    return m(b) - m(a);
-  })[Math.floor(Math.random()*3)];
-  cabecalhoTemp('Mundial', 'jogo único');
-  const r = await jogaPartida({ xi, opp: lenda, box: $('matches'), fase: 'Final', mata: true });
-  return { campeao: r.venceu, adversario: lenda };
+  /* o campeão da Europa sai no sorteio: do Chelsea de 2025, o mais
+     alcançável, ao Real de 2022, que é o pior bilhete possível */
+  const europeu = DB.europa[Math.floor(Math.random()*DB.europa.length)];
+  cabecalhoTemp('Mundial', 'jogo único contra a Europa');
+  const r = await jogaPartida({ xi, opp: europeu, box: $('matches'), fase: 'Final', mata: true });
+  return { campeao: r.venceu, adversario: europeu };
 }
 
 async function temporada(){

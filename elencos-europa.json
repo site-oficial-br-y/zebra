@@ -1,0 +1,457 @@
+[
+ {
+  "id": "che25",
+  "clube": "Chelsea",
+  "pais": "Inglaterra",
+  "ano": 2025,
+  "cores": [
+   "#0b3ea8",
+   "#f2f2f2"
+  ],
+  "conquista": "Mundial de Clubes de 2025",
+  "fonte": "elencos informados pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "robertsanche-che25",
+    "nome": "Robert Sánchez",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 80
+   },
+   {
+    "id": "reecejames-che25",
+    "nome": "Reece James",
+    "pos": "Lateral-direito",
+    "grupo": "DEF",
+    "over": 83
+   },
+   {
+    "id": "trevohchalob-che25",
+    "nome": "Trevoh Chalobah",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "levicolwill-che25",
+    "nome": "Levi Colwill",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 81
+   },
+   {
+    "id": "marccucurell-che25",
+    "nome": "Marc Cucurella",
+    "pos": "Lateral-esquerdo",
+    "grupo": "DEF",
+    "over": 83
+   },
+   {
+    "id": "moisescaiced-che25",
+    "nome": "Moisés Caicedo",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 85
+   },
+   {
+    "id": "enzofernande-che25",
+    "nome": "Enzo Fernández",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 84
+   },
+   {
+    "id": "pedroneto-che25",
+    "nome": "Pedro Neto",
+    "pos": "Ponta-direita",
+    "grupo": "MEI",
+    "over": 81
+   },
+   {
+    "id": "colepalmer-che25",
+    "nome": "Cole Palmer",
+    "pos": "Meia-atacante",
+    "grupo": "MEI",
+    "over": 88
+   },
+   {
+    "id": "joaopedro-che25",
+    "nome": "João Pedro",
+    "pos": "Segundo atacante",
+    "grupo": "ATA",
+    "over": 81
+   },
+   {
+    "id": "liamdelap-che25",
+    "nome": "Liam Delap",
+    "pos": "Centroavante",
+    "grupo": "ATA",
+    "over": 78
+   }
+  ]
+ },
+ {
+  "id": "cit23",
+  "clube": "Manchester City",
+  "pais": "Inglaterra",
+  "ano": 2023,
+  "cores": [
+   "#6cabdd",
+   "#1c2c5b"
+  ],
+  "conquista": "Champions League de 2023",
+  "fonte": "elencos informados pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "ederson-cit23",
+    "nome": "Ederson",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 88
+   },
+   {
+    "id": "kylewalker-cit23",
+    "nome": "Kyle Walker",
+    "pos": "Lateral-direito",
+    "grupo": "DEF",
+    "over": 84
+   },
+   {
+    "id": "johnstones-cit23",
+    "nome": "John Stones",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 85
+   },
+   {
+    "id": "manuelakanji-cit23",
+    "nome": "Manuel Akanji",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 82
+   },
+   {
+    "id": "joskogvardio-cit23",
+    "nome": "Joško Gvardiol",
+    "pos": "Lateral-esquerdo",
+    "grupo": "DEF",
+    "over": 82
+   },
+   {
+    "id": "rodri-cit23",
+    "nome": "Rodri",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 90
+   },
+   {
+    "id": "mateokovacic-cit23",
+    "nome": "Mateo Kovačić",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 82
+   },
+   {
+    "id": "philfoden-cit23",
+    "nome": "Phil Foden",
+    "pos": "Ponta-direita",
+    "grupo": "MEI",
+    "over": 86
+   },
+   {
+    "id": "jackgrealish-cit23",
+    "nome": "Jack Grealish",
+    "pos": "Ponta-esquerda",
+    "grupo": "MEI",
+    "over": 83
+   },
+   {
+    "id": "julianalvare-cit23",
+    "nome": "Julián Álvarez",
+    "pos": "Segundo atacante",
+    "grupo": "ATA",
+    "over": 84
+   },
+   {
+    "id": "erlinghaalan-cit23",
+    "nome": "Erling Haaland",
+    "pos": "Centroavante",
+    "grupo": "ATA",
+    "over": 93
+   }
+  ]
+ },
+ {
+  "id": "rea22",
+  "clube": "Real Madrid",
+  "pais": "Espanha",
+  "ano": 2022,
+  "cores": [
+   "#f5f5f5",
+   "#d4af37"
+  ],
+  "conquista": "Champions League de 2022",
+  "fonte": "elencos informados pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "thibautcourt-rea22",
+    "nome": "Thibaut Courtois",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 91
+   },
+   {
+    "id": "danicarvajal-rea22",
+    "nome": "Dani Carvajal",
+    "pos": "Lateral-direito",
+    "grupo": "DEF",
+    "over": 84
+   },
+   {
+    "id": "edermilitao-rea22",
+    "nome": "Éder Militão",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 84
+   },
+   {
+    "id": "davidalaba-rea22",
+    "nome": "David Alaba",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 85
+   },
+   {
+    "id": "ferlandmendy-rea22",
+    "nome": "Ferland Mendy",
+    "pos": "Lateral-esquerdo",
+    "grupo": "DEF",
+    "over": 81
+   },
+   {
+    "id": "federicovalv-rea22",
+    "nome": "Federico Valverde",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 86
+   },
+   {
+    "id": "eduardocamav-rea22",
+    "nome": "Eduardo Camavinga",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 83
+   },
+   {
+    "id": "lukamodric-rea22",
+    "nome": "Luka Modrić",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 88
+   },
+   {
+    "id": "tonikroos-rea22",
+    "nome": "Toni Kroos",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 89
+   },
+   {
+    "id": "viniciusjuni-rea22",
+    "nome": "Vinícius Júnior",
+    "pos": "Ponta-esquerda",
+    "grupo": "ATA",
+    "over": 89
+   },
+   {
+    "id": "karimbenzema-rea22",
+    "nome": "Karim Benzema",
+    "pos": "Centroavante",
+    "grupo": "ATA",
+    "over": 93
+   }
+  ]
+ },
+ {
+  "id": "bay20",
+  "clube": "Bayern de Munique",
+  "pais": "Alemanha",
+  "ano": 2020,
+  "cores": [
+   "#d40024",
+   "#0a1e3c"
+  ],
+  "conquista": "Champions League de 2020",
+  "fonte": "elencos informados pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "manuelneuer-bay20",
+    "nome": "Manuel Neuer",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 90
+   },
+   {
+    "id": "benjaminpava-bay20",
+    "nome": "Benjamin Pavard",
+    "pos": "Lateral-direito",
+    "grupo": "DEF",
+    "over": 81
+   },
+   {
+    "id": "jeromeboaten-bay20",
+    "nome": "Jérôme Boateng",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 84
+   },
+   {
+    "id": "davidalaba-bay20",
+    "nome": "David Alaba",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 86
+   },
+   {
+    "id": "alphonsodavi-bay20",
+    "nome": "Alphonso Davies",
+    "pos": "Lateral-esquerdo",
+    "grupo": "DEF",
+    "over": 84
+   },
+   {
+    "id": "joshuakimmic-bay20",
+    "nome": "Joshua Kimmich",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 89
+   },
+   {
+    "id": "leongoretzka-bay20",
+    "nome": "Leon Goretzka",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 84
+   },
+   {
+    "id": "thomasmuller-bay20",
+    "nome": "Thomas Müller",
+    "pos": "Meia-atacante",
+    "grupo": "MEI",
+    "over": 87
+   },
+   {
+    "id": "sergegnabry-bay20",
+    "nome": "Serge Gnabry",
+    "pos": "Ponta-direita",
+    "grupo": "MEI",
+    "over": 84
+   },
+   {
+    "id": "kingsleycoma-bay20",
+    "nome": "Kingsley Coman",
+    "pos": "Ponta-esquerda",
+    "grupo": "ATA",
+    "over": 83
+   },
+   {
+    "id": "robertlewand-bay20",
+    "nome": "Robert Lewandowski",
+    "pos": "Centroavante",
+    "grupo": "ATA",
+    "over": 93
+   }
+  ]
+ },
+ {
+  "id": "liv19",
+  "clube": "Liverpool",
+  "pais": "Inglaterra",
+  "ano": 2019,
+  "cores": [
+   "#c8102e",
+   "#0b3b2e"
+  ],
+  "conquista": "Champions League de 2019",
+  "fonte": "elencos informados pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "alisson-liv19",
+    "nome": "Alisson",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 90
+   },
+   {
+    "id": "trentalexand-liv19",
+    "nome": "Trent Alexander-Arnold",
+    "pos": "Lateral-direito",
+    "grupo": "DEF",
+    "over": 85
+   },
+   {
+    "id": "joegomez-liv19",
+    "nome": "Joe Gomez",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "virgilvandij-liv19",
+    "nome": "Virgil van Dijk",
+    "pos": "Zagueiro",
+    "grupo": "DEF",
+    "over": 92
+   },
+   {
+    "id": "andrewrobert-liv19",
+    "nome": "Andrew Robertson",
+    "pos": "Lateral-esquerdo",
+    "grupo": "DEF",
+    "over": 85
+   },
+   {
+    "id": "jordanhender-liv19",
+    "nome": "Jordan Henderson",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 82
+   },
+   {
+    "id": "fabinho-liv19",
+    "nome": "Fabinho",
+    "pos": "Volante",
+    "grupo": "MEI",
+    "over": 84
+   },
+   {
+    "id": "georginiowij-liv19",
+    "nome": "Georginio Wijnaldum",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 82
+   },
+   {
+    "id": "mohamedsalah-liv19",
+    "nome": "Mohamed Salah",
+    "pos": "Ponta-direita",
+    "grupo": "ATA",
+    "over": 90
+   },
+   {
+    "id": "robertofirmi-liv19",
+    "nome": "Roberto Firmino",
+    "pos": "Centroavante",
+    "grupo": "ATA",
+    "over": 85
+   },
+   {
+    "id": "sadiomane-liv19",
+    "nome": "Sadio Mané",
+    "pos": "Ponta-esquerda",
+    "grupo": "ATA",
+    "over": 88
+   }
+  ]
+ }
+]

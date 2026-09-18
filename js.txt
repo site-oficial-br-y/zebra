@@ -986,13 +986,12 @@ async function disputaLibertadores(xi){
 /* O campeão da América encara o melhor elenco da história do jogo.
    É o único lugar em que os dois modos se cruzam. */
 async function disputaMundial(xi){
-  const lenda = DB.times.slice().sort((a,b) => {
-    const m = t => t.elenco.reduce((s,p)=>s+p.over,0)/11;
-    return m(b) - m(a);
-  })[Math.floor(Math.random()*3)];
-  cabecalhoTemp('Mundial', 'jogo único');
-  const r = await jogaPartida({ xi, opp: lenda, box: $('matches'), fase: 'Final', mata: true });
-  return { campeao: r.venceu, adversario: lenda };
+  /* o campeão da Europa sai no sorteio: do Chelsea de 2025, o mais
+     alcançável, ao Real de 2022, que é o pior bilhete possível */
+  const europeu = DB.europa[Math.floor(Math.random()*DB.europa.length)];
+  cabecalhoTemp('Mundial', 'jogo único contra a Europa');
+  const r = await jogaPartida({ xi, opp: europeu, box: $('matches'), fase: 'Final', mata: true });
+  return { campeao: r.venceu, adversario: europeu };
 }
 
 async function temporada(){
