@@ -351,6 +351,13 @@ h1 em{font-style:italic;color:var(--verde)}
   50%{transform:rotate(-2.4deg) scale(1.07)}}
 @media(prefers-reduced-motion:reduce){.campo3d img{animation:none}}
 
+/* ---- cobranças de pênalti ---- */
+.ev.pen .who{opacity:.9}
+.ev.pen .pk{margin-left:auto;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:800;color:var(--verde)}
+.ev.pen.errou .pk{color:var(--vermelho)}
+.ev.pen.errou .who{opacity:.55;text-decoration:line-through;text-decoration-thickness:1px}
+
 /* ---- escolha de modo ---- */
 .modos{display:grid;gap:13px;margin-top:20px}
 @media(min-width:760px){.modos{grid-template-columns:1fr 1fr}}
@@ -809,10 +816,16 @@ try {
     },
     async excluir(){ const { error } = await sb.rpc('zebra_excluir_minha_conta'); if (error) throw error; await sb.auth.signOut(); },
     async salvarPartida(p){
-      const s = await this.sessao(); if (!s) return false;
+      const s = await this.sessao();
+      if (!s) return { ok:false, motivo:'Você não está logado nesta aba.' };
       const { error } = await sb.from('zebra_partidas').insert({ ...p, user_id: s.user.id });
-      if (error) { console.warn('partida não salva:', error.message); return false; }
-      return true;
+      // devolve o motivo em vez de engolir: partida que nao entra no ranking
+      // sem avisar ninguem e' pior do que erro na tela
+      if (error){
+        console.warn('partida não salva:', error);
+        return { ok:false, motivo: error.message || 'erro desconhecido', code: error.code };
+      }
+      return { ok:true };
     },
     async minhasPartidas(){
       const s = await this.sessao(); if (!s) return [];
@@ -1146,11 +1159,37 @@ function simula(meuXi, meuOv, opp){
   ev.sort((x,y)=>x.m-y.m);
   return {a,b,ev,of};
 }
-function penaltis(meuOv, of){
-  let a=0,b=0;
-  for(let i=0;i<5;i++){ if(Math.random() < .70 + (meuOv-of)/200) a++; if(Math.random() < .70 + (of-meuOv)/200) b++; }
-  while(a===b){ const x=Math.random()<.72, y=Math.random()<.72; if(x)a++; if(y)b++; }
-  return [a,b];
+/* Quem bate pênalti: os melhores do time primeiro, goleiro por último,
+   e depois volta ao começo da fila se a disputa esticar. */
+const filaDePenalti = xi => xi.slice().sort((p,q) =>
+  (p.grupo === 'GOL') - (q.grupo === 'GOL') || q.over - p.over);
+
+function penaltis(meuXi, meuOv, opp, of){
+  const filas = [filaDePenalti(meuXi), filaDePenalti(opp.elenco)];
+  const forcas = [meuOv, of];
+  const gols = [0, 0];
+  const cobrancas = [];
+  let n = 0;
+
+  const bate = lado => {
+    const quem = filas[lado][n % filas[lado].length];
+    // quem bate melhor converte mais: 70% de base, mais a qualidade do
+    // batedor e a diferença de nível entre os times
+    const chance = .62 + (quem.over - 78) / 100 + (forcas[lado] - forcas[1-lado]) / 260;
+    const fez = Math.random() < Math.max(.45, Math.min(.95, chance));
+    if (fez) gols[lado]++;
+    cobrancas.push({ meu: lado === 0, nome: quem.nome, fez });
+    return fez;
+  };
+
+  for (n = 0; n < 5; n++){ bate(0); bate(1); }
+  // alternadas: para na primeira rodada em que um faz e o outro perde
+  while (gols[0] === gols[1] && n < 15){
+    const x = bate(0), y = bate(1);
+    if (x !== y) break;
+    n++;
+  }
+  return { a: gols[0], b: gols[1], cobrancas };
 }
 
 const FASES = ['Grupos','Grupos','Grupos','Oitavas','Quartas','Semifinal','Final'];
@@ -1216,7 +1255,16 @@ async function campanha(){
       }
     }
     if (mata && a===b){
-      const [pa,pb] = penaltis(S.over, r.of);
+      const pen = penaltis(xi, S.over, opp, r.of);
+      const pa = pen.a, pb = pen.b;
+      pen.cobrancas.forEach((c, k) => {
+        const d = document.createElement('div');
+        d.className = 'ev pen' + (c.meu ? '' : ' c') + (c.fez ? '' : ' errou');
+        d.innerHTML = `<span class="m">${Math.floor(k/2)+1}ª</span>`
+          + `<span class="who">${c.nome}</span>`
+          + `<span class="pk">${c.fez ? 'marcou' : 'perdeu'}</span>`;
+        evs.appendChild(d);
+      });
       const d = document.createElement('div');
       d.className = 'ev' + (pa>pb?'':' c');
       d.innerHTML = `<span class="m">PEN</span><span class="who">${pa} x ${pb} nos pênaltis</span>`;
@@ -1239,8 +1287,10 @@ async function campanha(){
       goleada = {x, y, d:x-y};
   }
   const onde = String(eliminado);
-  $('vbig').textContent = campeao ? 'CAMPEÃO'
-    : onde === 'fase de grupos' ? 'CAIU NOS GRUPOS' : 'CAIU NAS ' + onde.toUpperCase();
+  // "caiu nas semifinal" nao existe: o artigo muda com a fase
+  const ONDE_CAIU = { 'fase de grupos':'CAIU NOS GRUPOS', 'Oitavas':'CAIU NAS OITAVAS',
+    'Quartas':'CAIU NAS QUARTAS', 'Semifinal':'CAIU NA SEMIFINAL', 'Final':'PERDEU A FINAL' };
+  $('vbig').textContent = campeao ? 'CAMPEÃO' : (ONDE_CAIU[onde] || 'CAIU NAS ' + onde.toUpperCase());
   $('vbig').className = 'big' + (campeao ? ' seven' : '');
   $('vtxt').innerHTML = `Time de <b>${S.over}</b> de overall, no <b>${S.form.n}</b> ${S.estilo.n.toLowerCase()}.<br>
     ${saldoPro} gols marcados, ${saldoContra} sofridos.
@@ -1255,7 +1305,13 @@ async function campanha(){
       maior_goleada: goleada ? goleada.d : 0,
       escalacao: xi.map(p=>({nome:p.nome, over:p.over, pos:ROT[p.grupo], de:p.de})),
     });
-    if (salvou) $('vtxt').innerHTML += '<br><span style="color:var(--verde)">Partida registrada no ranking.</span>';
+    if (salvou && salvou.ok){
+      $('vtxt').innerHTML += '<br><span style="color:var(--verde)">Partida registrada no ranking.</span>';
+    } else {
+      const m = (salvou && salvou.motivo) || 'erro desconhecido';
+      $('vtxt').innerHTML += '<br><span style="color:var(--vermelho)">A partida não entrou no ranking: '
+        + m + (salvou && salvou.code ? ' (' + salvou.code + ')' : '') + '</span>';
+    }
   } else if (window.ZB) {
     $('vtxt').innerHTML += '<br><span style="color:var(--apagado)">Entre na sua conta para valer no ranking.</span>';
   }

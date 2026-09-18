@@ -351,6 +351,13 @@ h1 em{font-style:italic;color:var(--verde)}
   50%{transform:rotate(-2.4deg) scale(1.07)}}
 @media(prefers-reduced-motion:reduce){.campo3d img{animation:none}}
 
+/* ---- cobranças de pênalti ---- */
+.ev.pen .who{opacity:.9}
+.ev.pen .pk{margin-left:auto;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:800;color:var(--verde)}
+.ev.pen.errou .pk{color:var(--vermelho)}
+.ev.pen.errou .who{opacity:.55;text-decoration:line-through;text-decoration-thickness:1px}
+
 /* ---- escolha de modo ---- */
 .modos{display:grid;gap:13px;margin-top:20px}
 @media(min-width:760px){.modos{grid-template-columns:1fr 1fr}}
@@ -809,10 +816,16 @@ try {
     },
     async excluir(){ const { error } = await sb.rpc('zebra_excluir_minha_conta'); if (error) throw error; await sb.auth.signOut(); },
     async salvarPartida(p){
-      const s = await this.sessao(); if (!s) return false;
+      const s = await this.sessao();
+      if (!s) return { ok:false, motivo:'Você não está logado nesta aba.' };
       const { error } = await sb.from('zebra_partidas').insert({ ...p, user_id: s.user.id });
-      if (error) { console.warn('partida não salva:', error.message); return false; }
-      return true;
+      // devolve o motivo em vez de engolir: partida que nao entra no ranking
+      // sem avisar ninguem e' pior do que erro na tela
+      if (error){
+        console.warn('partida não salva:', error);
+        return { ok:false, motivo: error.message || 'erro desconhecido', code: error.code };
+      }
+      return { ok:true };
     },
     async minhasPartidas(){
       const s = await this.sessao(); if (!s) return [];
