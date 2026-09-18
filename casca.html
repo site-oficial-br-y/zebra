@@ -358,6 +358,16 @@ h1 em{font-style:italic;color:var(--verde)}
 .ev.pen.errou .pk{color:var(--vermelho)}
 .ev.pen.errou .who{opacity:.55;text-decoration:line-through;text-decoration-thickness:1px}
 
+/* ---- bandeira ---- */
+/* Dessaturada de proposito: as cores cheias da bandeira brigam com o verde
+   do site. Acende no hover do bloco. */
+.pais{display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;
+  color:var(--apagado)}
+.pais svg{display:block;width:26px;height:auto;border-radius:2px;
+  filter:saturate(.62) brightness(.92);transition:filter .3s}
+.hero:hover .pais svg{filter:saturate(1) brightness(1)}
+
 /* ---- escolha de modo ---- */
 .modos{display:grid;gap:13px;margin-top:20px}
 @media(min-width:760px){.modos{grid-template-columns:1fr 1fr}}
@@ -478,6 +488,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     <div class="glow" aria-hidden="true"></div>
     <div class="hero-mesa">
     <div class="hero-texto">
+    <span class="pais"><svg viewBox="0 0 70 49" aria-hidden="true"><rect width="70" height="49" fill="#0a7b3e"/><path d="M35 5 66 24.5 35 44 4 24.5Z" fill="#f2d024"/><circle cx="35" cy="24.5" r="10" fill="#17386b"/><path d="M25.6 20.4a22 22 0 0 1 18.8 6.6 10 10 0 0 1-.9 2.2 20 20 0 0 0-18.6-6.6 10 10 0 0 1 .7-2.2Z" fill="#fff"/></svg>Campeonato brasileiro</span>
     <div class="tag">O jogo de futebol<br>com quem já vestiu a camisa</div>
     <h1>Monte seu time.<br><em>Ganhe a final.</em></h1>
     <p class="sub">Dois modos, a mesma regra. Em <b>Lendas</b>, os 46 elencos campeões de 1962 a 2024: o Santos de Pelé, o Flamengo de Zico, o Guarani que ganhou o Brasileiro em 78. Em <b>Times atuais</b>, os vinte clubes da Série A de 2026. O dado tira um time por vez e você escala <b>um</b> jogador daquele elenco — o próximo sorteio pode não ser tão generoso. Onze escolhas para montar um time que nunca existiu, e sete jogos até a final.</p>
