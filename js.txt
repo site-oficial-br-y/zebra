@@ -221,6 +221,7 @@ function escala(p){
 }
 
 $('go').onclick = () => mostra('scr-modo');
+$('marca').onclick = () => mostra('scr-home');
 $('modoVoltar').onclick = () => mostra('scr-home');
 document.querySelectorAll('.modo').forEach(b => b.onclick = () => {
   BASE = b.dataset.base;
