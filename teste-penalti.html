@@ -69,12 +69,28 @@ body{background:var(--preto);color:var(--claro);font-family:system-ui,-apple-sys
  box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 -8px 16px rgba(0,0,0,.22)}
 .alvo::after{content:'';position:absolute;inset:-9px;border-radius:50%;
  border:1.5px dashed rgba(255,255,255,.2)}
-#anel{position:absolute;border-radius:50%;
+@keyframes girar{to{transform:rotate(360deg)}}
+@keyframes bate{0%{transform:scale(1)}40%{transform:scale(1.28);opacity:.5}100%{transform:scale(1.6);opacity:0}}
+@keyframes pulsaBola{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes some{to{opacity:0;transform:scale(.7)}}
+@keyframes voa{to{transform:translate(var(--vx),-120px) scale(.35);opacity:0}}
+section{animation:entra .22s ease both}
+.alvo{animation:pulsaBola 2.2s ease-in-out infinite}
+.alvo.voando{animation:voa .5s cubic-bezier(.3,.1,.5,1) forwards}
+.flash{position:absolute;border-radius:50%;pointer-events:none;
+ border:3px solid var(--claro);animation:bate .45s ease-out forwards}
+.voltas{display:flex;gap:6px;justify-content:center;margin-top:2px}
+.volta{width:22px;height:4px;border-radius:2px;background:var(--linha)}
+.volta.usada{background:var(--verde-esc)}
+.volta.agora{background:var(--verde);box-shadow:0 0 10px rgba(123,228,149,.7)}
+#anel{position:absolute;border-radius:50%;animation:girar 2.2s linear infinite;
  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 9px));
  mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 9px));
  background:conic-gradient(from 210deg,#2f6f45,#7BE495,#d9ffe6,#7BE495,#2f6f45)}
-#anel.perto{background:conic-gradient(from 0deg,#57d67c,#b8ffcf,#7BE495,#eaffef,#57d67c);
- box-shadow:0 0 42px rgba(123,228,149,.55)}
+#anel.perto{background:conic-gradient(from 0deg,#8dffb0,#eaffef,#7BE495,#fff,#8dffb0);
+ box-shadow:0 0 54px rgba(123,228,149,.75),0 0 110px rgba(123,228,149,.3);
+ animation-duration:.7s}
 .rotulo{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:11px;
  letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--apagado);white-space:nowrap}
 
@@ -119,8 +135,9 @@ body{background:var(--preto);color:var(--claro);font-family:system-ui,-apple-sys
 <section id="s-tim" hidden>
   <div class="topo"><span class="tag" id="tQuem"></span><span class="tag" style="color:var(--verde)">Bater</span></div>
   <div class="papel"><div class="b">Toque quando o anel<br>chegar na bola</div></div>
-  <div class="palco" id="palco"><div class="alvo"></div><div id="anel"></div>
-    <div class="rotulo" id="rot">fechando…</div></div>
+  <div class="palco" id="palco"><div class="alvo" id="alvo"></div><div id="anel"></div>
+    <div class="rotulo" id="rot">toque na hora certa</div></div>
+  <div class="voltas" id="voltas"></div>
 </section>
 
 <section id="s-res" hidden>
@@ -151,10 +168,12 @@ let iBat = 0, gols = 0, total = 0;
 // O anel comeca em R0 e fecha ate sumir. A bola tem RALVO de raio.
 // A janela boa e' medida em PIXELS de raio, entao o tempo dela sai da
 // velocidade: jogador bom fecha devagar e ganha mais milissegundos.
-const R0 = 132, RALVO = 45, JANELA = 17, CEDO = 46;
-const tempoDe = over => 850 + (over - 73) * 46;   // 73 -> 850ms, 87 -> ~1494ms
+const RMAX = 125, RMIN = 18, RALVO = 48, JANELA = 22, CICLOS = 5;
+// Um ciclo e' fechar e abrir. O anel passa pela bola duas vezes por ciclo,
+// entao da' dez chances - mas o toque e' um so'.
+const cicloDe = over => 950 + (over - 73) * 32;   // 73 -> 950ms, 87 -> ~1400ms
 
-let raf = 0, fim = 0, t0 = 0, dur = 0, dir = '', bateu = false;
+let raf = 0, fim = 0, t0 = 0, ciclo = 0, dir = '', bateu = false, voltaVista = -1;
 
 function pintaBatedor(){
   const b = BATEDORES[iBat];
@@ -162,7 +181,7 @@ function pintaBatedor(){
   $('qOv').style.color = b.over >= 80 ? 'var(--verde)' : 'var(--apagado)';
   $('qNome').textContent = b.nome;
   $('qClube').textContent = b.clube;
-  $('serie').textContent = (tempoDe(b.over)/1000).toFixed(2).replace('.',',') + ' s de anel';
+  $('serie').textContent = cicloDe(b.over) + ' ms por volta';
 }
 function pintaPlacar(){
   const a = total ? Math.round(gols/total*100) + '%' : '—';
@@ -172,39 +191,68 @@ function pintaPlacar(){
 const mostra = id => ['s-dir','s-tim','s-res'].forEach(x => $(x).hidden = x !== id);
 
 $('btTrocar').onclick = () => { iBat = (iBat+1) % BATEDORES.length; pintaBatedor(); };
-
 document.querySelectorAll('.st').forEach(b => b.onclick = () => { dir = b.dataset.d; comeca(); });
 
 function comeca(){
   const b = BATEDORES[iBat];
-  bateu = false;
-  dur = tempoDe(b.over);
+  bateu = false; voltaVista = -1;
+  ciclo = cicloDe(b.over);
   $('tQuem').textContent = b.nome + ' · ' + ({E:'esquerda',M:'meio',D:'direita'})[dir];
-  $('rot').textContent = 'fechando…';
+  $('rot').textContent = 'toque na hora certa';
   $('rot').style.color = 'var(--apagado)';
+  $('voltas').innerHTML = Array.from({length:CICLOS}, () => '<i class="volta"></i>').join('');
+  $('alvo').className = 'alvo';
+  const a = $('anel');
+  a.style.width = a.style.height = (RMAX*2) + 'px';
+  a.classList.remove('perto');
   mostra('s-tim');
-  $('anel').style.width = $('anel').style.height = (R0*2) + 'px';
-  $('anel').classList.remove('perto');
   t0 = performance.now();
   // o tempo manda na animacao, nao a contagem de quadros: em celular lento
   // ou com a aba sem foco o anel nao pode andar mais devagar.
   raf = requestAnimationFrame(quadro);
-  fim = setTimeout(() => { if (!bateu) resolve(null); }, dur + 40);
+  fim = setTimeout(() => { if (!bateu) resolve(null); }, ciclo * CICLOS + 60);
 }
 
-function raioAgora(t){ return Math.max(0, R0 * (1 - (t - t0) / dur)); }
+// vai e volta com embalo: desacelera nas pontas, como quem respira
+function raioAgora(t){
+  const dt = t - t0;
+  const f = (Math.cos(2 * Math.PI * (dt / ciclo)) + 1) / 2;   // 1 -> 0 -> 1
+  return RMIN + (RMAX - RMIN) * f;
+}
 
 function quadro(agora){
   if (bateu) return;
+  const dt = agora - t0;
+  if (dt > ciclo * CICLOS) return;
   const r = raioAgora(agora);
   const a = $('anel');
   a.style.width = a.style.height = (r*2) + 'px';
   a.classList.toggle('perto', Math.abs(r - RALVO) <= JANELA);
-  if (r <= 0) return;
+
+  const n = Math.floor(dt / ciclo);
+  if (n !== voltaVista){
+    voltaVista = n;
+    [...$('voltas').children].forEach((el,i) => {
+      el.className = 'volta' + (i < n ? ' usada' : i === n ? ' agora' : '');
+    });
+  }
   raf = requestAnimationFrame(quadro);
 }
 
-$('palco').onpointerdown = e => { e.preventDefault(); if (!bateu) resolve(raioAgora(performance.now())); };
+window.__raio = () => raioAgora(performance.now());   // usado pelo teste automatico
+$('palco').onpointerdown = e => {
+  e.preventDefault();
+  if (bateu) return;
+  const r = raioAgora(performance.now());
+  const f = document.createElement('div');
+  f.className = 'flash';
+  f.style.width = f.style.height = (r*2) + 'px';
+  $('palco').appendChild(f);
+  setTimeout(() => f.remove(), 460);
+  $('alvo').style.setProperty('--vx', dir === 'E' ? '-90px' : dir === 'D' ? '90px' : '0px');
+  $('alvo').classList.add('voando');
+  setTimeout(() => resolve(r), 190);
+};
 
 function resolve(r){
   bateu = true;
@@ -214,19 +262,22 @@ function resolve(r){
   const mesmoLado = goleiro === dir;
   const lado = {E:'esquerda',M:'meio',D:'direita'};
 
-  let qual;                               // verde | cedo | tarde
-  if (r === null || r <= 0) qual = 'tarde';
+  let qual;
+  if (r === null) qual = 'tarde';
   else if (Math.abs(r - RALVO) <= JANELA) qual = 'verde';
   else if (r > RALVO) qual = 'cedo';
   else qual = 'tarde';
 
   let big, cor, sub;
-  if (qual === 'tarde'){
+  if (r === null){
     big = 'PRA FORA'; cor = 'r';
-    sub = 'Você passou da bola. A bola foi <b>por cima do travessão</b>.';
+    sub = 'Você deixou o anel dar as cinco voltas sem bater.';
+  } else if (qual === 'tarde'){
+    big = 'PRA FORA'; cor = 'r';
+    sub = 'Anel menor que a bola: bateu tarde, foi <b>por cima do travessão</b>.';
   } else if (qual === 'cedo'){
     big = 'DEFENDEU'; cor = 'o';
-    sub = 'Bateu cedo: <b>chute fraco</b>. O goleiro alcançou mesmo indo pra ' + lado[goleiro] + '.';
+    sub = 'Anel ainda largo: <b>chute fraco</b>. O goleiro alcançou mesmo indo pra ' + lado[goleiro] + '.';
   } else if (mesmoLado){
     big = 'DEFENDEU'; cor = 'r';
     sub = 'Chute no canto, mas o goleiro foi pra <b>' + lado[goleiro] + '</b> também.';
@@ -237,14 +288,15 @@ function resolve(r){
   total++;
   pintaPlacar();
 
-  const rr = Math.max(18, (r === null || r <= 0) ? 0 : r);
-  const cores = {verde:'#57d67c,#b8ffcf,#7BE495,#eaffef,#57d67c',
+  const rr = Math.max(18, r === null ? 0 : r);
+  const cores = {verde:'#8dffb0,#eaffef,#7BE495,#fff,#8dffb0',
                  cedo:'#8a6a1c,#e9c46a,#ffe9b0,#e9c46a,#8a6a1c',
                  tarde:'#8a2f1c,#ff5a3c,#ffb08f,#ff5a3c,#8a2f1c'}[qual];
   const af = $('anelFim');
   af.style.width = af.style.height = (rr*2) + 'px';
   af.style.background = 'conic-gradient(from 0deg,' + cores + ')';
-  af.style.boxShadow = '0 0 40px rgba(123,228,149,.35)';
+  af.style.boxShadow = qual === 'verde'
+    ? '0 0 50px rgba(123,228,149,.6)' : '0 0 34px rgba(0,0,0,.5)';
 
   $('rQuem').textContent = b.nome + ' · ' + lado[dir];
   $('rBig').textContent = big;
