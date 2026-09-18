@@ -368,6 +368,19 @@ h1 em{font-style:italic;color:var(--verde)}
   filter:saturate(.62) brightness(.92);transition:filter .3s}
 .hero:hover .pais svg{filter:saturate(1) brightness(1)}
 
+/* ---- competições da temporada ---- */
+.torneios{display:grid;gap:1px;background:var(--linha);border:1px solid var(--linha);
+  border-radius:12px;overflow:hidden;margin-top:12px}
+@media(min-width:620px){.torneios{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.torneio{background:var(--carvao);padding:20px 18px;transition:background .2s}
+.torneio:hover{background:#161c16}
+.torneio .n{font-family:var(--display);font-size:27px;font-weight:900;font-style:italic;
+  letter-spacing:-.02em;text-transform:uppercase;line-height:1}
+.torneio .q{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;
+  color:var(--apagado);margin-top:8px}
+@media(max-width:619px){.torneio{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .torneio .n{font-size:23px}.torneio .q{margin-top:0;font-size:9.5px;text-align:right}}
+
 /* ---- escolha de modo ---- */
 .modos{display:grid;gap:13px;margin-top:20px}
 @media(min-width:760px){.modos{grid-template-columns:1fr 1fr}}
@@ -505,6 +518,15 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     <div><div class="n">03</div><h3>Feche os onze</h3><p>Na formação que você escolheu, do 4-2-4 ao 5-4-1.</p></div>
     <div><div class="n">04</div><h3>Vá até a final</h3><p>Grupos e mata-mata contra os outros times da base.</p></div>
   </div>
+  <div class="tag" style="margin-top:32px">Em breve · modo temporada</div>
+  <div class="torneios">
+    <div class="torneio"><div class="n">Brasileirão</div><div class="q">Pontos corridos</div></div>
+    <div class="torneio"><div class="n">Copa do Brasil</div><div class="q">Mata-mata</div></div>
+    <div class="torneio"><div class="n">Libertadores</div><div class="q">Grupos e mata-mata</div></div>
+  </div>
+  <p class="dica" style="text-align:left;max-width:560px;margin-top:14px">Um time só, três taças
+  no mesmo ano. Vale para os <b>times atuais</b>.</p>
+
 </section>
 
 <section id="scr-modo" hidden>
