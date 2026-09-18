@@ -227,8 +227,11 @@ function escala(p){
 $('go').onclick = () => mostra('scr-modo');
 $('marca').onclick = () => mostra('scr-home');
 $('modoVoltar').onclick = () => mostra('scr-home');
+let MODO_JOGO = 'campanha';
 document.querySelectorAll('.modo').forEach(b => b.onclick = () => {
-  BASE = b.dataset.base;
+  // a temporada corre sobre os times atuais; os outros escolhem a própria base
+  MODO_JOGO = b.dataset.base === 'temporada' ? 'temporada' : 'campanha';
+  BASE = b.dataset.base === 'temporada' ? 'atuais' : b.dataset.base;
   novoJogo(FORMACOES[1], ESTILOS[1]);
   mostra('scr-jogo'); pinta();
 });
@@ -332,8 +335,88 @@ function penaltis(meuXi, meuOv, opp, of){
 const FASES = ['Grupos','Grupos','Grupos','Oitavas','Quartas','Semifinal','Final'];
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
+/* ---------- uma partida: cria o cartão, anima e devolve o resultado ---------- */
+/* Serve à campanha do modo clássico e às três competições da temporada. */
+async function jogaPartida({ xi, opp, box, fase, mata, casa }){
+  const el = document.createElement('div');
+  el.className = 'match';
+  el.innerHTML = `<div class="top">
+      <div class="fase">${fase.toUpperCase()}</div>
+      <div class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</div>
+      <div><span class="sc d">0 – 0</span> <span class="clock">0'</span></div>
+    </div><div class="evs"></div>`;
+  box.appendChild(el);
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  const sc = el.querySelector('.sc'), ck = el.querySelector('.clock'), evs = el.querySelector('.evs');
+  el.classList.add('vivo');
+
+  const r = simula(xi, S.over, opp);
+  let a = 0, b = 0, k = 0;
+  const stepAgora = () => S.vel === 0 ? 0 : Math.round(55 / S.vel);
+
+  for (let m = 1; m <= 90; m++){
+    while (k < r.ev.length && r.ev[k].m === m){
+      const e = r.ev[k++];
+      if (e.meu) a++; else b++;
+      sc.textContent = `${a} – ${b}`;
+      const d = document.createElement('div');
+      d.className = 'ev' + (e.meu ? '' : ' c');
+      d.innerHTML = `<span class="m">${e.m}'</span><span class="who">${e.who}</span>`;
+      evs.appendChild(d);
+    }
+    sc.className = 'sc ' + (a>b ? 'w' : a<b ? 'l' : 'd');
+    const st = stepAgora();
+    ck.textContent = m + "'";
+    if (st) await sleep(st);
+  }
+  ck.textContent = "90'"; ck.classList.add('fim');
+  el.classList.remove('vivo');
+
+  const saida = { a, b, of: r.of, el, evs, sc, venceu: a > b, empate: a === b, penaltis: null };
+
+  if (mata && a === b){
+    const pen = penaltis(xi, S.over, opp, r.of);
+    pen.cobrancas.forEach((c, i) => {
+      const d = document.createElement('div');
+      d.className = 'ev pen' + (c.meu ? '' : ' c') + (c.fez ? '' : ' errou');
+      d.innerHTML = `<span class="m">${Math.floor(i/2)+1}ª</span>`
+        + `<span class="who">${c.nome}</span>`
+        + `<span class="pk">${c.fez ? 'marcou' : 'perdeu'}</span>`;
+      evs.appendChild(d);
+    });
+    const d = document.createElement('div');
+    d.className = 'ev' + (pen.a > pen.b ? '' : ' c');
+    d.innerHTML = `<span class="m">PEN</span><span class="who">${pen.a} x ${pen.b} nos pênaltis</span>`;
+    evs.appendChild(d);
+    sc.className = 'sc ' + (pen.a > pen.b ? 'w' : 'l');
+    saida.penaltis = pen;
+    saida.venceu = pen.a > pen.b;
+    saida.empate = false;
+  }
+  return saida;
+}
+
+/* espera entre jogos: no manual, o clique; no automático, uma pausa */
+async function entreJogos(){
+  if (S.modo === 'manual') await esperaProximo();
+  else { const p = S.vel === 0 ? 0 : Math.round(55/S.vel) * 4; if (p) await sleep(p); }
+}
+
+/* sorteia adversários da base, do mais fraco ao mais forte */
+function sorteiaAdversarios(quantos, deFraco = true){
+  const pool = elencos().slice().sort(() => Math.random()-.5).sort((x,y) => forca(x)-forca(y));
+  const fora = [];
+  for (let i = 0; i < quantos; i++){
+    const faixa = Math.floor(pool.length * (i+1) / (quantos+1));
+    const idx = Math.min(pool.length-1, faixa + Math.floor(Math.random()*3));
+    fora.push(pool.splice(idx, 1)[0]);
+  }
+  return deFraco ? fora : fora.reverse();
+}
+
 async function campanha(){
   mostra('scr-camp');
+  $('campTitulo').textContent = 'A campanha';
   const xi = S.slots.map(s=>s.jog);
   const pool = elencos().slice().sort(()=>Math.random()-.5).sort((x,y)=>forca(x)-forca(y));
   const escolhidos = [];
@@ -417,6 +500,7 @@ async function campanha(){
   }
 
   const v = $('verdict'); v.hidden = false;
+  $('fimTitulo').textContent = 'Fim da campanha';
   let goleada = null;
   for (const el of box.querySelectorAll('.sc')){
     const [x,y] = el.textContent.split('–').map(n=>+n.trim());
@@ -453,6 +537,171 @@ async function campanha(){
     $('vtxt').innerHTML += '<br><span style="color:var(--apagado)">Entre na sua conta para valer no ranking.</span>';
   }
 }
+/* ---------- modo temporada: um time, o ano inteiro ---------- */
+const TEMP = {
+  brasileirao: 10,   // rodadas de pontos corridos
+  copa: 4,           // oitavas, quartas, semi e final
+  vagaLiberta: 6,    // o G-6 leva à Libertadores, como na vida real
+  libGrupos: 3,
+  libMata: 4,
+};
+const FASES_MATA = ['Oitavas','Quartas','Semifinal','Final'];
+
+function cabecalhoTemp(titulo, sub){
+  const h = document.createElement('div');
+  h.className = 'fase-cab';
+  h.innerHTML = `<span class="ft">${titulo}</span>` + (sub ? `<span class="fs">${sub}</span>` : '');
+  $('matches').appendChild(h);
+  h.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  return h;
+}
+
+/* Pontos corridos: joga as rodadas e devolve a colocação.
+   Os outros dezenove times pontuam sozinhos, com força parecida com a real. */
+async function disputaBrasileirao(xi){
+  cabecalhoTemp('Brasileirão', TEMP.brasileirao + ' rodadas');
+  const advs = sorteiaAdversarios(TEMP.brasileirao);
+  let pontos = 0, gp = 0, gc = 0;
+  for (let i = 0; i < advs.length; i++){
+    const r = await jogaPartida({ xi, opp: advs[i], box: $('matches'),
+                                  fase: (i+1) + 'ª rodada', mata: false });
+    pontos += r.venceu ? 3 : r.empate ? 1 : 0;
+    gp += r.a; gc += r.b;
+    const d = document.createElement('div');
+    d.className = 'ev';
+    d.innerHTML = `<span class="m">${pontos}pt</span><span class="who">${pontos} ponto${pontos===1?'':'s'} em ${i+1} jogo${i?'s':''}</span>`;
+    r.evs.appendChild(d);
+    if (i < advs.length - 1) await entreJogos();
+  }
+  // os outros do campeonato: média de 1,35 ponto por jogo, com variação
+  const rivais = [];
+  for (let i = 0; i < 19; i++){
+    let p = 0;
+    for (let r = 0; r < TEMP.brasileirao; r++){
+      const x = Math.random();
+      p += x < .30 ? 3 : x < .55 ? 1 : 0;
+    }
+    rivais.push(p);
+  }
+  rivais.sort((a,b) => b-a);
+  const posicao = rivais.filter(p => p > pontos).length + 1;
+  return { pontos, posicao, gp, gc };
+}
+
+async function disputaMataMata(xi, nome, quantos, faseNomes, comCabecalho = true){
+  if (comCabecalho) cabecalhoTemp(nome, quantos + ' jogos');
+  const advs = sorteiaAdversarios(quantos, false);
+  for (let i = 0; i < quantos; i++){
+    const r = await jogaPartida({ xi, opp: advs[i], box: $('matches'),
+                                  fase: faseNomes[i], mata: true });
+    if (!r.venceu) return { campeao: false, caiu: faseNomes[i] };
+    if (i < quantos - 1) await entreJogos();
+  }
+  return { campeao: true, caiu: null };
+}
+
+async function disputaLibertadores(xi){
+  cabecalhoTemp('Libertadores', 'grupos e mata-mata');
+  const grupo = sorteiaAdversarios(TEMP.libGrupos);
+  let pts = 0;
+  for (let i = 0; i < grupo.length; i++){
+    const r = await jogaPartida({ xi, opp: grupo[i], box: $('matches'),
+                                  fase: 'Grupo · jogo ' + (i+1), mata: false });
+    pts += r.venceu ? 3 : r.empate ? 1 : 0;
+    if (i === grupo.length - 1){
+      const passou = pts >= PTS_CLASSIFICA;
+      const d = document.createElement('div');
+      d.className = 'ev' + (passou ? '' : ' c');
+      d.innerHTML = `<span class="m">${pts}pt</span><span class="who">${passou ? 'Classificado' : 'Eliminado na fase de grupos'}</span>`;
+      r.evs.appendChild(d);
+      if (!passou) return { campeao: false, caiu: 'fase de grupos' };
+    }
+    await entreJogos();
+  }
+  return await disputaMataMata(xi, 'Libertadores', TEMP.libMata, FASES_MATA, false);
+}
+
+/* O campeão da América encara o melhor elenco da história do jogo.
+   É o único lugar em que os dois modos se cruzam. */
+async function disputaMundial(xi){
+  const lenda = DB.times.slice().sort((a,b) => {
+    const m = t => t.elenco.reduce((s,p)=>s+p.over,0)/11;
+    return m(b) - m(a);
+  })[Math.floor(Math.random()*3)];
+  cabecalhoTemp('Mundial', 'jogo único');
+  const r = await jogaPartida({ xi, opp: lenda, box: $('matches'), fase: 'Final', mata: true });
+  return { campeao: r.venceu, adversario: lenda };
+}
+
+async function temporada(){
+  mostra('scr-camp');
+  $('campTitulo').textContent = 'A temporada';
+  const xi = S.slots.map(s => s.jog);
+  $('matches').innerHTML = '';
+  const tacas = [];
+
+  const br = await disputaBrasileirao(xi);
+  if (br.posicao === 1) tacas.push('Brasileirão');
+  await entreJogos();
+
+  const copa = await disputaMataMata(xi, 'Copa do Brasil', TEMP.copa, FASES_MATA);
+  if (copa.campeao) tacas.push('Copa do Brasil');
+  await entreJogos();
+
+  let libertou = false;
+  if (br.posicao <= TEMP.vagaLiberta){
+    const lib = await disputaLibertadores(xi);
+    if (lib.campeao){ tacas.push('Libertadores'); libertou = true; }
+  } else {
+    const h = cabecalhoTemp('Libertadores', 'sem vaga');
+    h.classList.add('sem');
+    const d = document.createElement('div');
+    d.className = 'dica';
+    d.style.textAlign = 'left';
+    d.textContent = `${br.posicao}º no Brasileirão: precisava terminar entre os ${TEMP.vagaLiberta} primeiros.`;
+    $('matches').appendChild(d);
+  }
+
+  if (libertou){
+    await entreJogos();
+    const mun = await disputaMundial(xi);
+    if (mun.campeao) tacas.push('Mundial');
+  }
+
+  fimDaTemporada(br, tacas);
+}
+
+function fimDaTemporada(br, tacas){
+  const v = $('verdict'); v.hidden = false;
+  $('fimTitulo').textContent = 'Fim da temporada';
+  const n = tacas.length;
+  $('vbig').textContent = n === 0 ? 'ANO EM BRANCO'
+    : n === 1 ? 'UMA TAÇA'
+    : n === 2 ? 'ANO DE DUAS'
+    : n === 3 ? 'TRÍPLICE COROA'
+    : 'ANO PERFEITO';
+  $('vbig').className = 'big' + (n >= 2 ? ' seven' : '');
+  $('vtxt').innerHTML = `Time de <b>${S.over}</b> de overall, no <b>${S.form.n}</b> ${S.estilo.n.toLowerCase()}.<br>`
+    + `<b>${br.posicao}º</b> no Brasileirão, com ${br.pontos} pontos em ${TEMP.brasileirao} rodadas.<br>`
+    + (n ? 'Levou para casa: <b style="color:var(--verde)">' + tacas.join('</b>, <b style="color:var(--verde)">') + '</b>.'
+         : 'Saiu de mãos vazias.');
+  v.scrollIntoView({ behavior:'smooth' });
+
+  if (window.ZB && EU){
+    window.ZB.salvarPartida({
+      overall: S.over, formacao: S.form.n, estilo: S.estilo.n,
+      campeao: tacas.includes('Libertadores') || tacas.includes('Brasileirão'),
+      eliminado_em: tacas.length ? null : 'temporada sem título',
+      gols_pro: br.gp, gols_contra: br.gc, maior_goleada: 0,
+      escalacao: S.slots.map(s => ({ nome:s.jog.nome, over:s.jog.over, pos:ROT[s.jog.grupo], de:s.jog.de })),
+    }).then(r => {
+      $('vtxt').innerHTML += r && r.ok
+        ? '<br><span style="color:var(--verde)">Temporada registrada no ranking.</span>'
+        : '<br><span style="color:var(--vermelho)">Não entrou no ranking: ' + ((r && r.motivo) || 'erro') + '</span>';
+    });
+  }
+}
+
 function esperaProximo(){
   return new Promise(resolve=>{
     const w = $('proxWrap'), b = $('prox');
@@ -755,7 +1004,7 @@ window.addEventListener('zb-pronto', () => { pintaTopo(); carregaEu(); });
 window.addEventListener('zb-falhou', pintaTopo);
 pintaTopo();
 
-$('startCamp').onclick = campanha;
+$('startCamp').onclick = () => MODO_JOGO === 'temporada' ? temporada() : campanha();
 $('again').onclick = () => location.reload();
 document.querySelectorAll('.sp[data-sp]').forEach(b=>b.onclick=()=>{
   const v = +b.dataset.sp;
