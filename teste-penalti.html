@@ -64,7 +64,7 @@ body{background:var(--preto);color:var(--claro);font-family:system-ui,-apple-sys
 .st .l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--apagado)}
 
 .palco{position:relative;height:310px;display:grid;place-items:center;margin-top:8px;cursor:pointer}
-.alvo{position:absolute;width:90px;height:90px;border-radius:50%;
+.alvo{position:absolute;width:74px;height:74px;border-radius:50%;
  background:radial-gradient(circle at 34% 30%,#fff,#dfe6df 42%,#9fb0a2);
  box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 -8px 16px rgba(0,0,0,.22)}
 .alvo::after{content:'';position:absolute;inset:-9px;border-radius:50%;
@@ -168,7 +168,7 @@ let iBat = 0, gols = 0, total = 0;
 // O anel comeca em R0 e fecha ate sumir. A bola tem RALVO de raio.
 // A janela boa e' medida em PIXELS de raio, entao o tempo dela sai da
 // velocidade: jogador bom fecha devagar e ganha mais milissegundos.
-const RMAX = 125, RMIN = 18, RALVO = 48, JANELA = 22, CICLOS = 5;
+const RMAX = 125, RMIN = 6, RALVO = 40, JANELA = 23, CICLOS = 5;
 // Um ciclo e' fechar e abrir. O anel passa pela bola duas vezes por ciclo,
 // entao da' dez chances - mas o toque e' um so'.
 const cicloDe = over => 950 + (over - 73) * 32;   // 73 -> 950ms, 87 -> ~1400ms
