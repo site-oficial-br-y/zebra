@@ -1,0 +1,1802 @@
+[
+ {
+  "id": "fla26",
+  "clube": "Flamengo",
+  "ano": 2026,
+  "cores": [
+   "#E01A22",
+   "#000000"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "rossi-fla26",
+    "nome": "Rossi",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 82
+   },
+   {
+    "id": "varela-fla26",
+    "nome": "Varela",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "leoortiz-fla26",
+    "nome": "Léo Ortiz",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 83
+   },
+   {
+    "id": "leopereira-fla26",
+    "nome": "Léo Pereira",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 82
+   },
+   {
+    "id": "ayrtonlucas-fla26",
+    "nome": "Ayrton Lucas",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 81
+   },
+   {
+    "id": "pulgar-fla26",
+    "nome": "Pulgar",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 81
+   },
+   {
+    "id": "paqueta-fla26",
+    "nome": "Paquetá",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 86
+   },
+   {
+    "id": "arrascaeta-fla26",
+    "nome": "Arrascaeta",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 87
+   },
+   {
+    "id": "delacruz-fla26",
+    "nome": "De la Cruz",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 83
+   },
+   {
+    "id": "plata-fla26",
+    "nome": "Plata",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 81
+   },
+   {
+    "id": "pedro-fla26",
+    "nome": "Pedro",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 85
+   }
+  ]
+ },
+ {
+  "id": "pal26",
+  "clube": "Palmeiras",
+  "ano": 2026,
+  "cores": [
+   "#006437",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "carlosmiguel-pal26",
+    "nome": "Carlos Miguel",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 80
+   },
+   {
+    "id": "brunofuchs-pal26",
+    "nome": "Bruno Fuchs",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "gustavogomez-pal26",
+    "nome": "Gustavo Gómez",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 85
+   },
+   {
+    "id": "murilo-pal26",
+    "nome": "Murilo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 81
+   },
+   {
+    "id": "alexanderbar-pal26",
+    "nome": "Alexander Barboza",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "piquerez-pal26",
+    "nome": "Piquerez",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 82
+   },
+   {
+    "id": "marlonfreita-pal26",
+    "nome": "Marlon Freitas",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "andreasperei-pal26",
+    "nome": "Andreas Pereira",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 82
+   },
+   {
+    "id": "jhonarias-pal26",
+    "nome": "Jhon Arias",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 84
+   },
+   {
+    "id": "flacolopez-pal26",
+    "nome": "Flaco López",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 83
+   },
+   {
+    "id": "vitorroque-pal26",
+    "nome": "Vitor Roque",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 84
+   }
+  ]
+ },
+ {
+  "id": "cru26",
+  "clube": "Cruzeiro",
+  "ano": 2026,
+  "cores": [
+   "#0B2C6F",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "otavio-cru26",
+    "nome": "Otávio",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 80
+   },
+   {
+    "id": "fagner-cru26",
+    "nome": "Fagner",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "fabriciobrun-cru26",
+    "nome": "Fabrício Bruno",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 83
+   },
+   {
+    "id": "joaomarcelo-cru26",
+    "nome": "João Marcelo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "gabrielrojas-cru26",
+    "nome": "Gabriel Rojas",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "gerson-cru26",
+    "nome": "Gerson",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 84
+   },
+   {
+    "id": "matheushenri-cru26",
+    "nome": "Matheus Henrique",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 80
+   },
+   {
+    "id": "matheusperei-cru26",
+    "nome": "Matheus Pereira",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 84
+   },
+   {
+    "id": "sinisterra-cru26",
+    "nome": "Sinisterra",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 82
+   },
+   {
+    "id": "gabrielpec-cru26",
+    "nome": "Gabriel Pec",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 82
+   },
+   {
+    "id": "kaiojorge-cru26",
+    "nome": "Kaio Jorge",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 83
+   }
+  ]
+ },
+ {
+  "id": "bot26",
+  "clube": "Botafogo",
+  "ano": 2026,
+  "cores": [
+   "#000000",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "gabrielbatis-bot26",
+    "nome": "Gabriel Batista",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 78
+   },
+   {
+    "id": "vitinho-bot26",
+    "nome": "Vitinho",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "arthurchaves-bot26",
+    "nome": "Arthur Chaves",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "lucashalter-bot26",
+    "nome": "Lucas Halter",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "alextelles-bot26",
+    "nome": "Alex Telles",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "huguinho-bot26",
+    "nome": "Huguinho",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "edenilson-bot26",
+    "nome": "Edenilson",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "danilo-bot26",
+    "nome": "Danilo",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 80
+   },
+   {
+    "id": "montoro-bot26",
+    "nome": "Montoro",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "juniorsantos-bot26",
+    "nome": "Júnior Santos",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 81
+   },
+   {
+    "id": "tiquinhosoar-bot26",
+    "nome": "Tiquinho Soares",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 82
+   }
+  ]
+ },
+ {
+  "id": "bah26",
+  "clube": "Bahia",
+  "ano": 2026,
+  "cores": [
+   "#0066B3",
+   "#E30613"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "ronaldo-bah26",
+    "nome": "Ronaldo",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 79
+   },
+   {
+    "id": "romangomez-bah26",
+    "nome": "Roman Gomez",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "marcosvictor-bah26",
+    "nome": "Marcos Victor",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "davidduarte-bah26",
+    "nome": "David Duarte",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "lucianojuba-bah26",
+    "nome": "Luciano Juba",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "acevedo-bah26",
+    "nome": "Acevedo",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "jeanlucas-bah26",
+    "nome": "Jean Lucas",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 80
+   },
+   {
+    "id": "nestor-bah26",
+    "nome": "Nestor",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "kikeolivera-bah26",
+    "nome": "Kike Olivera",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "alejoveliz-bah26",
+    "nome": "Alejo Véliz",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   },
+   {
+    "id": "erickpulga-bah26",
+    "nome": "Erick Pulga",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 82
+   }
+  ]
+ },
+ {
+  "id": "mir26",
+  "clube": "Mirassol",
+  "ano": 2026,
+  "cores": [
+   "#F9C800",
+   "#006B3F"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "walter-mir26",
+    "nome": "Walter",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 79
+   },
+   {
+    "id": "igorformiga-mir26",
+    "nome": "Igor Formiga",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "joaovictor-mir26",
+    "nome": "João Victor",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "willianmacha-mir26",
+    "nome": "Willian Machado",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "reinaldo-mir26",
+    "nome": "Reinaldo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "japa-mir26",
+    "nome": "Japa",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "gustavocazon-mir26",
+    "nome": "Gustavo Cazonatti",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "denilson-mir26",
+    "nome": "Denilson",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "eduardo-mir26",
+    "nome": "Eduardo",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "alesson-mir26",
+    "nome": "Alesson",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "brunosantos-mir26",
+    "nome": "Bruno Santos",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   }
+  ]
+ },
+ {
+  "id": "sao26",
+  "clube": "São Paulo",
+  "ano": 2026,
+  "cores": [
+   "#FFFFFF",
+   "#FE0000"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "rafael-sao26",
+    "nome": "Rafael",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 82
+   },
+   {
+    "id": "domingosduar-sao26",
+    "nome": "Domingos Duarte",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "arboleda-sao26",
+    "nome": "Arboleda",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 81
+   },
+   {
+    "id": "sabino-sao26",
+    "nome": "Sabino",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "lucasramon-sao26",
+    "nome": "Lucas Ramon",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "pablomaia-sao26",
+    "nome": "Pablo Maia",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 80
+   },
+   {
+    "id": "marcosantoni-sao26",
+    "nome": "Marcos Antônio",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 83
+   },
+   {
+    "id": "wendell-sao26",
+    "nome": "Wendell",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "artur-sao26",
+    "nome": "Artur",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   },
+   {
+    "id": "calleri-sao26",
+    "nome": "Calleri",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 84
+   },
+   {
+    "id": "luciano-sao26",
+    "nome": "Luciano",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 82
+   }
+  ]
+ },
+ {
+  "id": "cor26",
+  "clube": "Corinthians",
+  "ano": 2026,
+  "cores": [
+   "#000000",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "hugosouza-cor26",
+    "nome": "Hugo Souza",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 80
+   },
+   {
+    "id": "matheuzinho-cor26",
+    "nome": "Matheuzinho",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "andreramalho-cor26",
+    "nome": "André Ramalho",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "gustavohenri-cor26",
+    "nome": "Gustavo Henrique",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "matheusbidu-cor26",
+    "nome": "Matheus Bidu",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "andre-cor26",
+    "nome": "André",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "brenobidon-cor26",
+    "nome": "Breno Bidon",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "rodrigogarro-cor26",
+    "nome": "Rodrigo Garro",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 83
+   },
+   {
+    "id": "andrecarrill-cor26",
+    "nome": "André Carrillo",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 81
+   },
+   {
+    "id": "memphisdepay-cor26",
+    "nome": "Memphis Depay",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 86
+   },
+   {
+    "id": "yurialberto-cor26",
+    "nome": "Yuri Alberto",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 82
+   }
+  ]
+ },
+ {
+  "id": "cam26",
+  "clube": "Atlético-MG",
+  "ano": 2026,
+  "cores": [
+   "#000000",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "everson-cam26",
+    "nome": "Everson",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 83
+   },
+   {
+    "id": "natanael-cam26",
+    "nome": "Natanael",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "lyanco-cam26",
+    "nome": "Lyanco",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "vitorhugo-cam26",
+    "nome": "Vitor Hugo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "renanlodi-cam26",
+    "nome": "Renan Lodi",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "castano-cam26",
+    "nome": "Castaño",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "alanfranco-cam26",
+    "nome": "Alan Franco",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "fred-cam26",
+    "nome": "Fred",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "bernard-cam26",
+    "nome": "Bernard",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 81
+   },
+   {
+    "id": "cuello-cam26",
+    "nome": "Cuello",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 80
+   },
+   {
+    "id": "cassierra-cam26",
+    "nome": "Cassierra",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   }
+  ]
+ },
+ {
+  "id": "flu26",
+  "clube": "Fluminense",
+  "ano": 2026,
+  "cores": [
+   "#9F1C33",
+   "#006646"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "fabio-flu26",
+    "nome": "Fábio",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 83
+   },
+   {
+    "id": "juliofidelis-flu26",
+    "nome": "Júlio Fidélis",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "thiagosilva-flu26",
+    "nome": "Thiago Silva",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 84
+   },
+   {
+    "id": "igorrabello-flu26",
+    "nome": "Igor Rabello",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "arana-flu26",
+    "nome": "Arana",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 82
+   },
+   {
+    "id": "hercules-flu26",
+    "nome": "Hércules",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "nonato-flu26",
+    "nome": "Nonato",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "luchoacosta-flu26",
+    "nome": "Lucho Acosta",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 80
+   },
+   {
+    "id": "savarino-flu26",
+    "nome": "Savarino",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 81
+   },
+   {
+    "id": "canobbio-flu26",
+    "nome": "Canobbio",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 81
+   },
+   {
+    "id": "hulk-flu26",
+    "nome": "Hulk",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 84
+   }
+  ]
+ },
+ {
+  "id": "int26",
+  "clube": "Internacional",
+  "ano": 2026,
+  "cores": [
+   "#E5050F",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "anthoni-int26",
+    "nome": "Anthoni",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 78
+   },
+   {
+    "id": "brunogomes-int26",
+    "nome": "Bruno Gomes",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "maripan-int26",
+    "nome": "Maripán",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "mercado-int26",
+    "nome": "Mercado",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "bernabei-int26",
+    "nome": "Bernabei",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "villagra-int26",
+    "nome": "Villagra",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "brunohenriqu-int26",
+    "nome": "Bruno Henrique",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "alanpatrick-int26",
+    "nome": "Alan Patrick",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 83
+   },
+   {
+    "id": "vitinho-int26",
+    "nome": "Vitinho",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "carbonero-int26",
+    "nome": "Carbonero",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   },
+   {
+    "id": "sanabria-int26",
+    "nome": "Sanabria",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   }
+  ]
+ },
+ {
+  "id": "gre26",
+  "clube": "Grêmio",
+  "ano": 2026,
+  "cores": [
+   "#0D80BF",
+   "#000000"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "weverton-gre26",
+    "nome": "Weverton",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 81
+   },
+   {
+    "id": "diegocaito-gre26",
+    "nome": "Diego Caito",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "wallace-gre26",
+    "nome": "Wallace",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "kannemann-gre26",
+    "nome": "Kannemann",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "pedrogabriel-gre26",
+    "nome": "Pedro Gabriel",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "noriega-gre26",
+    "nome": "Noriega",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "villasanti-gre26",
+    "nome": "Villasanti",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 81
+   },
+   {
+    "id": "krovinovic-gre26",
+    "nome": "Krovinović",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "tete-gre26",
+    "nome": "Tetê",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 81
+   },
+   {
+    "id": "jovanecabral-gre26",
+    "nome": "Jovane Cabral",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "carlosvinici-gre26",
+    "nome": "Carlos Vinícius",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 80
+   }
+  ]
+ },
+ {
+  "id": "vas26",
+  "clube": "Vasco",
+  "ano": 2026,
+  "cores": [
+   "#000000",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "leojardim-vas26",
+    "nome": "Léo Jardim",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 83
+   },
+   {
+    "id": "paulohenriqu-vas26",
+    "nome": "Paulo Henrique",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "cuesta-vas26",
+    "nome": "Cuesta",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "robertrenan-vas26",
+    "nome": "Robert Renan",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "lucaspiton-vas26",
+    "nome": "Lucas Piton",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "sosa-vas26",
+    "nome": "Sosa",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "ramonrique-vas26",
+    "nome": "Ramon Rique",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "thiagomendes-vas26",
+    "nome": "Thiago Mendes",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "marinohinest-vas26",
+    "nome": "Marino Hinestroza",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 80
+   },
+   {
+    "id": "nunomoreira-vas26",
+    "nome": "Nuno Moreira",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 80
+   },
+   {
+    "id": "colidio-vas26",
+    "nome": "Colidio",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 81
+   }
+  ]
+ },
+ {
+  "id": "san26",
+  "clube": "Santos",
+  "ano": 2026,
+  "cores": [
+   "#FFFFFF",
+   "#000000"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "gabrielbraza-san26",
+    "nome": "Gabriel Brazão",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 79
+   },
+   {
+    "id": "rodinei-san26",
+    "nome": "Rodinei",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "lucasverissi-san26",
+    "nome": "Lucas Veríssimo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 81
+   },
+   {
+    "id": "luanperes-san26",
+    "nome": "Luan Peres",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "escobar-san26",
+    "nome": "Escobar",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "arthur-san26",
+    "nome": "Arthur",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 80
+   },
+   {
+    "id": "rollheiser-san26",
+    "nome": "Rollheiser",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 81
+   },
+   {
+    "id": "coutinho-san26",
+    "nome": "Coutinho",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 82
+   },
+   {
+    "id": "neymar-san26",
+    "nome": "Neymar",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 87
+   },
+   {
+    "id": "rony-san26",
+    "nome": "Rony",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 81
+   },
+   {
+    "id": "gabigol-san26",
+    "nome": "Gabigol",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 84
+   }
+  ]
+ },
+ {
+  "id": "bra26",
+  "clube": "Bragantino",
+  "ano": 2026,
+  "cores": [
+   "#E30613",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "tiagovolpi-bra26",
+    "nome": "Tiago Volpi",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 79
+   },
+   {
+    "id": "agustinsanta-bra26",
+    "nome": "Agustín Sant'Anna",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "guzmanrodrig-bra26",
+    "nome": "Guzmán Rodríguez",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "gustavomarqu-bra26",
+    "nome": "Gustavo Marques",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "juninhocapix-bra26",
+    "nome": "Juninho Capixaba",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "fabinho-bra26",
+    "nome": "Fabinho",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "ericramires-bra26",
+    "nome": "Eric Ramires",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "lucasbarbosa-bra26",
+    "nome": "Lucas Barbosa",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "wallaceyan-bra26",
+    "nome": "Wallace Yan",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "fernando-bra26",
+    "nome": "Fernando",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "isidropitta-bra26",
+    "nome": "Isidro Pitta",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   }
+  ]
+ },
+ {
+  "id": "vit26",
+  "clube": "Vitória",
+  "ano": 2026,
+  "cores": [
+   "#E30613",
+   "#000000"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "lucasarcanjo-vit26",
+    "nome": "Lucas Arcanjo",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 77
+   },
+   {
+    "id": "mateussilva-vit26",
+    "nome": "Mateus Silva",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "britez-vit26",
+    "nome": "Brítez",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "caca-vit26",
+    "nome": "Cacá",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "luancandido-vit26",
+    "nome": "Luan Cândido",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "jamerson-vit26",
+    "nome": "Jamerson",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "caiquegoncal-vit26",
+    "nome": "Caíque Gonçalves",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "zevitor-vit26",
+    "nome": "Zé Vitor",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "matheuzinho-vit26",
+    "nome": "Matheuzinho",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "diegotarzia-vit26",
+    "nome": "Diego Tarzia",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 76
+   },
+   {
+    "id": "rene-vit26",
+    "nome": "Renê",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 75
+   }
+  ]
+ },
+ {
+  "id": "cap26",
+  "clube": "Athletico-PR",
+  "ano": 2026,
+  "cores": [
+   "#E30613",
+   "#000000"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "mycael-cap26",
+    "nome": "Mycael",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 78
+   },
+   {
+    "id": "dantas-cap26",
+    "nome": "Dantas",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "felipeaguirr-cap26",
+    "nome": "Felipe Aguirre",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "arthurdias-cap26",
+    "nome": "Arthur Dias",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "benavidez-cap26",
+    "nome": "Benavídez",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "luizgustavo-cap26",
+    "nome": "Luiz Gustavo",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "jadson-cap26",
+    "nome": "Jadson",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "esquivel-cap26",
+    "nome": "Esquível",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "joaocruz-cap26",
+    "nome": "João Cruz",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "stivenmendoz-cap26",
+    "nome": "Stiven Mendoza",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "kevinviveros-cap26",
+    "nome": "Kevin Viveros",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   }
+  ]
+ },
+ {
+  "id": "cfc26",
+  "clube": "Coritiba",
+  "ano": 2026,
+  "cores": [
+   "#005C3C",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "pedromorisco-cfc26",
+    "nome": "Pedro Morisco",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 76
+   },
+   {
+    "id": "jpchermont-cfc26",
+    "nome": "JP Chermont",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "jacy-cfc26",
+    "nome": "Jacy",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "tiagocoser-cfc26",
+    "nome": "Tiago Cóser",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "rodrigomoled-cfc26",
+    "nome": "Rodrigo Moledo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "thiagosantos-cfc26",
+    "nome": "Thiago Santos",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "josue-cfc26",
+    "nome": "Josué",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "sebastiangom-cfc26",
+    "nome": "Sebastián Gómez",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "joaquinlaveg-cfc26",
+    "nome": "Joaquín Lavega",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "brenolopes-cfc26",
+    "nome": "Breno Lopes",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "pedrorocha-cfc26",
+    "nome": "Pedro Rocha",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 76
+   }
+  ]
+ },
+ {
+  "id": "cha26",
+  "clube": "Chapecoense",
+  "ano": 2026,
+  "cores": [
+   "#006B3F",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "anderson-cha26",
+    "nome": "Anderson",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 74
+   },
+   {
+    "id": "everton-cha26",
+    "nome": "Everton",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 73
+   },
+   {
+    "id": "eduardodoma-cha26",
+    "nome": "Eduardo Doma",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 74
+   },
+   {
+    "id": "brunopacheco-cha26",
+    "nome": "Bruno Pacheco",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "heitor-cha26",
+    "nome": "Heitor",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "camilo-cha26",
+    "nome": "Camilo",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "yagofelipe-cha26",
+    "nome": "Yago Felipe",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "giovanniaugu-cha26",
+    "nome": "Giovanni Augusto",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 74
+   },
+   {
+    "id": "bolasie-cha26",
+    "nome": "Bolasie",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "marcinho-cha26",
+    "nome": "Marcinho",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 74
+   },
+   {
+    "id": "tulioeduardo-cha26",
+    "nome": "Túlio Eduardo",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 73
+   }
+  ]
+ },
+ {
+  "id": "rem26",
+  "clube": "Remo",
+  "ano": 2026,
+  "cores": [
+   "#005BAA",
+   "#FFFFFF"
+  ],
+  "conquista": "Elenco da Série A de 2026",
+  "fonte": "elenco do clube na temporada de 2026, lesionados incluídos",
+  "elenco": [
+   {
+    "id": "marcelorange-rem26",
+    "nome": "Marcelo Rangel",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 76
+   },
+   {
+    "id": "zeivaldo-rem26",
+    "nome": "Zé Ivaldo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "matheusfelip-rem26",
+    "nome": "Matheus Felipe",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "tchamba-rem26",
+    "nome": "Tchamba",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 74
+   },
+   {
+    "id": "yagopikachu-rem26",
+    "nome": "Yago Pikachu",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "patrick-rem26",
+    "nome": "Patrick",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "leonelpicco-rem26",
+    "nome": "Leonel Picco",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "zericardo-rem26",
+    "nome": "Zé Ricardo",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "marlon-rem26",
+    "nome": "Marlon",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 74
+   },
+   {
+    "id": "galeano-rem26",
+    "nome": "Galeano",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "jaja-rem26",
+    "nome": "Jajá",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 75
+   }
+  ]
+ }
+]

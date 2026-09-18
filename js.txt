@@ -88,12 +88,21 @@ const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
 
 /* ---------- telas ---------- */
 const $ = id => document.getElementById(id);
-const TELAS = ['scr-home','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank','scr-legal'];
+const TELAS = ['scr-home','scr-modo','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank','scr-legal'];
 const mostra = id => {
   TELAS.forEach(x => $(x).hidden = x !== id);
   const el = $(id);
   el.classList.remove('anima'); void el.offsetWidth; el.classList.add('anima');
 };
+
+/* ---------- base em jogo ---------- */
+/* Os dois modos usam a mesma mecânica; só muda de onde os elencos saem. */
+const BASES = {
+  lendas: { nome:'Lendas', elencos: DB.times },
+  atuais: { nome:'Brasileirão 2026', elencos: DB.atuais },
+};
+let BASE = 'lendas';
+const elencos = () => BASES[BASE].elencos;
 
 /* ---------- tática ---------- */
 const jaComecou = () => S && S.slots.some(x => x.jog);
@@ -187,8 +196,8 @@ function pinta(){
 
 function rolar(){
   if (completo()) return;
-  let livres = DB.times.filter(t=>!S.sorteados.has(t.id) && temEscolha(t));
-  if (!livres.length){ S.sorteados.clear(); livres = DB.times.filter(temEscolha); }
+  let livres = elencos().filter(t=>!S.sorteados.has(t.id) && temEscolha(t));
+  if (!livres.length){ S.sorteados.clear(); livres = elencos().filter(temEscolha); }
   if (!livres.length){
     S.atual = null; pinta();
     $('roll').textContent = 'Sem jogador disponível'; $('roll').disabled = true;
@@ -211,10 +220,13 @@ function escala(p){
   if (completo()) revelar(); else rolar();
 }
 
-$('go').onclick = () => {
+$('go').onclick = () => mostra('scr-modo');
+$('modoVoltar').onclick = () => mostra('scr-home');
+document.querySelectorAll('.modo').forEach(b => b.onclick = () => {
+  BASE = b.dataset.base;
   novoJogo(FORMACOES[1], ESTILOS[1]);
   mostra('scr-jogo'); pinta();
-};
+});
 $('roll').onclick = rolar;
 $('pass').onclick = () => { if(S.passes>0 && S.atual){ S.passes--; S.atual=null; pinta(); rolar(); } };
 
@@ -290,7 +302,7 @@ const sleep = ms => new Promise(r=>setTimeout(r,ms));
 async function campanha(){
   mostra('scr-camp');
   const xi = S.slots.map(s=>s.jog);
-  const pool = DB.times.slice().sort(()=>Math.random()-.5).sort((x,y)=>forca(x)-forca(y));
+  const pool = elencos().slice().sort(()=>Math.random()-.5).sort((x,y)=>forca(x)-forca(y));
   const escolhidos = [];
   for (let i=0;i<7;i++){
     const faixa = Math.floor(pool.length * (i+1)/8);
@@ -700,4 +712,33 @@ document.querySelectorAll('.sp[data-sp]').forEach(b=>b.onclick=()=>{
   if (S) S.vel = v;
   document.querySelectorAll('.sp[data-sp]').forEach(x=>x.classList.toggle('on', +x.dataset.sp === v));
 });
+
+/* ---- o campo da home inclina atrás do cursor (só onde existe mouse) ---- */
+(function(){
+  const campo = $('campo3d'), hero = document.querySelector('.hero');
+  if (!campo || !hero) return;
+  if (!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+
+  let alvoX = 0, alvoY = 0, pedido = 0;
+  const aplica = () => {
+    pedido = 0;
+    campo.style.setProperty('--ry', alvoX.toFixed(2) + 'deg');
+    campo.style.setProperty('--rx', alvoY.toFixed(2) + 'deg');
+  };
+  hero.addEventListener('pointermove', e => {
+    const r = hero.getBoundingClientRect();
+    // -1 a 1 a partir do centro do bloco
+    alvoX = ((e.clientX - r.left) / r.width  - .5) *  16;
+    alvoY = ((e.clientY - r.top)  / r.height - .5) * -11;
+    campo.classList.add('seguindo');
+    // um ajuste por quadro: pointermove dispara muito mais que isso
+    if (!pedido) pedido = requestAnimationFrame(aplica);
+  });
+  hero.addEventListener('pointerleave', () => {
+    alvoX = alvoY = 0;
+    campo.classList.remove('seguindo');
+    if (!pedido) pedido = requestAnimationFrame(aplica);
+  });
+})();
 </script>

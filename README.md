@@ -49,18 +49,14 @@ velocidades. Em "Jogo a jogo", cada partida espera o seu clique.
 ## Os arquivos
 
 - `index.html` — o jogo, arquivo único, abre no celular sem internet
-- `elencos.json` — a base, fonte da verdade
+- `elencos.json` — os elencos campeões da história
+- `elencos-2026.json` — os vinte times da Série A de 2026
 - `casca.html` + `js.txt` — a casca e a lógica, de onde o `tmpl.html` é montado
 - `teste-formacoes.js` — confere as coordenadas das formações
 
 Para reconstruir depois de editar a base ou o molde:
 
 ```
-python3 -c "
-import json
-d=json.load(open('elencos.json',encoding='utf-8')); d.pop('_leia',None)
-t=open('tmpl.html',encoding='utf-8').read()
-open('index.html','w',encoding='utf-8').write(t.replace('__DADOS__',json.dumps(d,ensure_ascii=False,separators=(',',':'))))
-"
+python3 build.py
 node teste-formacoes.js
 ```
