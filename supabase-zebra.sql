@@ -39,17 +39,19 @@ drop policy if exists "perfil: dono cria"             on zebra_perfis;
 drop policy if exists "perfil: dono edita"            on zebra_perfis;
 drop policy if exists "perfil: dono apaga"            on zebra_perfis;
 -- leitura pública: o ranking precisa mostrar o apelido de todo mundo
+-- auth.uid() vem entre parênteses e select: assim o Postgres calcula uma vez
+-- por consulta em vez de uma vez por linha.
 create policy "perfil: qualquer um lê" on zebra_perfis for select using (true);
-create policy "perfil: dono cria"      on zebra_perfis for insert with check (auth.uid() = id);
-create policy "perfil: dono edita"     on zebra_perfis for update using (auth.uid() = id);
-create policy "perfil: dono apaga"     on zebra_perfis for delete using (auth.uid() = id);
+create policy "perfil: dono cria"      on zebra_perfis for insert with check ((select auth.uid()) = id);
+create policy "perfil: dono edita"     on zebra_perfis for update using ((select auth.uid()) = id);
+create policy "perfil: dono apaga"     on zebra_perfis for delete using ((select auth.uid()) = id);
 
 drop policy if exists "partida: qualquer um lê" on zebra_partidas;
 drop policy if exists "partida: dono cria"      on zebra_partidas;
 drop policy if exists "partida: dono apaga"     on zebra_partidas;
 create policy "partida: qualquer um lê" on zebra_partidas for select using (true);
-create policy "partida: dono cria"      on zebra_partidas for insert with check (auth.uid() = user_id);
-create policy "partida: dono apaga"     on zebra_partidas for delete using (auth.uid() = user_id);
+create policy "partida: dono cria"      on zebra_partidas for insert with check ((select auth.uid()) = user_id);
+create policy "partida: dono apaga"     on zebra_partidas for delete using ((select auth.uid()) = user_id);
 -- de propósito NÃO existe policy de update em partidas:
 -- resultado publicado não se edita, senão o ranking vira ficção
 
@@ -67,6 +69,11 @@ select
 from zebra_perfis p
 left join zebra_partidas j on j.user_id = p.id
 group by p.id, p.apelido;
+
+-- A view roda com as permissões de quem chama, não com as do dono do banco.
+-- Na prática não muda nada hoje (as duas tabelas têm leitura pública), mas se um
+-- dia alguma delas fechar, a view não vira porta dos fundos.
+alter view zebra_ranking set (security_invoker = on);
 
 grant select on zebra_ranking to anon, authenticated;
 
