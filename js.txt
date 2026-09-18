@@ -402,14 +402,24 @@ async function entreJogos(){
   else { const p = S.vel === 0 ? 0 : Math.round(55/S.vel) * 4; if (p) await sleep(p); }
 }
 
-/* sorteia adversários da base, do mais fraco ao mais forte */
-function sorteiaAdversarios(quantos, deFraco = true){
-  const pool = elencos().slice().sort(() => Math.random()-.5).sort((x,y) => forca(x)-forca(y));
-  const fora = [];
-  for (let i = 0; i < quantos; i++){
+/* sorteia adversários, do mais fraco ao mais forte */
+function sorteiaAdversarios(quantos, deFraco = true, base = null){
+  // o bolo pode trazer o mesmo time várias vezes, para dar peso a um grupo;
+  // tirar as repetições antes do sorteio anularia esse peso, então elas só
+  // são descartadas na hora de fechar a chave
+  const pool = (base || elencos()).slice()
+    .sort(() => Math.random()-.5).sort((x,y) => forca(x)-forca(y));
+  const fora = [], jaEstao = new Set();
+  for (let i = 0; i < quantos && pool.length; i++){
     const faixa = Math.floor(pool.length * (i+1) / (quantos+1));
-    const idx = Math.min(pool.length-1, faixa + Math.floor(Math.random()*3));
-    fora.push(pool.splice(idx, 1)[0]);
+    let idx = Math.min(pool.length-1, faixa + Math.floor(Math.random()*3));
+    let tentativas = 0;
+    while (jaEstao.has(pool[idx].id) && tentativas++ < pool.length){
+      idx = (idx + 1) % pool.length;
+    }
+    const t = pool.splice(idx, 1)[0];
+    jaEstao.add(t.id);
+    fora.push(t);
   }
   return deFraco ? fora : fora.reverse();
 }
@@ -546,6 +556,10 @@ const TEMP = {
   libMata: 4,
 };
 const FASES_MATA = ['Oitavas','Quartas','Semifinal','Final'];
+/* Na Libertadores o Brasil não joga sozinho. Seis sul-americanos contra vinte
+   brasileiros sumiriam no sorteio, então eles entram repetidos no bolo para
+   ficar perto de metade da chave, como na competição de verdade. */
+const CONTINENTE = () => DB.sul.concat(DB.sul).concat(DB.sul).concat(DB.atuais);
 
 function cabecalhoTemp(titulo, sub){
   const h = document.createElement('div');
@@ -612,9 +626,9 @@ function desenhaTabela(tabela, posicao){
   el.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
-async function disputaMataMata(xi, nome, quantos, faseNomes, comCabecalho = true){
+async function disputaMataMata(xi, nome, quantos, faseNomes, comCabecalho = true, base = null){
   if (comCabecalho) cabecalhoTemp(nome, quantos + ' jogos');
-  const advs = sorteiaAdversarios(quantos, false);
+  const advs = sorteiaAdversarios(quantos, false, base);
   for (let i = 0; i < quantos; i++){
     const r = await jogaPartida({ xi, opp: advs[i], box: $('matches'),
                                   fase: faseNomes[i], mata: true });
@@ -626,7 +640,7 @@ async function disputaMataMata(xi, nome, quantos, faseNomes, comCabecalho = true
 
 async function disputaLibertadores(xi){
   cabecalhoTemp('Libertadores', 'grupos e mata-mata');
-  const grupo = sorteiaAdversarios(TEMP.libGrupos);
+  const grupo = sorteiaAdversarios(TEMP.libGrupos, true, CONTINENTE());
   let pts = 0;
   for (let i = 0; i < grupo.length; i++){
     const r = await jogaPartida({ xi, opp: grupo[i], box: $('matches'),
@@ -642,7 +656,7 @@ async function disputaLibertadores(xi){
     }
     await entreJogos();
   }
-  return await disputaMataMata(xi, 'Libertadores', TEMP.libMata, FASES_MATA, false);
+  return await disputaMataMata(xi, 'Libertadores', TEMP.libMata, FASES_MATA, false, CONTINENTE());
 }
 
 /* O campeão da América encara o melhor elenco da história do jogo.

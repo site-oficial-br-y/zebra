@@ -14,6 +14,7 @@ hist.pop('_leia', None)
 dados = {
     'times':  hist['times'] if isinstance(hist, dict) else hist,   # lendas
     'atuais': json.load(open('elencos-2026.json', encoding='utf-8')),
+    'sul':    json.load(open('elencos-sul.json', encoding='utf-8')),   # Libertadores
 }
 for nome, base in dados.items():
     for t in base:
@@ -26,5 +27,6 @@ assert tmpl.count('__DADOS__') == 1
 io.open('index.html', 'w', encoding='utf-8').write(
     tmpl.replace('__DADOS__', json.dumps(dados, ensure_ascii=False, separators=(',', ':'))))
 
-print('%d elencos históricos, %d atuais · index.html com %d KB' % (
-    len(dados['times']), len(dados['atuais']), os.path.getsize('index.html') / 1024))
+print('%d elencos históricos, %d atuais, %d sul-americanos · index.html com %d KB' % (
+    len(dados['times']), len(dados['atuais']), len(dados['sul']),
+    os.path.getsize('index.html') / 1024))

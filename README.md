@@ -51,6 +51,7 @@ velocidades. Em "Jogo a jogo", cada partida espera o seu clique.
 - `index.html` — o jogo, arquivo único, abre no celular sem internet
 - `elencos.json` — os elencos campeões da história
 - `elencos-2026.json` — os vinte times da Série A de 2026
+- `elencos-sul.json` — os sul-americanos que aparecem na Libertadores
 - `casca.html` + `js.txt` — a casca e a lógica, de onde o `tmpl.html` é montado
 - `teste-formacoes.js` — confere as coordenadas das formações
 

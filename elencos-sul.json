@@ -1,0 +1,548 @@
+[
+ {
+  "id": "boc26",
+  "clube": "Boca Juniors",
+  "pais": "Argentina",
+  "ano": 2026,
+  "cores": [
+   "#14316b",
+   "#f0c419"
+  ],
+  "conquista": "Libertadores de 2026",
+  "fonte": "elenco informado pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "agustinmarch-boc26",
+    "nome": "Agustín Marchesín",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 80
+   },
+   {
+    "id": "dylangorosit-boc26",
+    "nome": "Dylan Gorosito",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "marcopellegr-boc26",
+    "nome": "Marco Pellegrino",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "ayrtoncosta-boc26",
+    "nome": "Ayrton Costa",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "leandrolozan-boc26",
+    "nome": "Leandro Lozano",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "leandropared-boc26",
+    "nome": "Leandro Paredes",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 84
+   },
+   {
+    "id": "rodrigobatta-boc26",
+    "nome": "Rodrigo Battaglia",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "malcombraida-boc26",
+    "nome": "Malcom Braida",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "miltongimene-boc26",
+    "nome": "Milton Giménez",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   },
+   {
+    "id": "angelromero-boc26",
+    "nome": "Ángel Romero",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "ennervalenci-boc26",
+    "nome": "Enner Valencia",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 80
+   }
+  ]
+ },
+ {
+  "id": "est26",
+  "clube": "Estudiantes",
+  "pais": "Argentina",
+  "ano": 2026,
+  "cores": [
+   "#d62027",
+   "#ffffff"
+  ],
+  "conquista": "Libertadores de 2026",
+  "fonte": "elenco informado pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "fernandomusl-est26",
+    "nome": "Fernando Muslera",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 79
+   },
+   {
+    "id": "erosmancuso-est26",
+    "nome": "Eros Mancuso",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "santiagonune-est26",
+    "nome": "Santiago Núñez",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "maximodesaba-est26",
+    "nome": "Máximo Desábato",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "gastonbenede-est26",
+    "nome": "Gastón Benedetti",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "lucaspiovi-est26",
+    "nome": "Lucas Piovi",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "gabrielneves-est26",
+    "nome": "Gabriel Neves",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "facundofaria-est26",
+    "nome": "Facundo Farías",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "edwuincetre-est26",
+    "nome": "Edwuin Cetré",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "guidocarrill-est26",
+    "nome": "Guido Carrillo",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "lucasalario-est26",
+    "nome": "Lucas Alario",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   }
+  ]
+ },
+ {
+  "id": "ldu26",
+  "clube": "LDU Quito",
+  "pais": "Equador",
+  "ano": 2026,
+  "cores": [
+   "#ffffff",
+   "#0a2d6e"
+  ],
+  "conquista": "Libertadores de 2026",
+  "fonte": "elenco informado pelo dono, setembro de 2026",
+  "elenco": [
+   {
+    "id": "gonzalovalle-ldu26",
+    "nome": "Gonzalo Valle",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 77
+   },
+   {
+    "id": "ricardoade-ldu26",
+    "nome": "Ricardo Adé",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "josequintero-ldu26",
+    "nome": "José Quintero",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "luissegovia-ldu26",
+    "nome": "Luis Segovia",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "leonelquinon-ldu26",
+    "nome": "Leonel Quiñónez",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "jesuspretell-ldu26",
+    "nome": "Jesús Pretell",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "gabrielvilla-ldu26",
+    "nome": "Gabriel Villamil",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "sebastiangon-ldu26",
+    "nome": "Sebastián González",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "alexanderalv-ldu26",
+    "nome": "Alexander Alvarado",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "michaelestra-ldu26",
+    "nome": "Michael Estrada",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "deyverson-ldu26",
+    "nome": "Deyverson",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   }
+  ]
+ },
+ {
+  "id": "nac26",
+  "clube": "Nacional",
+  "pais": "Uruguai",
+  "ano": 2026,
+  "cores": [
+   "#ffffff",
+   "#0b3a86"
+  ],
+  "conquista": "Libertadores de 2026",
+  "fonte": "escalação do clássico de 1 de março de 2026",
+  "elenco": [
+   {
+    "id": "luismejia-nac26",
+    "nome": "Luis Mejía",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 77
+   },
+   {
+    "id": "juanpintado-nac26",
+    "nome": "Juan Pintado",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "sebastiancoa-nac26",
+    "nome": "Sebastián Coates",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 80
+   },
+   {
+    "id": "julianmillan-nac26",
+    "nome": "Julián Millán",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "camilocandid-nac26",
+    "nome": "Camilo Cándido",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "lucasrodrigu-nac26",
+    "nome": "Lucas Rodríguez",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "lucianoboggi-nac26",
+    "nome": "Luciano Boggio",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "tomasveronlu-nac26",
+    "nome": "Tomás Verón Lupi",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 75
+   },
+   {
+    "id": "maximilianos-nac26",
+    "nome": "Maximiliano Silvera",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   },
+   {
+    "id": "maxigomez-nac26",
+    "nome": "Maxi Gómez",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   },
+   {
+    "id": "rodrigomarti-nac26",
+    "nome": "Rodrigo Martínez",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 76
+   }
+  ]
+ },
+ {
+  "id": "pen26",
+  "clube": "Peñarol",
+  "pais": "Uruguai",
+  "ano": 2026,
+  "cores": [
+   "#f5d000",
+   "#111111"
+  ],
+  "conquista": "Libertadores de 2026",
+  "fonte": "escalação de 2026 confirmada em três jogos seguidos",
+  "elenco": [
+   {
+    "id": "washingtonag-pen26",
+    "nome": "Washington Aguerre",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 77
+   },
+   {
+    "id": "francoescoba-pen26",
+    "nome": "Franco Escobar",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "emanuelgular-pen26",
+    "nome": "Emanuel Gularte",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "mauriciolemo-pen26",
+    "nome": "Mauricio Lemos",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "maximilianoo-pen26",
+    "nome": "Maximiliano Olivera",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "gastontogni-pen26",
+    "nome": "Gastón Togni",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "eduardodaria-pen26",
+    "nome": "Eduardo Darias",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 76
+   },
+   {
+    "id": "jesustrindad-pen26",
+    "nome": "Jesús Trindade",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "diegolaxalt-pen26",
+    "nome": "Diego Laxalt",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "leandroumpie-pen26",
+    "nome": "Leandro Umpiérrez",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 76
+   },
+   {
+    "id": "matiasarezo-pen26",
+    "nome": "Matías Arezo",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   }
+  ]
+ },
+ {
+  "id": "riv26",
+  "clube": "River Plate",
+  "pais": "Argentina",
+  "ano": 2026,
+  "cores": [
+   "#ffffff",
+   "#d62027"
+  ],
+  "conquista": "Libertadores de 2026",
+  "fonte": "escalação de 2026 com Armani e Driussi; Colidio fora por já estar no Vasco",
+  "elenco": [
+   {
+    "id": "francoarmani-riv26",
+    "nome": "Franco Armani",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 81
+   },
+   {
+    "id": "gonzalomonti-riv26",
+    "nome": "Gonzalo Montiel",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "martinezquar-riv26",
+    "nome": "Martínez Quarta",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "paulodiaz-riv26",
+    "nome": "Paulo Díaz",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 79
+   },
+   {
+    "id": "matiasvina-riv26",
+    "nome": "Matías Viña",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 77
+   },
+   {
+    "id": "faustovera-riv26",
+    "nome": "Fausto Vera",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "anibalmoreno-riv26",
+    "nome": "Aníbal Moreno",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "juanfernando-riv26",
+    "nome": "Juan Fernando Quintero",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 81
+   },
+   {
+    "id": "tomasgalvan-riv26",
+    "nome": "Tomás Galván",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "kendrypaez-riv26",
+    "nome": "Kendry Páez",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 79
+   },
+   {
+    "id": "sebastiandri-riv26",
+    "nome": "Sebastián Driussi",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 82
+   }
+  ]
+ }
+]
