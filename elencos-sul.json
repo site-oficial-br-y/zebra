@@ -544,5 +544,96 @@
     "over": 82
    }
   ]
+ },
+ {
+  "id": "rac26",
+  "clube": "Racing",
+  "pais": "Argentina",
+  "ano": 2026,
+  "cores": [
+   "#6cace4",
+   "#ffffff"
+  ],
+  "conquista": "Libertadores de 2026",
+  "fonte": "elenco 2026-27 informado pelo dono; onze montado por jogos disputados",
+  "elenco": [
+   {
+    "id": "facundocambe-rac26",
+    "nome": "Facundo Cambeses",
+    "pos": "Goleiro",
+    "grupo": "GOL",
+    "over": 78
+   },
+   {
+    "id": "ezequielcann-rac26",
+    "nome": "Ezequiel Cannavo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 75
+   },
+   {
+    "id": "marcosrojo-rac26",
+    "nome": "Marcos Rojo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 78
+   },
+   {
+    "id": "nazarenocolo-rac26",
+    "nome": "Nazareno Colombo",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "pachaespino-rac26",
+    "nome": "Pacha Espino",
+    "pos": "Defensor",
+    "grupo": "DEF",
+    "over": 76
+   },
+   {
+    "id": "matiaskranev-rac26",
+    "nome": "Matías Kranevitter",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 78
+   },
+   {
+    "id": "matiaszarach-rac26",
+    "nome": "Matías Zaracho",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 79
+   },
+   {
+    "id": "matkomiljevi-rac26",
+    "nome": "Matko Miljevic",
+    "pos": "Meia",
+    "grupo": "MEI",
+    "over": 77
+   },
+   {
+    "id": "duvanvergara-rac26",
+    "nome": "Duván Vergara",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 78
+   },
+   {
+    "id": "adrianmartin-rac26",
+    "nome": "Adrián Martínez",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 80
+   },
+   {
+    "id": "tomasconechn-rac26",
+    "nome": "Tomás Conechny",
+    "pos": "Atacante",
+    "grupo": "ATA",
+    "over": 77
+   }
+  ]
  }
 ]
