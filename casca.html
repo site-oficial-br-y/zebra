@@ -337,6 +337,38 @@ h1 em{font-style:italic;color:var(--verde)}
 .perigo p{font-size:12.5px;color:var(--apagado);line-height:1.55;margin-bottom:11px}
 .btn.risco{background:var(--vermelho);color:#fff}
 
+/* ---- painel da conta ---- */
+.bloco{margin-top:30px}
+.bloco > .tag{display:block;margin-bottom:2px}
+.cab{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.cab .sub{font-size:12px;color:var(--apagado);font-weight:700}
+.cab .sub b{color:var(--verde);font-weight:900;font-style:italic}
+.duas{display:grid;gap:26px;margin-top:6px}
+@media(min-width:720px){.duas{grid-template-columns:1fr 1fr;gap:34px}}
+.top{list-style:none;margin-top:10px}
+.subtag{display:block;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--verde-esc);font-weight:800;margin-top:18px}
+.subtag:first-of-type{margin-top:10px}
+.top li{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--linha);
+  font-size:13.5px}
+.top li:last-child{border-bottom:0}
+.top .n{font-size:11px;font-weight:900;font-style:italic;color:var(--apagado);width:16px;flex:none}
+.top .q{flex:1;font-weight:800;letter-spacing:-.01em}
+.top .q small{display:block;font-size:10.5px;font-weight:700;color:var(--apagado);letter-spacing:.02em}
+.top .x{font-variant-numeric:tabular-nums;font-weight:900;font-style:italic;color:var(--verde);font-size:14px}
+.barras{margin-top:10px;display:grid;gap:7px}
+.barra{display:grid;grid-template-columns:78px minmax(0,1fr) 26px;align-items:center;gap:10px;font-size:11.5px}
+.barra .et{color:var(--apagado);font-weight:800;letter-spacing:.02em;text-align:right}
+.barra .tr{height:12px;border-radius:3px;background:rgba(255,255,255,.04);
+  border:1px solid var(--linha);overflow:hidden}
+.barra .fi{display:block;height:100%;background:var(--verde-esc);border-radius:2px;min-width:3px}
+.barra.ouro .fi{background:var(--verde);box-shadow:0 0 14px rgba(123,228,149,.45)}
+.barra .qt{font-variant-numeric:tabular-nums;font-weight:900;font-style:italic;color:var(--claro);font-size:12px}
+.melhor{display:grid;gap:18px;align-items:start;margin-top:4px}
+@media(min-width:820px){.melhor{grid-template-columns:minmax(0,320px) minmax(0,1fr)}}
+.campo.perfil .quem{display:block}
+.vazio{font-size:13px;color:var(--apagado);line-height:1.6;max-width:420px;margin-top:8px}
+
 .elo{background:none;border:none;padding:0;color:var(--verde);font-family:inherit;
   font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .elo:hover{color:var(--claro)}
@@ -477,7 +509,10 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     <div class="ovbox"><div class="v" id="meuTit">0</div>
       <div class="note" style="margin:0">título(s)<br>como <b id="meuApelido"></b></div></div>
     <div class="resumo" id="minhasStats" style="margin-top:4px"></div>
-    <div class="row" style="margin-top:20px">
+
+    <div id="perfilCorpo"></div>
+
+    <div class="row" style="margin-top:34px">
       <button class="btn ghost" id="btSair">Sair da conta</button>
     </div>
     <div class="perigo">
@@ -681,6 +716,16 @@ try {
       const { error } = await sb.from('zebra_partidas').insert({ ...p, user_id: s.user.id });
       if (error) { console.warn('partida não salva:', error.message); return false; }
       return true;
+    },
+    async minhasPartidas(){
+      const s = await this.sessao(); if (!s) return [];
+      // Mil é o teto de uma leitura no Supabase. Quem passar disso tem a
+      // estatística feita sobre as mil mais recentes, o que serve.
+      const { data, error } = await sb.from('zebra_partidas')
+        .select('overall,formacao,estilo,campeao,eliminado_em,gols_pro,gols_contra,maior_goleada,escalacao,criado_em')
+        .eq('user_id', s.user.id).order('criado_em', { ascending:false }).limit(1000);
+      if (error) throw error;
+      return data;
     },
     async ranking(){
       const { data, error } = await sb.from('zebra_ranking').select('*')

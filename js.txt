@@ -425,18 +425,127 @@ async function carregaEu(){
   pintaTopo();
 }
 
+/* Conta quantas vezes cada chave aparece e devolve as mais frequentes. */
+function maisVezes(itens, quantos){
+  const c = new Map();
+  itens.forEach(k => c.set(k, (c.get(k)||0) + 1));
+  return [...c.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0])).slice(0, quantos);
+}
+const clubeDe = de => String(de||'').replace(/\s+\d{4}$/, '') || '—';
+
+function listaTop(itens, legenda){
+  return '<ol class="top">' + itens.map(([k,q],i)=>
+    `<li><span class="n">${i+1}</span>
+       <span class="q">${k}</span>
+       <span class="x">${q}${legenda||''}</span></li>`).join('') + '</ol>';
+}
+
+/* O melhor time: o campeão de maior overall. Sem título, o de maior overall. */
+function melhorPartida(ps){
+  const campeas = ps.filter(p=>p.campeao);
+  const pool = campeas.length ? campeas : ps;
+  return pool.reduce((a,b)=> b.overall > a.overall ? b : a, pool[0]);
+}
+
+function campoDaPartida(p){
+  const form = FORMACOES.find(f=>f.n === p.formacao);
+  const xi = p.escalacao || [];
+  if (!form || xi.length !== form.pos.length) return '';
+  // A escalação foi gravada na ordem dos slots, então o índice reconstrói a posição.
+  const pontos = form.pos.map((c,i)=> ({rot:c.rot, x:c.x, y:c.y, jog:xi[i]}));
+  const campo = document.createElement('div');
+  desenhaCampo(campo, pontos, true);
+  return `<div class="campo mini perfil">
+      <div class="marcacao"></div><div class="meio"></div><div class="circulo"></div>
+      <div class="area t"></div><div class="area b"></div>
+      <div class="linhas">${campo.innerHTML}</div>
+    </div>`;
+}
+
+const ORDEM_FASES = ['fase de grupos','Oitavas','Quartas','Semifinal','Final'];
+const NOME_FASE = { 'fase de grupos':'Grupos' };
+
+function pintaPerfil(ps){
+  const alvo = $('perfilCorpo');
+  if (!ps.length){
+    alvo.innerHTML = `<p class="vazio">Nenhuma partida registrada ainda.
+      Monte um time, jogue a campanha até o fim e ela aparece aqui — com o seu melhor
+      time, os jogadores que mais escala e até onde você costuma chegar.</p>`;
+    return;
+  }
+
+  const todos = ps.flatMap(p => p.escalacao || []);
+  const melhor = melhorPartida(ps);
+  const fases = maisVezes(ps.map(p => p.campeao ? 'Campeão' : (p.eliminado_em || 'Grupos')));
+  const linhas = ['Campeão', ...ORDEM_FASES.slice().reverse()]
+    .map(f => [f, (fases.find(x=>x[0]===f) || [,0])[1]])
+    .filter(([,q]) => q > 0);
+  const maior = Math.max(...linhas.map(([,q])=>q), 1);
+
+  alvo.innerHTML = `
+  <div class="bloco">
+    <div class="cab">
+      <span class="tag">Seu melhor time</span>
+      <span class="sub"><b>${melhor.overall}</b> de overall · ${melhor.formacao}
+        ${melhor.estilo.toLowerCase()} · ${melhor.campeao ? 'campeão' : 'caiu ' + (melhor.eliminado_em === 'fase de grupos' ? 'nos grupos' : 'nas ' + melhor.eliminado_em.toLowerCase())}</span>
+    </div>
+    <div class="melhor">
+      ${campoDaPartida(melhor)}
+      <div class="xi" style="margin-top:0">${(melhor.escalacao||[]).map(j=>
+        `<div class="c"><span class="ov">${j.over}</span><div class="nm">${j.nome}</div>
+           <div class="sm">${j.pos} · ${j.de}</div></div>`).join('')}</div>
+    </div>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="tag">Quem mais joga por você</span>
+      ${listaTop(maisVezes(todos.map(j=>j.nome), 5), 'x')}
+    </div>
+    <div class="bloco">
+      <span class="tag">De onde vem o seu time</span>
+      ${listaTop(maisVezes(todos.map(j=>clubeDe(j.de)), 5), '')}
+    </div>
+  </div>
+
+  <div class="duas">
+    <div class="bloco">
+      <span class="tag">Até onde você chega</span>
+      <div class="barras">${linhas.map(([f,q])=>
+        `<div class="barra${f==='Campeão'?' ouro':''}">
+           <span class="et">${NOME_FASE[f] || f}</span>
+           <span class="tr"><span class="fi" style="width:${Math.round(q/maior*100)}%"></span></span>
+           <span class="qt">${q}</span>
+         </div>`).join('')}</div>
+    </div>
+    <div class="bloco">
+      <span class="tag">Como você joga</span>
+      <span class="subtag">Formação</span>
+      ${listaTop(maisVezes(ps.map(p=>p.formacao), 3), 'x')}
+      <span class="subtag">Postura</span>
+      ${listaTop(maisVezes(ps.map(p=>p.estilo), 3), 'x')}
+    </div>
+  </div>`;
+}
+
 function pintaConta(){
   $('deslogado').hidden = !!EU;
   $('logado').hidden = !EU;
   if (EU){
     $('meuApelido').textContent = EU.apelido || '—';
+    $('perfilCorpo').innerHTML = '<p class="vazio">Carregando suas partidas…</p>';
     window.ZB.ranking().then(r=>{
       const meu = r.find(x=>x.user_id === EU.id);
       $('meuTit').textContent = meu ? meu.titulos : 0;
-      $('minhasStats').innerHTML = meu
-        ? `<span>Partidas <b>${meu.partidas}</b></span><span>Melhor overall <b>${meu.melhor_overall}</b></span><span>Saldo <b>${meu.saldo>0?'+':''}${meu.saldo}</b></span>`
+      const taxa = meu && meu.partidas ? Math.round(meu.titulos / meu.partidas * 100) : 0;
+      $('minhasStats').innerHTML = meu && meu.partidas
+        ? `<span>Partidas <b>${meu.partidas}</b></span><span>Aproveitamento <b>${taxa}%</b></span><span>Melhor overall <b>${meu.melhor_overall}</b></span><span>Saldo <b>${meu.saldo>0?'+':''}${meu.saldo}</b></span><span>Maior goleada <b>${meu.maior_goleada}</b></span>`
         : '<span>Nenhuma partida registrada ainda</span>';
     }).catch(()=>{});
+    window.ZB.minhasPartidas()
+      .then(pintaPerfil)
+      .catch(()=> $('perfilCorpo').innerHTML =
+        '<p class="vazio">Não deu para carregar suas partidas agora. Tente de novo daqui a pouco.</p>');
   } else {
     const criando = modoConta === 'criar', recuperando = modoConta === 'recuperar';
     $('abasConta').hidden = recuperando;
