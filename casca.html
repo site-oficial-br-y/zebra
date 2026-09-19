@@ -535,8 +535,8 @@ h1 em{font-style:italic;color:var(--verde)}
 /* o conteúdo precisa ser posicionado: elemento com z-index pinta acima de
    irmão não posicionado, e a foto passaria por cima do texto */
 .modo > :not(.foto){position:relative;z-index:1}
-.modo:hover{border-color:var(--verde-esc);transform:translateY(-2px);
-  box-shadow:0 14px 34px rgba(0,0,0,.45)}
+@media(hover:hover){.modo:hover{border-color:var(--verde-esc);transform:translateY(-2px);
+  box-shadow:0 14px 34px rgba(0,0,0,.45)}}
 .modo .faixa{position:absolute;inset:0 auto 0 0;width:3px;background:var(--verde)}
 .modo .selo{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;
   color:var(--verde)}
@@ -548,13 +548,22 @@ h1 em{font-style:italic;color:var(--verde)}
   mask-image:linear-gradient(90deg,transparent,#000 46%)}
 .modo .foto img{display:block;width:100%;height:100%;object-fit:cover;
   transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .3s;opacity:.9}
-.modo:hover .foto img{transform:scale(1.06);opacity:1}
+@media(hover:hover){.modo:hover .foto img{transform:scale(1.06);opacity:1}}
 /* cada foto tem o seu ponto de interesse em altura diferente */
-.modo[data-base="lendas"]    .foto img{object-position:50% 62%}
+.modo[data-base="lendas"]    .foto img{object-position:50% 26%}
 .modo[data-base="atuais"]    .foto img{object-position:50% 26%}
 .modo[data-base="temporada"] .foto img{object-position:50% 30%}
-/* o duelo local ainda não tem foto: sem ela o texto usa a largura toda */
-.modo.local{padding-right:20px;min-height:0}
+/* os dois estão de corpo inteiro: cabem inteiros em vez de preencher,
+   e a máscara segue a largura real da imagem, não a da caixa */
+/* a caixa toma a proporção da foto: com contain sobrava vazio dentro dela
+   e a máscara, medida em % da caixa, cortava reto na borda da imagem */
+.modo.local .foto{width:auto;aspect-ratio:457/600;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 46%),
+                     linear-gradient(180deg,transparent,#000 15%);
+  mask-image:linear-gradient(90deg,transparent,#000 46%),
+             linear-gradient(180deg,transparent,#000 15%);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.modo.local .foto img{object-position:50% 100%}
 @media(max-width:759px){
   /* no celular a foto fica atrás do texto, então recua e apaga */
   .modo{padding-right:20px;min-height:250px}
@@ -562,6 +571,9 @@ h1 em{font-style:italic;color:var(--verde)}
     -webkit-mask-image:linear-gradient(90deg,transparent,#000 68%);
     mask-image:linear-gradient(90deg,transparent,#000 68%)}
   .modo .foto img{opacity:.26}
+  /* a foto do duelo é a mais clara das quatro e vinha por cima do texto */
+  .modo.local .foto{height:78%;top:auto;bottom:0}
+  .modo.local .foto img{opacity:.2}
   .modo p,.modo .pe{max-width:25ch}
 }
 .modo .pe{display:flex;gap:14px;margin-top:15px;font-size:11px;color:var(--apagado);
@@ -747,6 +759,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     </button>
     <button class="modo local" data-base="local">
       <span class="faixa"></span>
+      <span class="foto"><img src="foto-local.webp" alt="Dois jogadores lado a lado no gramado" width="457" height="600" loading="lazy" decoding="async"></span>
       <span class="selo">Dois jogadores · um aparelho</span>
       <h3>Duelo<br>local</h3>
       <p>Cada um monta os seus onze escondido do outro, o aparelho passa de mão,
