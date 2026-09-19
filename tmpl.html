@@ -545,7 +545,7 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo{position:relative;text-align:left;border:1px solid var(--linha);border-radius:14px;
   background:var(--carta);padding:22px 20px 20px;cursor:pointer;color:inherit;font-family:inherit;
   overflow:hidden;transition:border-color .16s,transform .16s,box-shadow .16s;
-  min-height:236px;padding-right:200px}
+  min-height:236px;padding-right:40%}
 /* o conteúdo precisa ser posicionado: elemento com z-index pinta acima de
    irmão não posicionado, e a foto passaria por cima do texto */
 .modo > :not(.foto){position:relative;z-index:1}
@@ -557,30 +557,21 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo h3{font-size:25px;font-weight:900;font-style:italic;letter-spacing:-.03em;
   margin:8px 0 7px;line-height:1.05;text-transform:uppercase}
 .modo p{font-size:13px;color:var(--apagado);line-height:1.6;max-width:42ch}
-/* as quatro fotos saem do mesmo molde: mesma proporção, mesma altura na
-   tela e arquivo com quase três vezes essa altura, para ficar nítido */
-.modo .foto{position:absolute;right:16px;top:auto;bottom:0;height:206px;aspect-ratio:437/560;
-  z-index:0;pointer-events:none;
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 44%),
-                     linear-gradient(180deg,transparent,#000 16%);
-  mask-image:linear-gradient(90deg,transparent,#000 44%),
-             linear-gradient(180deg,transparent,#000 16%);
-  -webkit-mask-composite:source-in;mask-composite:intersect}
-.modo .foto img{display:block;width:100%;height:100%;object-fit:cover;
-  transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .3s;opacity:.9}
-@media(hover:hover){.modo:hover .foto img{transform:scale(1.06);opacity:1}}
-/* cada foto tem o seu ponto de interesse em altura diferente */
-.modo[data-base="lendas"]    .foto img{object-position:50% 30%}
-.modo[data-base="atuais"]    .foto img{object-position:50% 24%}
-.modo[data-base="temporada"] .foto img{object-position:50% 28%}
-.modo.local                  .foto img{object-position:50% 100%}
+/* a foto panorâmica é o fundo do cartão inteiro. Dissolve à esquerda para
+   o texto ler limpo e o estádio aparecer inteiro do meio para a direita. */
+.modo .foto{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.modo .foto img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 42%;
+  transition:transform .6s cubic-bezier(.2,.7,.3,1),opacity .3s;opacity:.62;
+  -webkit-mask-image:linear-gradient(90deg,transparent 6%,#000 52%);
+  mask-image:linear-gradient(90deg,transparent 6%,#000 52%)}
+@media(hover:hover){.modo:hover .foto img{transform:scale(1.04);opacity:.82}}
 @media(max-width:759px){
-  /* no celular a foto fica atrás do texto, então encolhe e apaga */
   .modo{padding-right:20px;min-height:236px}
-  .modo .foto{height:174px;right:10px}
-  .modo .foto img{opacity:.26}
-  .modo.local .foto img{opacity:.2}   /* é a mais clara das quatro */
-  .modo p,.modo .pe{max-width:25ch}
+  /* no celular o texto atravessa a foto inteira, então ela recua bem mais */
+  .modo .foto img{opacity:.2;object-position:66% 42%;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 72%);
+    mask-image:linear-gradient(90deg,transparent 0%,#000 72%)}
+  .modo p,.modo .pe{max-width:27ch}
 }
 .modo .pe{display:flex;gap:14px;margin-top:15px;font-size:11px;color:var(--apagado);
   font-weight:700;flex-wrap:wrap}
@@ -734,7 +725,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
   <div class="modos">
     <button class="modo" data-base="lendas">
       <span class="faixa"></span>
-      <span class="foto"><img src="foto-lendas.webp" alt="Disputa de bola entre três jogadores" width="480" height="600" loading="lazy" decoding="async"></span>
+      <span class="foto"><img src="fundo-lendas.webp" alt="Disputa de bola entre três jogadores" width="1400" height="560" loading="lazy" decoding="async"></span>
       <span class="selo">De 1962 a 2024</span>
       <h3>Lendas do<br>futebol brasileiro</h3>
       <p>Os elencos campeões da história, do Santos de Pelé ao Botafogo de 2024.
@@ -744,7 +735,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     </button>
     <button class="modo atual" data-base="atuais">
       <span class="faixa"></span>
-      <span class="foto"><img src="foto-atuais.webp" alt="Jogador do Corinthians comemorando" width="480" height="600" loading="lazy" decoding="async"></span>
+      <span class="foto"><img src="fundo-atuais.webp" alt="Jogador do Corinthians comemorando" width="1400" height="560" loading="lazy" decoding="async"></span>
       <span class="selo">Brasileirão 2026</span>
       <h3>Times<br>atuais</h3>
       <p>Os vinte times da Série A deste ano, com quem está em campo hoje.
@@ -754,7 +745,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     </button>
     <button class="modo temp" data-base="temporada">
       <span class="faixa"></span>
-      <span class="foto"><img src="foto-temporada.webp" alt="Neymar com a camisa do Santos" width="480" height="600" loading="lazy" decoding="async"></span>
+      <span class="foto"><img src="fundo-temporada.webp" alt="Neymar com a camisa do Santos" width="1400" height="560" loading="lazy" decoding="async"></span>
       <span class="selo">Times atuais · o ano inteiro</span>
       <h3>Temporada</h3>
       <p>Um time só, o ano todo: Brasileirão, Copa do Brasil e, se terminar no
@@ -765,7 +756,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     </button>
     <button class="modo local" data-base="local">
       <span class="faixa"></span>
-      <span class="foto"><img src="foto-local.webp" alt="Dois jogadores lado a lado no gramado" width="457" height="600" loading="lazy" decoding="async"></span>
+      <span class="foto"><img src="fundo-local.webp" alt="Dois jogadores lado a lado no gramado" width="1400" height="560" loading="lazy" decoding="async"></span>
       <span class="selo">Dois jogadores · um aparelho</span>
       <h3>Duelo<br>local</h3>
       <p>Cada um monta os seus onze escondido do outro, o aparelho passa de mão,
