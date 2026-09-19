@@ -545,7 +545,7 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo{position:relative;text-align:left;border:1px solid var(--linha);border-radius:14px;
   background:var(--carta);padding:22px 20px 20px;cursor:pointer;color:inherit;font-family:inherit;
   overflow:hidden;transition:border-color .16s,transform .16s,box-shadow .16s;
-  min-height:236px;padding-right:40%}
+  min-height:236px;padding-right:34%}
 /* o conteúdo precisa ser posicionado: elemento com z-index pinta acima de
    irmão não posicionado, e a foto passaria por cima do texto */
 .modo > :not(.foto){position:relative;z-index:1}
@@ -557,20 +557,24 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo h3{font-size:25px;font-weight:900;font-style:italic;letter-spacing:-.03em;
   margin:8px 0 7px;line-height:1.05;text-transform:uppercase}
 .modo p{font-size:13px;color:var(--apagado);line-height:1.6;max-width:42ch}
-/* a foto panorâmica é o fundo do cartão inteiro. Dissolve à esquerda para
-   o texto ler limpo e o estádio aparecer inteiro do meio para a direita. */
-.modo .foto{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.modo .foto img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 42%;
-  transition:transform .6s cubic-bezier(.2,.7,.3,1),opacity .3s;opacity:.62;
-  -webkit-mask-image:linear-gradient(90deg,transparent 6%,#000 52%);
-  mask-image:linear-gradient(90deg,transparent 6%,#000 52%)}
-@media(hover:hover){.modo:hover .foto img{transform:scale(1.04);opacity:.82}}
+/* a foto entra no tamanho dela: a caixa toma a proporção do arquivo e a
+   altura do cartão, então nada é cortado na vertical. Encosta na direita e
+   o que sobra do lado esquerdo dissolve. */
+.modo .foto{position:absolute;right:0;top:0;bottom:0;left:auto;width:auto;
+  aspect-ratio:1983/793;z-index:0;pointer-events:none;overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent 2%,rgba(0,0,0,.45) 46%,#000 82%);
+  mask-image:linear-gradient(90deg,transparent 2%,rgba(0,0,0,.45) 46%,#000 82%)}
+.modo .foto img{display:block;width:100%;height:100%;object-fit:cover;
+  transition:transform .6s cubic-bezier(.2,.7,.3,1),opacity .3s;opacity:.7}
+@media(hover:hover){.modo:hover .foto img{transform:scale(1.04);opacity:.9}}
 @media(max-width:759px){
+  /* no celular o cartão é estreito e a foto em tamanho natural ficaria mais
+     larga que ele: ali ela volta a ser fundo, apagada atrás do texto */
   .modo{padding-right:20px;min-height:236px}
-  /* no celular o texto atravessa a foto inteira, então ela recua bem mais */
-  .modo .foto img{opacity:.2;object-position:66% 42%;
-    -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 72%);
-    mask-image:linear-gradient(90deg,transparent 0%,#000 72%)}
+  .modo .foto{inset:0;width:auto;aspect-ratio:auto;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.4) 55%,#000 92%);
+    mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.4) 55%,#000 92%)}
+  .modo .foto img{opacity:.22;object-position:66% 42%}
   .modo p,.modo .pe{max-width:27ch}
 }
 .modo .pe{display:flex;gap:14px;margin-top:15px;font-size:11px;color:var(--apagado);
