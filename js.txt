@@ -92,6 +92,7 @@ const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
 
 /* ---------- telas ---------- */
 const $ = id => document.getElementById(id);
+const ATALHO_PEN = new URLSearchParams(location.search).has('pen');
 const TELAS = ['scr-home','scr-modo','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank','scr-legal','scr-passe','scr-pen'];
 let MODO_JOGO = 'campanha';
 const mostra = id => {
@@ -298,7 +299,7 @@ function marcador(xi){
   for (const p of xi){ r -= peso(p); if (r<=0) return p.nome; }
   return xi[xi.length-1].nome;
 }
-function simula(meuXi, meuOv, opp, mods){
+function simula(meuXi, meuOv, opp, mods, empatar){
   // o duelo local manda a força e os modificadores prontos, com os dois lados
   // medidos pela mesma régua; nos outros modos sai tudo do estado atual
   const of = opp.forca != null ? opp.forca : forca(opp);
@@ -307,6 +308,7 @@ function simula(meuXi, meuOv, opp, mods){
   const lam = (dif,mod) => Math.min(3.6, 1.35*Math.exp(dif/16)*mod);
   let a = Math.min(6, poisson(lam(meuOv-of, mods ? mods.atk : modAtaque())));
   let b = Math.min(6, poisson(lam(of-meuOv, mods ? mods.sof : modDefesa())));
+  if (empatar) b = a;
   const ev = [];
   const min = () => 1 + Math.floor(Math.random()*90);
   for (let i=0;i<a;i++) ev.push({m:min(), meu:true,  who:marcador(meuXi)});
@@ -352,7 +354,7 @@ const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 /* ---------- uma partida: cria o cartão, anima e devolve o resultado ---------- */
 /* Serve à campanha do modo clássico e às três competições da temporada. */
-async function jogaPartida({ xi, opp, box, fase, mata, casa, mods }){
+async function jogaPartida({ xi, opp, box, fase, mata, casa, mods, empatar }){
   const el = document.createElement('div');
   el.className = 'match';
   el.innerHTML = `<div class="top">
@@ -365,7 +367,7 @@ async function jogaPartida({ xi, opp, box, fase, mata, casa, mods }){
   const sc = el.querySelector('.sc'), ck = el.querySelector('.clock'), evs = el.querySelector('.evs');
   el.classList.add('vivo');
 
-  const r = simula(xi, S.over, opp, mods);
+  const r = simula(xi, S.over, opp, mods, empatar);
   let a = 0, b = 0, k = 0;
   const stepAgora = () => S.vel === 0 ? 0 : Math.round(55 / S.vel);
 
@@ -644,6 +646,8 @@ async function partidaLocal(){
   const adversario = { clube:'Jogador 2', ano:'', cores:['#e9c46a','#0a0d0a'],
                        elenco: xi2, forca: f2 };
 
+  if (ATALHO_PEN) $('campTitulo').textContent = 'Duelo local · teste de pênaltis';
+
   const el = document.createElement('div');
   el.className = 'duelo';
   el.innerHTML = `<div class="lado"><div class="q">Jogador 1</div><div class="o">${LOCAL.overs[0]}</div>
@@ -657,7 +661,8 @@ async function partidaLocal(){
   S.over = f1;
   const r = await jogaPartida({ xi: xi1, opp: adversario, box: $('matches'),
                                 fase: 'Duelo', mata: false,
-                                mods: { atk: m1.atk * m2.sof, sof: m2.atk * m1.sof } });
+                                mods: { atk: m1.atk * m2.sof, sof: m2.atk * m1.sof },
+                                empatar: ATALHO_PEN });
   S.over = antes;
 
   if (r.a === r.b){
