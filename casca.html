@@ -528,10 +528,13 @@ h1 em{font-style:italic;color:var(--verde)}
 
 /* ---- escolha de modo ---- */
 .modos{display:grid;gap:13px;margin-top:20px}
-@media(min-width:760px){.modos{grid-template-columns:1fr 1fr}}
 .modo{position:relative;text-align:left;border:1px solid var(--linha);border-radius:14px;
   background:var(--carta);padding:22px 20px 20px;cursor:pointer;color:inherit;font-family:inherit;
-  overflow:hidden;transition:border-color .16s,transform .16s,box-shadow .16s}
+  overflow:hidden;transition:border-color .16s,transform .16s,box-shadow .16s;
+  min-height:268px;padding-right:34%}
+/* o conteúdo precisa ser posicionado: elemento com z-index pinta acima de
+   irmão não posicionado, e a foto passaria por cima do texto */
+.modo > :not(.foto){position:relative;z-index:1}
 .modo:hover{border-color:var(--verde-esc);transform:translateY(-2px);
   box-shadow:0 14px 34px rgba(0,0,0,.45)}
 .modo .faixa{position:absolute;inset:0 auto 0 0;width:3px;background:var(--verde)}
@@ -540,17 +543,36 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo h3{font-size:25px;font-weight:900;font-style:italic;letter-spacing:-.03em;
   margin:8px 0 7px;line-height:1.05;text-transform:uppercase}
 .modo p{font-size:13px;color:var(--apagado);line-height:1.6;max-width:42ch}
+.modo .foto{position:absolute;inset:0 0 0 auto;width:32%;z-index:0;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 46%);
+  mask-image:linear-gradient(90deg,transparent,#000 46%)}
+.modo .foto img{display:block;width:100%;height:100%;object-fit:cover;
+  transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .3s;opacity:.9}
+.modo:hover .foto img{transform:scale(1.06);opacity:1}
+/* cada foto tem o seu ponto de interesse em altura diferente */
+.modo[data-base="lendas"]    .foto img{object-position:50% 62%}
+.modo[data-base="atuais"]    .foto img{object-position:50% 26%}
+.modo[data-base="temporada"] .foto img{object-position:50% 30%}
+/* o duelo local ainda não tem foto: sem ela o texto usa a largura toda */
+.modo.local{padding-right:20px;min-height:0}
+@media(max-width:759px){
+  /* no celular a foto fica atrás do texto, então recua e apaga */
+  .modo{padding-right:20px;min-height:250px}
+  .modo .foto{width:54%;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 68%);
+    mask-image:linear-gradient(90deg,transparent,#000 68%)}
+  .modo .foto img{opacity:.26}
+  .modo p,.modo .pe{max-width:25ch}
+}
 .modo .pe{display:flex;gap:14px;margin-top:15px;font-size:11px;color:var(--apagado);
   font-weight:700;flex-wrap:wrap}
 .modo .pe b{color:var(--claro);font-weight:900;font-style:italic}
-.modo.temp{grid-column:1/-1}
 .modo.temp .faixa{background:linear-gradient(180deg,var(--ouro),var(--verde))}
 .modo.temp .selo{color:var(--ouro)}
 .modo.temp:hover{border-color:var(--ouro)}
 .modo.atual .faixa{background:var(--ouro)}
 .modo.atual .selo{color:var(--ouro)}
 .modo.atual:hover{border-color:var(--ouro)}
-.modo.local{grid-column:1/-1}
 .modo.local .faixa{background:linear-gradient(180deg,var(--claro),var(--verde-esc))}
 .modo.local .selo{color:var(--claro)}
 .modo.local:hover{border-color:var(--claro)}
@@ -694,6 +716,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
   <div class="modos">
     <button class="modo" data-base="lendas">
       <span class="faixa"></span>
+      <span class="foto"><img src="foto-lendas.webp" alt="Disputa de bola entre três jogadores" width="480" height="600" loading="lazy" decoding="async"></span>
       <span class="selo">De 1962 a 2024</span>
       <h3>Lendas do<br>futebol brasileiro</h3>
       <p>Os elencos campeões da história, do Santos de Pelé ao Botafogo de 2024.
@@ -703,6 +726,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     </button>
     <button class="modo atual" data-base="atuais">
       <span class="faixa"></span>
+      <span class="foto"><img src="foto-atuais.webp" alt="Jogador do Corinthians comemorando" width="480" height="600" loading="lazy" decoding="async"></span>
       <span class="selo">Brasileirão 2026</span>
       <h3>Times<br>atuais</h3>
       <p>Os vinte times da Série A deste ano, com quem está em campo hoje.
@@ -712,6 +736,7 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     </button>
     <button class="modo temp" data-base="temporada">
       <span class="faixa"></span>
+      <span class="foto"><img src="foto-temporada.webp" alt="Neymar com a camisa do Santos" width="480" height="600" loading="lazy" decoding="async"></span>
       <span class="selo">Times atuais · o ano inteiro</span>
       <h3>Temporada</h3>
       <p>Um time só, o ano todo: Brasileirão, Copa do Brasil e, se terminar no
