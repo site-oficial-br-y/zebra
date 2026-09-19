@@ -1136,13 +1136,15 @@ try {
       return data;
     },
     async ranking(){
-      // quem só criou conta e nunca jogou não ocupa vaga no ranking: com
-      // saldo zero eles ficavam na frente de quem jogou e tomou gol
+      /* Quem só criou conta e nunca jogou não ocupa vaga: com saldo zero
+         ficava na frente de quem jogou e tomou gol. O corte é feito aqui e
+         não no banco de propósito — filtrar coluna de agregação da view pelo
+         PostgREST devolveu lista vazia, e a lista inteira cabe numa leitura. */
       const { data, error } = await sb.from('zebra_ranking').select('*')
-        .gt('partidas', 0)
-        .order('titulos', { ascending:false }).order('saldo', { ascending:false }).limit(50);
+        .order('titulos', { ascending:false }).order('saldo', { ascending:false }).limit(1000);
       if (error) throw error;
-      return data;
+      const jogaram = (data || []).filter(x => Number(x.partidas) > 0);
+      return { linhas: (data || []).length, lista: jogaram.slice(0, 50) };
     },
     /* A própria linha, buscada direto. A aba "minha conta" procurava a pessoa
        dentro do top 50; quem ficava de fora via "nenhuma partida registrada"

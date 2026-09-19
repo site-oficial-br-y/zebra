@@ -1425,8 +1425,14 @@ $('btRank').onclick = async () => {
   mostra('scr-rank');
   $('rankCorpo').innerHTML = '<div class="dica" style="margin-top:18px">Carregando…</div>';
   try {
-    const r = await window.ZB.ranking();
-    if (!r.length){ $('rankCorpo').innerHTML = '<div class="dica" style="margin-top:18px">Ninguém jogou ainda. Seja o primeiro.</div>'; return; }
+    const { linhas, lista: r } = await window.ZB.ranking();
+    if (!r.length){
+      // dizer quantos perfis vieram separa "ninguém jogou" de "a leitura veio vazia"
+      $('rankCorpo').innerHTML = '<div class="dica" style="margin-top:18px">'
+        + (linhas ? 'Ninguém jogou ainda, entre os ' + linhas + ' cadastrados. Seja o primeiro.'
+                  : 'A lista voltou vazia do banco (0 perfis lidos).') + '</div>';
+      return;
+    }
     $('rankCorpo').innerHTML = `<table class="rank"><thead><tr>
         <th></th><th>Jogador</th><th>Títulos</th>
         <th class="esconde">Partidas</th><th class="esconde">Melhor XI</th><th>Saldo</th>
