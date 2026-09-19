@@ -433,6 +433,20 @@ h1 em{font-style:italic;color:var(--verde)}
 @keyframes pulsaBola{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
 .flash{position:absolute;border-radius:50%;pointer-events:none;
   border:3px solid var(--claro);animation:bate .45s ease-out forwards}
+/* a bola sai de verdade para o canto escolhido; a altura conta a batida:
+   no tempo certo ela cruza rasteira, cedo demais ela sobe por cima */
+@keyframes voa{60%{opacity:1}
+  to{transform:translate(var(--vx),var(--vy)) scale(.34);opacity:0}}
+.alvo.voando{animation:voa .55s cubic-bezier(.25,.6,.35,1) forwards}
+/* o anel sai de cena junto com a bola, senão fica um donut parado na tela */
+@keyframes apagaAnel{to{opacity:0;transform:scale(1.45)}}
+#penAnel.saiu{animation:apagaAnel .4s ease-out forwards}
+@keyframes treme{0%,100%{transform:translate(0,0)}
+  20%{transform:translate(-7px,2px)}40%{transform:translate(6px,-2px)}
+  60%{transform:translate(-4px,1px)}80%{transform:translate(3px,-1px)}}
+.palco.sacode{animation:treme .38s ease-out}
+.pen-quem{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:800}
+.pen-quem.bate{color:var(--verde)} .pen-quem.pega{color:var(--ouro)}
 .voltas{display:flex;gap:6px;justify-content:center;margin-top:2px}
 .volta{display:block;width:22px;height:4px;border-radius:2px;background:var(--linha)}
 .volta.usada{background:var(--verde-esc)}
@@ -782,12 +796,13 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     <div class="aviso" id="passeAviso"></div>
     <div class="feito" id="passeFeito" hidden></div>
     <button class="btn" id="passeOk">Estou com o celular</button>
+    <button class="btn ghost" id="passeOk2" hidden style="margin-top:10px">Outra opção</button>
   </div>
 </section>
 
 <section id="scr-pen" hidden>
   <div class="pen">
-    <div class="tag">Pênaltis</div>
+    <div class="tag" id="penQuem">Pênaltis</div>
     <div class="pen-t" id="penTitulo">Pênaltis</div>
     <div class="pen-s" id="penSub"></div>
 

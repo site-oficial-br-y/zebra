@@ -567,7 +567,7 @@ async function campanha(){
 /* ---------- duelo local: dois jogadores, um aparelho ---------- */
 let LOCAL = null;
 
-function telaPassagem({ vez, titulo, cima, aviso, feito, botao }){
+function telaPassagem({ vez, titulo, cima, aviso, feito, botao, botao2 }){
   return new Promise(resolve => {
     $('passeCima').textContent = cima;
     // ou o número gigante de quem joga, ou um título; nunca os dois
@@ -579,8 +579,12 @@ function telaPassagem({ vez, titulo, cima, aviso, feito, botao }){
     $('passeFeito').hidden = !feito;
     if (feito) $('passeFeito').innerHTML = '<span class="ok">✓</span><div>' + feito + '</div>';
     $('passeOk').textContent = botao || 'Estou com o celular';
+    $('passeOk2').hidden = !botao2;
+    if (botao2) $('passeOk2').textContent = botao2;
     mostra('scr-passe');
-    $('passeOk').onclick = () => { $('passeOk').onclick = null; resolve(); };
+    const fecha = r => () => { $('passeOk').onclick = $('passeOk2').onclick = null; resolve(r); };
+    $('passeOk').onclick = fecha(1);
+    $('passeOk2').onclick = fecha(2);
   });
 }
 
@@ -697,7 +701,7 @@ function filaLocal(xi){
   return xi.slice().sort((p,q) => (p.grupo==='GOL') - (q.grupo==='GOL') || q.over - p.over);
 }
 
-function anelDoBatedor(over){
+function anelDoBatedor(over, direcao){
   return new Promise(resolve => {
     const palco = $('penPalco'), anel = $('penAnel');
     const ciclo = cicloDoBatedor(over);
@@ -731,27 +735,44 @@ function anelDoBatedor(over){
     /* o anel nasce grande e fecha. Só o raio não diz se o toque foi cedo
        ou tarde: com o anel abrindo de volta, raio grande é atraso. Por isso
        sai junto a fase do ciclo. */
-    const encerra = (r, t) => {
+    /* travar é uma coisa, responder é outra: o chute tranca tudo no toque
+       e só devolve o resultado quando a bola termina de voar. Se as duas
+       coisas andassem juntas, o cronômetro das cinco voltas caía no meio
+       do voo e dizia que o jogador não tinha batido. */
+    const tranca = () => {
       bateu = true;
       cancelAnimationFrame(raf); clearTimeout(fim);
       palco.onpointerdown = null;
-      resolve(r === null ? null
-        : { r, fechando: Math.sin(2*Math.PI*((t - t0)/ciclo)) > 0 });
     };
     raf = requestAnimationFrame(quadro);
-    fim = setTimeout(() => { if (!bateu) encerra(null, 0); }, ciclo * PEN.CICLOS + 60);
+    fim = setTimeout(() => { if (!bateu){ tranca(); resolve(null); } },
+                     ciclo * PEN.CICLOS + 60);
     palco.onpointerdown = e => {
       e.preventDefault();
       if (bateu) return;
       const t = performance.now(), r = raio(t);
+      tranca();
       const f = document.createElement('div');
       f.className = 'flash';
       f.style.width = f.style.height = (r*2) + 'px';
       palco.appendChild(f);
       setTimeout(() => f.remove(), 460);
-      setTimeout(() => encerra(r, t), 170);
+      chutaBola(direcao, Math.abs(r - PEN.RALVO) <= PEN.JANELA);
+      setTimeout(() => resolve({ r, fechando: Math.sin(2*Math.PI*((t - t0)/ciclo)) > 0 }), 620);
     };
   });
+}
+
+function chutaBola(direcao, noPonto){
+  const bola = $('penPalco').querySelector('.alvo'), palco = $('penPalco');
+  const anel = $('penAnel');
+  anel.classList.add('saiu');
+  setTimeout(() => anel.classList.remove('saiu'), 700);
+  bola.style.setProperty('--vx', direcao === 'E' ? '-118px' : direcao === 'D' ? '118px' : '0px');
+  bola.style.setProperty('--vy', noPonto ? '-150px' : '-260px');
+  bola.classList.add('voando');
+  if (noPonto){ palco.classList.add('sacode'); setTimeout(()=>palco.classList.remove('sacode'), 420); }
+  setTimeout(() => { bola.classList.remove('voando'); bola.style.removeProperty('--vx'); }, 700);
 }
 
 function escolheLado(titulo, sub, cor){
@@ -787,34 +808,48 @@ async function disputaPenaltisLocal(xi1, xi2){
   const g = [0, 0], feitas = [];
   let n = 0;
 
+  const escolha = await telaPassagem({
+    titulo: 'Pênaltis', cima: 'Deu empate',
+    aviso: 'Cinco cobranças para cada um. Vocês podem bater na mão, '
+         + 'ou deixar a sorte resolver.',
+    botao: 'Bater na mão', botao2: 'Disputa automática',
+  });
+  if (escolha === 2) return penaltisAutoLocal(filas, g, feitas);
+
+  /* o batedor vai primeiro e o goleiro adivinha depois: é o goleiro que
+     tem de chutar o canto, não o contrário */
   const cobra = async lado => {
     const quem = filas[lado][n % 11];
     const outro = lado === 0 ? 2 : 1;
-    // o goleiro escolhe primeiro, sozinho com o aparelho
-    await telaPassagem({
-      vez: outro, cima: 'Pênaltis · defesa',
-      aviso: 'Você é o goleiro. Escolha o canto <b>sem o outro ver</b>.',
-      botao: 'Estou com o celular',
-    });
-    mostra('scr-pen'); pintaPlacarPen(g, feitas);
-    const ladoGol = await escolheLado('Você defende', 'Para onde você se joga?', 'ouro');
 
     await telaPassagem({
       vez: lado + 1, cima: 'Pênaltis · cobrança',
-      aviso: 'O goleiro já escolheu. Sua vez de bater.',
-      botao: 'Estou com o celular',
+      aviso: `Sua vez de bater com <b>${quem.nome}</b>. `
+           + 'Escolha o canto e acerte o tempo.',
     });
     mostra('scr-pen'); pintaPlacarPen(g, feitas);
+    $('penQuem').textContent = 'Jogador ' + (lado + 1) + ' · cobra';
+    $('penQuem').className = 'tag pen-quem bate';
     const ladoBat = await escolheLado(quem.nome, 'Para onde você bate?', '');
 
     $('penTitulo').textContent = quem.nome;
     $('penSub').textContent = 'Toque quando o anel chegar na bola';
     $('penLados').hidden = true;
     $('penPalcoWrap').hidden = false;
-    const t = await anelDoBatedor(quem.over);
+    const t = await anelDoBatedor(quem.over, ladoBat);
+    $('penPalcoWrap').hidden = true;
+
+    await telaPassagem({
+      vez: outro, cima: 'Pênaltis · defesa',
+      aviso: 'A bola já saiu. Você é o goleiro: <b>chute o canto</b>.',
+    });
+    mostra('scr-pen'); pintaPlacarPen(g, feitas);
+    $('penQuem').textContent = 'Jogador ' + outro + ' · defende';
+    $('penQuem').className = 'tag pen-quem pega';
+    const ladoGol = await escolheLado('Você defende', 'Para onde você se joga?', 'ouro');
+
     const dentro = t && Math.abs(t.r - PEN.RALVO) <= PEN.JANELA;
     const cedo = t && (t.fechando ? t.r > PEN.RALVO : t.r < PEN.RALVO);
-
     let fez, motivo;
     if (t === null){ fez = false; motivo = 'deixou o anel dar as cinco voltas'; }
     else if (!dentro){ fez = false;
@@ -822,28 +857,69 @@ async function disputaPenaltisLocal(xi1, xi2){
     else if (ladoGol === ladoBat){ fez = false; motivo = 'o goleiro foi no mesmo canto'; }
     else { fez = true; motivo = 'no canto, sem chance'; }
 
+    // meio segundo de suspense antes de dizer no que deu
+    $('penTitulo').textContent = '...';
+    $('penSub').textContent = 'A bola está indo';
+    $('penLados').hidden = true;
+    await sleep(500);
+
     if (fez) g[lado]++;
     feitas.push({ lado, nome: quem.nome, fez });
     pintaPlacarPen(g, feitas);
     $('penTitulo').textContent = fez ? 'GOL' : 'PERDEU';
     $('penTitulo').className = 'pen-t ' + (fez ? 'g' : 'r');
     $('penSub').textContent = motivo;
-    await sleep(1500);
+    await sleep(1600);
     $('penTitulo').className = 'pen-t';
   };
 
-  /* as cinco primeiras, parando assim que um não alcança mais o outro */
   for (n = 0; n < 5; n++){
     await cobra(0);
     if (g[0] - g[1] > 4 - n) break;
     await cobra(1);
     if (g[1] - g[0] > 4 - n) break;
   }
-  /* alternada: só decide quando um faz e o outro perde na mesma rodada */
   while (g[0] === g[1]){
     await cobra(0); await cobra(1);
     n++;
   }
+  return { g, feitas };
+}
+
+/* a mesma disputa sem ninguém tocar na tela: a chance sai do overall do
+   batedor, como no mata-mata dos outros modos */
+async function penaltisAutoLocal(filas, g, feitas){
+  mostra('scr-pen');
+  $('penQuem').textContent = 'Disputa automática';
+  $('penQuem').className = 'tag pen-quem';
+  $('penLados').hidden = true;
+  $('penPalcoWrap').hidden = true;
+  let n = 0;
+
+  const bate = async lado => {
+    const quem = filas[lado][n % 11];
+    const fez = Math.random() < Math.max(.45, Math.min(.95, .68 + (quem.over - 78) / 100));
+    $('penTitulo').textContent = quem.nome;
+    $('penTitulo').className = 'pen-t';
+    $('penSub').textContent = 'Jogador ' + (lado + 1) + ' na marca do pênalti';
+    await sleep(420);
+    if (fez) g[lado]++;
+    feitas.push({ lado, nome: quem.nome, fez });
+    pintaPlacarPen(g, feitas);
+    $('penTitulo').textContent = fez ? 'GOL' : 'PERDEU';
+    $('penTitulo').className = 'pen-t ' + (fez ? 'g' : 'r');
+    await sleep(520);
+  };
+
+  pintaPlacarPen(g, feitas);
+  for (n = 0; n < 5; n++){
+    await bate(0);
+    if (g[0] - g[1] > 4 - n) break;
+    await bate(1);
+    if (g[1] - g[0] > 4 - n) break;
+  }
+  while (g[0] === g[1]){ await bate(0); await bate(1); n++; }
+  $('penTitulo').className = 'pen-t';
   return { g, feitas };
 }
 
