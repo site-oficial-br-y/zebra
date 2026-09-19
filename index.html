@@ -1081,7 +1081,24 @@ try {
     async meuPerfil(){
       const s = await this.sessao(); if (!s) return null;
       const { data } = await sb.from('zebra_perfis').select('apelido').eq('id', s.user.id).maybeSingle();
-      return data ? { id: s.user.id, apelido: data.apelido } : { id: s.user.id, apelido: null };
+      if (data) return { id: s.user.id, apelido: data.apelido };
+      /* Conta sem perfil some do ranking calada: a pessoa joga, a partida é
+         gravada e nunca aparece, porque a lista é montada a partir dos perfis.
+         O gatilho do banco cria o perfil junto com a conta, mas quem entrou
+         antes dele ficou órfão. Esta é a segunda trava, do lado do navegador. */
+      const meta = ((s.user.user_metadata || {}).apelido || '').trim();
+      const ap = meta.length >= 2 && meta.length <= 18 ? meta
+        : 'zebra' + String(Math.floor(Math.random() * 100000)).padStart(5, '0');
+      const { error } = await sb.from('zebra_perfis').insert({ id: s.user.id, apelido: ap });
+      if (!error) return { id: s.user.id, apelido: ap };
+      // apelido já tomado: entra com sufixo em vez de continuar sem perfil
+      const alt = (ap.slice(0, 14) + Math.floor(Math.random() * 1000)).slice(0, 18);
+      const { error: e2 } = await sb.from('zebra_perfis').insert({ id: s.user.id, apelido: alt });
+      if (e2){
+        console.warn('perfil não criado:', e2);
+        return { id: s.user.id, apelido: null };
+      }
+      return { id: s.user.id, apelido: alt };
     },
     async entrar(email, senha){
       const { error } = await sb.auth.signInWithPassword({ email, password: senha });
