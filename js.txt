@@ -564,6 +564,23 @@ async function campanha(){
     $('vtxt').innerHTML += '<br><span style="color:var(--apagado)">Entre na sua conta para valer no ranking.</span>';
   }
 }
+/* ---------- troféus ---------- */
+const TACAS = [
+  { chave:'t_brasileirao',  nome:'Brasileirão',    img:'taca-brasileirao.webp' },
+  { chave:'t_copa',         nome:'Copa do Brasil', img:'taca-copa-do-brasil.webp' },
+  { chave:'t_libertadores', nome:'Libertadores',   img:'taca-libertadores.webp' },
+  { chave:'t_mundial',      nome:'Mundial',        img:'taca-mundial.webp' },
+];
+/* Só desenha o que a pessoa ganhou. Linha vazia some em vez de virar
+   uma fileira de zeros. */
+function pintaTacas(linha, tamanho){
+  if (!linha) return '';
+  return TACAS.filter(t => +linha[t.chave] > 0).map(t =>
+    `<span class="taca ${tamanho||''}" title="${t.nome}">
+       <img src="${t.img}" alt="${t.nome}" loading="lazy" decoding="async">
+       <b>${linha[t.chave]}x</b></span>`).join('');
+}
+
 /* ---------- duelo local: dois jogadores, um aparelho ---------- */
 let LOCAL = null;
 
@@ -1128,7 +1145,8 @@ function fimDaTemporada(br, tacas){
   if (window.ZB && EU){
     window.ZB.salvarPartida({
       overall: S.over, formacao: S.form.n, estilo: S.estilo.n,
-      campeao: tacas.includes('Libertadores') || tacas.includes('Brasileirão'),
+      campeao: false,          // na temporada o título é cada taça, não a campanha
+      titulos: tacas,
       eliminado_em: tacas.length ? null : 'temporada sem título',
       gols_pro: br.gp, gols_contra: br.gc, maior_goleada: 0,
       escalacao: S.slots.map(s => ({ nome:s.jog.nome, over:s.jog.over, pos:ROT[s.jog.grupo], de:s.jog.de })),
@@ -1285,6 +1303,7 @@ function pintaConta(){
     $('perfilCorpo').innerHTML = '<p class="vazio">Carregando suas partidas…</p>';
     window.ZB.minhaLinha().then(meu=>{
       $('meuTit').textContent = meu ? meu.titulos : 0;
+      $('minhasTacas').innerHTML = pintaTacas(meu);
       const taxa = meu && meu.partidas ? Math.round(meu.titulos / meu.partidas * 100) : 0;
       $('minhasStats').innerHTML = meu && meu.partidas
         ? `<span>Partidas <b>${meu.partidas}</b></span><span>Aproveitamento <b>${taxa}%</b></span><span>Melhor overall <b>${meu.melhor_overall}</b></span><span>Saldo <b>${meu.saldo>0?'+':''}${meu.saldo}</b></span><span>Maior goleada <b>${meu.maior_goleada}</b></span>`
@@ -1439,7 +1458,7 @@ $('btRank').onclick = async () => {
       </tr></thead><tbody>` + r.map((x,i)=>
       `<tr class="${EU && x.user_id===EU.id ? 'eu-linha':''}">
          <td class="pos">${i+1}</td>
-         <td class="ap">${x.apelido}</td>
+         <td class="ap">${x.apelido}<div class="tacas">${pintaTacas(x, 'mini')}</div></td>
          <td class="dest">${x.titulos}</td>
          <td class="esconde">${x.partidas}</td>
          <td class="esconde">${x.melhor_overall||'—'}</td>

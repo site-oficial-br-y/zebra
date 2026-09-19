@@ -27,6 +27,10 @@ create table if not exists zebra_partidas (
   escalacao     jsonb,                -- os onze, para poder remontar o time
   criado_em     timestamptz not null default now()
 );
+-- Quais taças a temporada rendeu. Só o boolean campeao não diz qual foi, e
+-- sem isso não dá para mostrar o troféu certo no perfil e no ranking.
+alter table zebra_partidas add column if not exists titulos text[] not null default '{}';
+
 create index if not exists zebra_partidas_user on zebra_partidas (user_id);
 create index if not exists zebra_partidas_campeao on zebra_partidas (campeao) where campeao;
 
@@ -57,12 +61,20 @@ create policy "partida: dono apaga"     on zebra_partidas for delete using ((sel
 
 -- ---------------------------------------------------------------- ranking
 -- Uma view faz a conta no banco, então o navegador não baixa todas as partidas.
-create or replace view zebra_ranking as
+-- É drop e create, não replace: replace não aceita colunas novas.
+drop view if exists zebra_ranking;
+create view zebra_ranking as
 select
   p.id                                             as user_id,
   p.apelido,
   count(j.id)                                      as partidas,
-  count(*) filter (where j.campeao)                as titulos,
+  -- campanha vencida conta uma; temporada conta uma por taça levantada
+  count(*) filter (where j.campeao)
+    + coalesce(sum(coalesce(array_length(j.titulos, 1), 0)), 0)   as titulos,
+  count(*) filter (where 'Brasileirão'    = any(j.titulos))       as t_brasileirao,
+  count(*) filter (where 'Copa do Brasil' = any(j.titulos))       as t_copa,
+  count(*) filter (where 'Libertadores'   = any(j.titulos))       as t_libertadores,
+  count(*) filter (where 'Mundial'        = any(j.titulos))       as t_mundial,
   coalesce(max(j.overall), 0)                      as melhor_overall,
   coalesce(sum(j.gols_pro) - sum(j.gols_contra), 0) as saldo,
   coalesce(max(j.maior_goleada), 0)                as maior_goleada
@@ -71,8 +83,6 @@ left join zebra_partidas j on j.user_id = p.id
 group by p.id, p.apelido;
 
 -- A view roda com as permissões de quem chama, não com as do dono do banco.
--- Na prática não muda nada hoje (as duas tabelas têm leitura pública), mas se um
--- dia alguma delas fechar, a view não vira porta dos fundos.
 alter view zebra_ranking set (security_invoker = on);
 
 grant select on zebra_ranking to anon, authenticated;
