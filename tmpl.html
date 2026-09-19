@@ -545,7 +545,7 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo{position:relative;text-align:left;border:1px solid var(--linha);border-radius:14px;
   background:var(--carta);padding:22px 20px 20px;cursor:pointer;color:inherit;font-family:inherit;
   overflow:hidden;transition:border-color .16s,transform .16s,box-shadow .16s;
-  min-height:268px;padding-right:34%}
+  min-height:236px;padding-right:200px}
 /* o conteúdo precisa ser posicionado: elemento com z-index pinta acima de
    irmão não posicionado, e a foto passaria por cima do texto */
 .modo > :not(.foto){position:relative;z-index:1}
@@ -557,37 +557,29 @@ h1 em{font-style:italic;color:var(--verde)}
 .modo h3{font-size:25px;font-weight:900;font-style:italic;letter-spacing:-.03em;
   margin:8px 0 7px;line-height:1.05;text-transform:uppercase}
 .modo p{font-size:13px;color:var(--apagado);line-height:1.6;max-width:42ch}
-.modo .foto{position:absolute;inset:0 0 0 auto;width:32%;z-index:0;pointer-events:none;
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 46%);
-  mask-image:linear-gradient(90deg,transparent,#000 46%)}
+/* as quatro fotos saem do mesmo molde: mesma proporção, mesma altura na
+   tela e arquivo com quase três vezes essa altura, para ficar nítido */
+.modo .foto{position:absolute;right:16px;top:auto;bottom:0;height:206px;aspect-ratio:437/560;
+  z-index:0;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 44%),
+                     linear-gradient(180deg,transparent,#000 16%);
+  mask-image:linear-gradient(90deg,transparent,#000 44%),
+             linear-gradient(180deg,transparent,#000 16%);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
 .modo .foto img{display:block;width:100%;height:100%;object-fit:cover;
   transition:transform .5s cubic-bezier(.2,.7,.3,1),opacity .3s;opacity:.9}
 @media(hover:hover){.modo:hover .foto img{transform:scale(1.06);opacity:1}}
 /* cada foto tem o seu ponto de interesse em altura diferente */
-.modo[data-base="lendas"]    .foto img{object-position:50% 26%}
-.modo[data-base="atuais"]    .foto img{object-position:50% 26%}
-.modo[data-base="temporada"] .foto img{object-position:50% 30%}
-/* os dois estão de corpo inteiro: cabem inteiros em vez de preencher,
-   e a máscara segue a largura real da imagem, não a da caixa */
-/* a caixa toma a proporção da foto: com contain sobrava vazio dentro dela
-   e a máscara, medida em % da caixa, cortava reto na borda da imagem */
-.modo.local .foto{width:auto;aspect-ratio:457/600;
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 46%),
-                     linear-gradient(180deg,transparent,#000 15%);
-  mask-image:linear-gradient(90deg,transparent,#000 46%),
-             linear-gradient(180deg,transparent,#000 15%);
-  -webkit-mask-composite:source-in;mask-composite:intersect}
-.modo.local .foto img{object-position:50% 100%}
+.modo[data-base="lendas"]    .foto img{object-position:50% 30%}
+.modo[data-base="atuais"]    .foto img{object-position:50% 24%}
+.modo[data-base="temporada"] .foto img{object-position:50% 28%}
+.modo.local                  .foto img{object-position:50% 100%}
 @media(max-width:759px){
-  /* no celular a foto fica atrás do texto, então recua e apaga */
-  .modo{padding-right:20px;min-height:250px}
-  .modo .foto{width:54%;
-    -webkit-mask-image:linear-gradient(90deg,transparent,#000 68%);
-    mask-image:linear-gradient(90deg,transparent,#000 68%)}
+  /* no celular a foto fica atrás do texto, então encolhe e apaga */
+  .modo{padding-right:20px;min-height:236px}
+  .modo .foto{height:174px;right:10px}
   .modo .foto img{opacity:.26}
-  /* a foto do duelo é a mais clara das quatro e vinha por cima do texto */
-  .modo.local .foto{height:78%;top:auto;bottom:0}
-  .modo.local .foto img{opacity:.2}
+  .modo.local .foto img{opacity:.2}   /* é a mais clara das quatro */
   .modo p,.modo .pe{max-width:25ch}
 }
 .modo .pe{display:flex;gap:14px;margin-top:15px;font-size:11px;color:var(--apagado);
