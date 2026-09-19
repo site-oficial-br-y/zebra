@@ -1136,8 +1136,21 @@ try {
       return data;
     },
     async ranking(){
+      // quem só criou conta e nunca jogou não ocupa vaga no ranking: com
+      // saldo zero eles ficavam na frente de quem jogou e tomou gol
       const { data, error } = await sb.from('zebra_ranking').select('*')
+        .gt('partidas', 0)
         .order('titulos', { ascending:false }).order('saldo', { ascending:false }).limit(50);
+      if (error) throw error;
+      return data;
+    },
+    /* A própria linha, buscada direto. A aba "minha conta" procurava a pessoa
+       dentro do top 50; quem ficava de fora via "nenhuma partida registrada"
+       mesmo tendo jogado. */
+    async minhaLinha(){
+      const s = await this.sessao(); if (!s) return null;
+      const { data, error } = await sb.from('zebra_ranking').select('*')
+        .eq('user_id', s.user.id).maybeSingle();
       if (error) throw error;
       return data;
     },

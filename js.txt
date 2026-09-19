@@ -1283,14 +1283,18 @@ function pintaConta(){
   if (EU){
     $('meuApelido').textContent = EU.apelido || '—';
     $('perfilCorpo').innerHTML = '<p class="vazio">Carregando suas partidas…</p>';
-    window.ZB.ranking().then(r=>{
-      const meu = r.find(x=>x.user_id === EU.id);
+    window.ZB.minhaLinha().then(meu=>{
       $('meuTit').textContent = meu ? meu.titulos : 0;
       const taxa = meu && meu.partidas ? Math.round(meu.titulos / meu.partidas * 100) : 0;
       $('minhasStats').innerHTML = meu && meu.partidas
         ? `<span>Partidas <b>${meu.partidas}</b></span><span>Aproveitamento <b>${taxa}%</b></span><span>Melhor overall <b>${meu.melhor_overall}</b></span><span>Saldo <b>${meu.saldo>0?'+':''}${meu.saldo}</b></span><span>Maior goleada <b>${meu.maior_goleada}</b></span>`
         : '<span>Nenhuma partida registrada ainda</span>';
-    }).catch(()=>{});
+    }).catch(e => {
+      // engolir o erro aqui escondia justamente o que eu precisava ver
+      $('minhasStats').innerHTML =
+        '<span style="color:var(--vermelho)">Não deu para ler suas estatísticas: '
+        + (e.message || e) + '</span>';
+    });
     window.ZB.minhasPartidas()
       .then(pintaPerfil)
       .catch(()=> $('perfilCorpo').innerHTML =
