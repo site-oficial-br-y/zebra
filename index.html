@@ -188,8 +188,15 @@ h1 em{font-style:italic;color:var(--verde)}
 .match.vivo{border-color:rgba(123,228,149,.4);box-shadow:0 0 30px rgba(123,228,149,.10)}
 .match .top{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:11px;align-items:center}
 .match .fase{font-size:9px;letter-spacing:.13em;color:var(--apagado);font-weight:900}
-.match .opp{font-weight:900;font-size:16px;font-style:italic;letter-spacing:-.02em;
-  display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.match .quemjoga{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.match .meu{font-weight:900;font-size:13px;font-style:italic;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--verde);white-space:nowrap}
+.match .x{font-size:10px;font-style:italic;color:var(--apagado);flex:none}
+.match .opp{font-weight:900;font-size:13px;font-style:italic;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:7px;text-transform:uppercase;min-width:0;
+  color:var(--claro);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* os gols do jogador na cor dele, os do adversário na cor do adversário */
+.ev .who{font-weight:800} .ev:not(.c) .who{color:var(--verde)}
 .match .sc{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;font-style:italic}
 .match .sc.w{color:var(--verde)} .match .sc.l{color:var(--vermelho)} .match .sc.d{color:var(--ouro)}
 .match .clock{font-size:10px;font-weight:900;color:var(--vermelho);font-variant-numeric:tabular-nums;
@@ -777,9 +784,10 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
       <span class="selo">Dois jogadores · um aparelho</span>
       <h3>Duelo<br>local</h3>
       <p>Cada um monta os seus onze escondido do outro, o aparelho passa de mão,
-         e os dois times se enfrentam. Empatou, vai para os pênaltis na mão:
-         você escolhe o canto e acerta o tempo da batida.</p>
-      <div class="pe"><span><b>2</b> jogadores</span><span><b>1</b> partida</span>
+         e os dois se enfrentam em três partidas: quem ganhar duas leva.
+         Empatou no tempo normal, vai para os pênaltis na mão — você escolhe
+         o canto e acerta o tempo da batida.</p>
+      <div class="pe"><span><b>2</b> jogadores</span><span>Melhor de <b>3</b></span>
         <span>Pênaltis no dedo</span></div>
     </button>
   </div>
@@ -1548,12 +1556,14 @@ const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 /* ---------- uma partida: cria o cartão, anima e devolve o resultado ---------- */
 /* Serve à campanha do modo clássico e às três competições da temporada. */
-async function jogaPartida({ xi, opp, box, fase, mata, casa, mods, empatar }){
+async function jogaPartida({ xi, opp, box, fase, mata, casa, mods, empatar, eu }){
   const el = document.createElement('div');
   el.className = 'match';
   el.innerHTML = `<div class="top">
       <div class="fase">${fase.toUpperCase()}</div>
-      <div class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</div>
+      <div class="quemjoga"><span class="meu">${eu || 'Seu time'}</span>
+        <span class="x">x</span>
+        <span class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</span></div>
       <div><span class="sc d">0 – 0</span> <span class="clock">0'</span></div>
     </div><div class="evs"></div>`;
   box.appendChild(el);
@@ -1655,7 +1665,9 @@ async function campanha(){
     el.className = 'match';
     el.innerHTML = `<div class="top">
         <div class="fase">${fase.toUpperCase()}</div>
-        <div class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</div>
+        <div class="quemjoga"><span class="meu">Seu time</span>
+          <span class="x">x</span>
+          <span class="opp"><span class="flag" style="width:24px;height:17px;background:linear-gradient(105deg,${opp.cores[0]} 0 50%,${opp.cores[1]} 50% 100%)"></span>${opp.clube} ${opp.ano}</span></div>
         <div><span class="sc d">0 – 0</span> <span class="clock">0'</span></div>
       </div><div class="evs"></div>`;
     box.appendChild(el);
@@ -1843,12 +1855,6 @@ async function fechouNoLocal(){
 }
 
 async function partidaLocal(){
-  mostra('scr-camp');
-  $('campTitulo').textContent = 'Duelo local';
-  $('matches').innerHTML = '';
-  $('proxWrap').hidden = true;
-  $('verdict').hidden = true;
-
   const [xi1, xi2] = LOCAL.times;
   const media = xi => xi.reduce((s,p)=>s+p.over,0) / xi.length;
   /* os dois lados passam pelo mesmo esticador: no duelo ninguém pode
@@ -1857,48 +1863,76 @@ async function partidaLocal(){
   const f1 = estica(media(xi1)), f2 = estica(media(xi2));
   const m1 = modsDe(LOCAL.forms[0], LOCAL.estilos[0]);
   const m2 = modsDe(LOCAL.forms[1], LOCAL.estilos[1]);
-
   const adversario = { clube:'Jogador 2', ano:'', cores:['#e9c46a','#0a0d0a'],
                        elenco: xi2, forca: f2 };
+  const serie = [0, 0];
+  const historico = [];
 
-  if (ATALHO_PEN) $('campTitulo').textContent = 'Duelo local · teste de pênaltis';
+  /* melhor de três, com os mesmos onze. Empate na partida vai para os
+     pênaltis, então toda partida sai com um vencedor e a série sempre fecha. */
+  for (let jogo = 1; jogo <= 3; jogo++){
+    mostra('scr-camp');
+    $('campTitulo').textContent = ATALHO_PEN
+      ? 'Duelo local · teste de pênaltis' : 'Duelo local · melhor de 3';
+    $('matches').innerHTML = '';
+    $('proxWrap').hidden = true;
+    $('verdict').hidden = true;
 
-  const el = document.createElement('div');
-  el.className = 'duelo';
-  el.innerHTML = `<div class="lado"><div class="q">Jogador 1</div><div class="o">${LOCAL.overs[0]}</div>
-      <div class="f">${LOCAL.forms[0].n} · ${LOCAL.estilos[0].n}</div></div>
-    <div class="vs">x</div>
-    <div class="lado"><div class="q">Jogador 2</div><div class="o">${LOCAL.overs[1]}</div>
-      <div class="f">${LOCAL.forms[1].n} · ${LOCAL.estilos[1].n}</div></div>`;
-  $('matches').appendChild(el);
+    const el = document.createElement('div');
+    el.className = 'duelo';
+    el.innerHTML = `<div class="lado${serie[0]>serie[1]?' g':''}">
+        <div class="q">Jogador 1</div><div class="o">${LOCAL.overs[0]}</div>
+        <div class="f">${LOCAL.forms[0].n} · ${LOCAL.estilos[0].n}</div></div>
+      <div class="vs"><b>${serie[0]} – ${serie[1]}</b><span>${jogo}ª de 3</span></div>
+      <div class="lado${serie[1]>serie[0]?' g':''}">
+        <div class="q">Jogador 2</div><div class="o">${LOCAL.overs[1]}</div>
+        <div class="f">${LOCAL.forms[1].n} · ${LOCAL.estilos[1].n}</div></div>`;
+    $('matches').appendChild(el);
 
-  const antes = S.over;
-  S.over = f1;
-  const r = await jogaPartida({ xi: xi1, opp: adversario, box: $('matches'),
-                                fase: 'Duelo', mata: false,
-                                mods: { atk: m1.atk * m2.sof, sof: m2.atk * m1.sof },
-                                empatar: ATALHO_PEN });
-  S.over = antes;
+    const antes = S.over;
+    S.over = f1;
+    const r = await jogaPartida({ xi: xi1, opp: adversario, box: $('matches'),
+                                  fase: jogo + 'ª partida', mata: false, eu: 'Jogador 1',
+                                  mods: { atk: m1.atk * m2.sof, sof: m2.atk * m1.sof },
+                                  empatar: ATALHO_PEN });
+    S.over = antes;
 
-  if (r.a === r.b){
-    const pen = await disputaPenaltisLocal(xi1, xi2);
-    fimDoDuelo(r, pen);
-  } else {
-    fimDoDuelo(r, null);
+    const pen = r.a === r.b ? await disputaPenaltisLocal(xi1, xi2) : null;
+    const g1 = pen ? pen.g[0] : r.a, g2 = pen ? pen.g[1] : r.b;
+    serie[g1 > g2 ? 0 : 1]++;
+    historico.push({ jogo, a:r.a, b:r.b, pen });
+
+    if (serie[0] === 2 || serie[1] === 2) break;
+    await placarDaSerie(serie, jogo + 1);
   }
+  fimDaSerie(serie, historico);
 }
 
-function fimDoDuelo(r, pen){
+/* entre uma partida e outra, quem está com o aparelho vê como está a série */
+function placarDaSerie(serie, proxima){
+  const lidera = serie[0] === serie[1] ? 'Empatado'
+    : 'Jogador ' + (serie[0] > serie[1] ? 1 : 2) + ' na frente';
+  return telaPassagem({
+    titulo: serie[0] + ' a ' + serie[1], cima: 'Série',
+    aviso: `${lidera}. Quem fizer <b>duas</b> leva o duelo.`,
+    botao: proxima + 'ª partida',
+  });
+}
+
+function fimDaSerie(serie, historico){
   mostra('scr-camp');
-  const g1 = pen ? pen.g[0] : r.a, g2 = pen ? pen.g[1] : r.b;
-  const venceu1 = g1 > g2;
+  const venceu1 = serie[0] > serie[1];
   const v = $('verdict'); v.hidden = false;
   $('fimTitulo').textContent = 'Fim do duelo';
   $('vbig').textContent = 'JOGADOR ' + (venceu1 ? '1' : '2');
   $('vbig').className = 'big seven';
-  $('vtxt').innerHTML = `${r.a} a ${r.b} no tempo normal`
-    + (pen ? `, <b>${pen.g[0]} x ${pen.g[1]}</b> nos pênaltis` : '')
-    + `.<br>Jogador 1 com <b>${LOCAL.overs[0]}</b>, Jogador 2 com <b>${LOCAL.overs[1]}</b> de overall.`;
+  const jogos = historico.map(h =>
+    `${h.jogo}ª: <b>${h.a} a ${h.b}</b>` + (h.pen ? ` (${h.pen.g[0]}x${h.pen.g[1]} nos pênaltis)` : '')
+  ).join(' · ');
+  // o placar sai pelo lado de quem ganhou, senão vira "levou a série por 1 a 2"
+  const placar = venceu1 ? serie[0] + ' a ' + serie[1] : serie[1] + ' a ' + serie[0];
+  $('vtxt').innerHTML = `Levou a série por <b>${placar}</b>.<br>${jogos}<br>`
+    + `Jogador 1 com <b>${LOCAL.overs[0]}</b>, Jogador 2 com <b>${LOCAL.overs[1]}</b> de overall.`;
   v.scrollIntoView({ behavior:'smooth' });
 }
 
