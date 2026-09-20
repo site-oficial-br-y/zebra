@@ -110,8 +110,14 @@ const BASES = {
   // todas coladas e sem ele o dado decidiria tudo. A base de 2026 já nasce
   // mais espalhada, então estica menos — com 2.2 o Flamengo abria 18 pontos
   // para a Chapecoense e saíam placares de 9 a 0.
-  lendas: { nome:'Lendas', elencos: DB.times,  estica: 2.2 },
-  atuais: { nome:'Brasileirão 2026', elencos: DB.atuais, estica: 1.5 },
+  lendas: { nome:'Lendas', de:'<b>das lendas do futebol brasileiro</b>',
+            elencos: DB.times,  estica: 2.2 },
+  atuais: { nome:'Brasileirão 2026', de:'<b>dos times do Brasileirão 2026</b>',
+            elencos: DB.atuais, estica: 1.5 },
+  /* as duas juntas: 66 times, de 74,5 a 86,2 de média. A base já nasce mais
+     larga que cada uma sozinha, então o esticador é menor que o das lendas */
+  misto:  { nome:'Lendas e atuais', de:'<b>das lendas e dos times de 2026, misturados</b>',
+            elencos: DB.times.concat(DB.atuais), estica: 1.6 },
 };
 let BASE = 'lendas';
 const elencos = () => BASES[BASE].elencos;
@@ -241,7 +247,7 @@ document.querySelectorAll('.modo').forEach(b => b.onclick = () => {
   const m = b.dataset.base;
   MODO_JOGO = m === 'temporada' ? 'temporada' : m === 'local' ? 'local' : 'campanha';
   // temporada e duelo local correm sobre os times atuais
-  BASE = (m === 'temporada' || m === 'local') ? 'atuais' : m;
+  BASE = m === 'temporada' ? 'atuais' : m === 'local' ? BASE : m;
   if (MODO_JOGO === 'local'){ comecaLocal(); return; }
   novoJogo(FORMACOES[1], ESTILOS[1]);
   mostra('scr-jogo'); pinta();
@@ -588,7 +594,7 @@ function pintaTacas(linha, tamanho){
 /* ---------- duelo local: dois jogadores, um aparelho ---------- */
 let LOCAL = null;
 
-function telaPassagem({ vez, titulo, cima, aviso, feito, botao, botao2 }){
+function telaPassagem({ vez, titulo, cima, aviso, feito, botao, botao2, botao3 }){
   return new Promise(resolve => {
     $('passeCima').textContent = cima;
     // ou o número gigante de quem joga, ou um título; nunca os dois
@@ -602,18 +608,35 @@ function telaPassagem({ vez, titulo, cima, aviso, feito, botao, botao2 }){
     $('passeOk').textContent = botao || 'Estou com o celular';
     $('passeOk2').hidden = !botao2;
     if (botao2) $('passeOk2').textContent = botao2;
+    $('passeOk3').hidden = !botao3;
+    if (botao3) $('passeOk3').textContent = botao3;
     mostra('scr-passe');
-    const fecha = r => () => { $('passeOk').onclick = $('passeOk2').onclick = null; resolve(r); };
+    const fecha = r => () => {
+      $('passeOk').onclick = $('passeOk2').onclick = $('passeOk3').onclick = null;
+      resolve(r);
+    };
     $('passeOk').onclick = fecha(1);
     $('passeOk2').onclick = fecha(2);
+    $('passeOk3').onclick = fecha(3);
   });
 }
 
 async function comecaLocal(){
   LOCAL = { times: [], overs: [], forms: [], estilos: [], vez: 1 };
+  // o duelo vale nas duas bases; a escolha vem antes de qualquer um montar
+  const base = await telaPassagem({
+    titulo: 'Duelo local', cima: 'Escolham a base',
+    aviso: 'De onde saem os jogadores que vocês vão disputar?',
+    botao: 'Lendas do futebol brasileiro',
+    botao2: 'Times atuais · Brasileirão 2026',
+    botao3: 'Misto · as duas bases juntas',
+  });
+  BASE = base === 2 ? 'atuais' : base === 3 ? 'misto' : 'lendas';
   await telaPassagem({
     vez: 1, cima: 'Duelo local',
-    aviso: 'Monte os seus onze. Quando terminar, o aparelho passa para o <b>Jogador 2</b>.',
+    // "os Lendas" e "os Brasileirão 2026" não existem: o artigo muda com o nome
+    aviso: `Os onze saem ${BASES[BASE].de}. Monte o seu — quando terminar, `
+         + 'o aparelho passa para o <b>Jogador 2</b>.',
     botao: 'Montar meu time',
   });
   novoJogo(FORMACOES[1], ESTILOS[1]);
