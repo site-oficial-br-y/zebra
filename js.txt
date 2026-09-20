@@ -9,6 +9,20 @@ const ROT = {GOL:'GOL',DEF:'DEF',MEI:'MEI',ATA:'ATA'};
 /* DEF-MEI-ATA, sempre 1 goleiro. atk mexe no que você faz, def no que você toma. */
 const P = (g,rot,x,y) => ({g,rot,x,y});
 /* y: 8 = ataque adversario, 92 = proprio gol. x: 0 esquerda, 100 direita */
+/* numeração à brasileira. Quando o rótulo se repete na formação, o segundo
+   leva o número seguinte da lista. */
+const CAMISAS = { GOL:[1], LD:[2], ZAG:[3,4], LE:[6], VOL:[5,8], MEI:[8,10,5],
+                  MD:[7], ME:[11], PD:[7], PE:[11], CA:[9], ATA:[9,11] };
+function numeraSlots(slots){
+  const usados = {};
+  slots.forEach(s => {
+    const lista = CAMISAS[s.rot] || [0];
+    const n = usados[s.rot] = (usados[s.rot] || 0);
+    s.camisa = lista[Math.min(n, lista.length - 1)];
+    usados[s.rot]++;
+  });
+}
+
 const FORMACOES = [
   {n:'4-4-2', d:4,m:4,a:2, txt:'O padrão. Equilíbrio sem luxo.', pos:[
     P('GOL','GOL',50,90),
@@ -79,6 +93,8 @@ function novoJogo(form, estilo){
   S = { passes:PASSES, slots:[], usados:new Set(), sorteados:new Set(),
         atual:null, vel:velEscolhida, modo:modoEscolhido, ultimo:-1, form, estilo };
   S.slots = form.pos.map(p => ({grupo:p.g, rot:p.rot, x:p.x, y:p.y, jog:null}));
+  numeraSlots(S.slots);
+  S.naMao = null;
 }
 const vagasDe = g => S.slots.filter(s=>s.grupo===g && !s.jog).length;
 const completo = () => S.slots.every(s=>s.jog);
@@ -153,33 +169,47 @@ function trocaTatica(form, estilo){
 
 /* ---------- campo ---------- */
 function desenhaCampo(alvo, pontos, mostrarOver){
-  alvo.innerHTML = pontos.map(p=>
-    `<div class="pos${p.jog?' on':''}${p.novo?' novo':''}" style="left:${p.x}%;top:${p.y}%">
-       <div class="bola"><b>${p.jog ? (mostrarOver ? p.jog.over : '✓') : '+'}</b></div>
+  alvo.innerHTML = pontos.map((p,i)=>
+    `<div class="pos${p.jog?' on':''}${p.novo?' novo':''}${p.livre?' livre':''}"
+          style="left:${p.x}%;top:${p.y}%" data-slot="${i}">
+       <div class="bola"><b>${p.jog ? (mostrarOver ? p.jog.over : p.camisa) : '+'}</b></div>
        <div class="rot">${p.rot}</div>
        <div class="quem">${p.jog ? p.jog.nome : ''}</div>
      </div>`).join('');
 }
 function pintaSlots(){
+  /* quem está na mão acende só as vagas da sua posição: o jogador escolhe
+     entre a direita e a esquerda, mas não vira zagueiro por decreto */
+  const g = S.naMao ? S.naMao.grupo : null;
   desenhaCampo($('campo'), S.slots.map((s,i)=>
-    ({rot:s.rot, x:s.x, y:s.y, jog:s.jog, novo:i===S.ultimo})), false);
+    ({rot:s.rot, x:s.x, y:s.y, jog:s.jog, camisa:s.camisa, novo:i===S.ultimo,
+      livre: g && s.grupo === g && !s.jog})), false);
+  /* #campo é o .linhas de dentro; a classe tem de ir no .campo de fora,
+     que é quem o CSS escuta */
+  $('campo').closest('.campo').classList.toggle('escolhendo', !!g);
+  if (!g) return;
+  $('campo').querySelectorAll('.pos.livre').forEach(el =>
+    el.onclick = () => encaixa(+el.dataset.slot));
 }
 function pintaBarra(){
   const n = S.slots.filter(s=>s.jog).length;
   $('picks').textContent = n + '/' + S.slots.length;
   $('passN').textContent = S.passes;
-  $('pass').disabled = S.passes === 0 || !S.atual;
+  $('pass').disabled = S.passes === 0 || !S.atual || !!S.naMao;
   $('tatLabel').textContent = S.form.n + ' · ' + S.estilo.n;
   $('tatQuem').textContent = MODO_JOGO === 'local' ? 'Time do Jogador ' + LOCAL.vez : 'Seu time';
   $('dicaRolar').hidden = !!S.atual || n > 0;
+  $('naMao').hidden = !S.naMao;
+  if (S.naMao) $('naMao').innerHTML =
+    `<b>${S.naMao.nome}</b> na mão · toque na vaga do campo onde ele joga`;
   pintaLista();
 }
 function pintaLista(){
   $('listaXi').innerHTML = S.slots.map(s=>
-    `<div class="li${s.jog?' cheia':''}">
+    `<div class="li${s.jog?' cheia':''}${S.naMao && !s.jog && s.grupo===S.naMao.grupo?' esperando':''}">
        <span class="p">${s.rot}</span>
        <span class="n${s.jog?'':' vazio'}">${s.jog ? s.jog.nome : '—'}</span>
-       <span class="o">${s.jog ? '✓' : ''}</span>
+       <span class="o">${s.jog ? s.camisa : ''}</span>
      </div>`).join('');
   const feitos = S.slots.filter(s=>s.jog);
   const clubes = new Set(feitos.map(s=>s.jog.de));
@@ -230,10 +260,20 @@ function rolar(){
 }
 function escala(p){
   if (bloqueio(p)) return;
-  const s = S.slots.find(s=>s.grupo===p.grupo && !s.jog);
-  s.jog = {...p, de:`${S.atual.clube} ${S.atual.ano}`};
-  S.ultimo = S.slots.indexOf(s);
+  // uma vaga só do grupo: não há o que escolher, entra direto
+  const vagas = S.slots.filter(s => s.grupo === p.grupo && !s.jog);
+  if (vagas.length === 1) return encaixa(S.slots.indexOf(vagas[0]), p);
+  S.naMao = { ...p, de:`${S.atual.clube} ${S.atual.ano}` };
+  pinta();
+}
+
+function encaixa(i, quem){
+  const p = quem ? { ...quem, de:`${S.atual.clube} ${S.atual.ano}` } : S.naMao;
+  if (!p) return;
+  S.slots[i].jog = p;
+  S.ultimo = i;
   S.usados.add(p.id);
+  S.naMao = null;
   S.atual = null;
   pinta();
   if (completo()) revelar(); else rolar();
@@ -264,7 +304,7 @@ async function revelar(){
     : MODO_JOGO === 'local' ? (LOCAL.vez === 1 ? 'Passar o celular' : 'Ir para a partida')
     : 'Jogar a campanha';
   $('xi').innerHTML = xi.map(p=>`<div class="c"><span class="ov">${p.over}</span><div class="nm">${p.nome}</div><div class="sm">${ROT[p.grupo]} · ${p.de}</div></div>`).join('');
-  const pontos = S.slots.map(s=>({rot:s.rot, x:s.x, y:s.y, jog:s.jog}));
+  const pontos = S.slots.map(s=>({rot:s.rot, x:s.x, y:s.y, jog:s.jog, camisa:s.camisa}));
   desenhaCampo($('campoRev'), pontos, false);
   $('ovTeam').textContent = '··';
   mostra('scr-reveal');
