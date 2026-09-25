@@ -166,6 +166,11 @@ h1 em{font-style:italic;color:var(--verde)}
   border-radius:8px;padding:11px 13px;font-size:12.5px;color:var(--claro);
   line-height:1.5;margin-bottom:11px}
 .namao b{color:var(--verde);font-weight:900}
+/* o adversário chegou antes: o mesmo balão, em tom de aviso */
+.namao.roubo{background:rgba(255,90,60,.12);border-color:var(--vermelho);color:var(--claro)}
+.namao.roubo b{color:var(--vermelho)}
+/* enquanto o banco confirma a reserva, o elenco não aceita outro toque */
+.list.pedindo{opacity:.55;pointer-events:none}
 .li.esperando{border-color:var(--verde-esc);background:rgba(123,228,149,.07)}
 .pos.novo .bola{animation:brilha .9s ease-out}
 /* camisa em fonte de sistema: o 1 da Ombro parece uma barra */
@@ -411,6 +416,29 @@ h1 em{font-style:italic;color:var(--verde)}
   text-shadow:0 0 70px rgba(123,228,149,.3)}
 @media(min-width:560px){.passe .tit{font-size:82px}}
 .passe .btn{margin-top:28px}
+
+/* ---- sala do duelo online ---- */
+.sala .cod{margin-top:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sala .cod b{font-family:var(--display);font-style:italic;font-weight:900;
+  font-size:clamp(46px,15vw,84px);line-height:1;color:var(--verde);
+  letter-spacing:.06em;text-shadow:0 0 34px rgba(123,228,149,.3)}
+.sala .copia{border:1px solid var(--linha);background:rgba(255,255,255,.03);
+  color:var(--claro);border-radius:9px;padding:9px 13px;font:inherit;font-size:12px;
+  font-weight:800;cursor:pointer;transition:all .18s;letter-spacing:.02em}
+.sala .copia:hover{border-color:var(--verde-esc);color:var(--verde)}
+.sala .copia.feito{border-color:var(--verde);color:var(--verde)}
+.sala input{margin-top:24px;width:100%;max-width:300px;background:rgba(255,255,255,.04);
+  border:1px solid var(--linha);border-radius:12px;padding:16px 18px;color:var(--claro);
+  font-family:var(--display);font-style:italic;font-weight:900;font-size:34px;
+  letter-spacing:.18em;text-align:center;text-transform:uppercase;outline:none;
+  transition:border-color .18s}
+.sala input:focus{border-color:var(--verde-esc)}
+.sala input::placeholder{color:var(--apagado);opacity:.45;letter-spacing:.1em}
+.sala .espera{margin-top:22px;display:flex;align-items:center;gap:10px;
+  color:var(--apagado);font-size:13px;font-weight:700}
+.sala .pulso{width:9px;height:9px;border-radius:50%;background:var(--verde);flex:none;
+  animation:pulsaEspera 1.4s ease-in-out infinite}
+@keyframes pulsaEspera{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
 
 /* ---- troféus levantados ---- */
 .tacas{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;margin:16px 0 4px}
@@ -817,6 +845,23 @@ rodape{display:block;margin-top:40px;padding-top:22px;border-top:1px solid var(-
     <button class="btn" id="passeOk">Estou com o celular</button>
     <button class="btn ghost" id="passeOk2" hidden style="margin-top:10px">Outra opção</button>
     <button class="btn ghost" id="passeOk3" hidden style="margin-top:10px">Outra opção</button>
+  </div>
+</section>
+
+<section id="scr-sala" hidden>
+  <div class="passe sala">
+    <div class="cima" id="salaCima">Duelo online</div>
+    <div class="tit" id="salaTitulo">Sala</div>
+    <div class="aviso" id="salaAviso"></div>
+    <div class="cod" id="salaCod" hidden><b id="salaCodigo"></b>
+      <button class="copia" id="salaCopia">Copiar o convite</button></div>
+    <input id="salaInput" maxlength="5" placeholder="CÓDIGO" autocomplete="off"
+           spellcheck="false" autocapitalize="characters" hidden>
+    <div class="feito" id="salaFeito" hidden></div>
+    <div class="espera" id="salaEspera" hidden><i class="pulso"></i><span id="salaEsperaTxt"></span></div>
+    <button class="btn" id="salaOk">Continuar</button>
+    <button class="btn ghost" id="salaOk2" hidden style="margin-top:10px"></button>
+    <button class="btn ghost" id="salaSair" style="margin-top:10px">Sair da sala</button>
   </div>
 </section>
 

@@ -90,7 +90,7 @@ let S;
 function novoJogo(form, estilo){
   const modoEscolhido = document.querySelector('.sp[data-modo].on')?.dataset.modo || 'auto';
   const velEscolhida  = +(document.querySelector('.sp[data-sp].on')?.dataset.sp ?? 1);
-  S = { passes:PASSES, slots:[], usados:new Set(), sorteados:new Set(),
+  S = { passes:PASSES, slots:[], usados:new Set(), meus:new Set(), sorteados:new Set(),
         atual:null, vel:velEscolhida, modo:modoEscolhido, ultimo:-1, form, estilo };
   S.slots = form.pos.map(p => ({grupo:p.g, rot:p.rot, x:p.x, y:p.y, jog:null}));
   numeraSlots(S.slots);
@@ -109,8 +109,28 @@ const temEscolha = t => t.elenco.some(p=>!bloqueio(p));
 /* ---------- telas ---------- */
 const $ = id => document.getElementById(id);
 const ATALHO_PEN = new URLSearchParams(location.search).has('pen');
-const TELAS = ['scr-home','scr-modo','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank','scr-legal','scr-passe','scr-pen'];
+const TELAS = ['scr-home','scr-modo','scr-jogo','scr-reveal','scr-camp','scr-conta','scr-rank','scr-legal','scr-passe','scr-sala','scr-pen'];
 let MODO_JOGO = 'campanha';
+
+/* No duelo online os dois navegadores simulam a mesma partida cada um no seu
+   aparelho. Com Math.random cada lado veria um placar diferente, então a
+   simulação passa por este gerador, que o modo online semeia com o código da
+   sala. Fora do online ele é o Math.random de sempre. */
+let RND = Math.random;
+function geradorSemeado(semente){
+  let a = semente >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const sementeDe = txt => {
+  let h = 2166136261;
+  for (const c of String(txt)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+};
 const mostra = id => {
   TELAS.forEach(x => $(x).hidden = x !== id);
   // no duelo local é uma partida só: não existe jogo a jogo
@@ -197,7 +217,8 @@ function pintaBarra(){
   $('passN').textContent = S.passes;
   $('pass').disabled = S.passes === 0 || !S.atual || !!S.naMao;
   $('tatLabel').textContent = S.form.n + ' · ' + S.estilo.n;
-  $('tatQuem').textContent = MODO_JOGO === 'local' ? 'Time do Jogador ' + LOCAL.vez : 'Seu time';
+  $('tatQuem').textContent = MODO_JOGO === 'online' ? 'Seu time'
+    : MODO_JOGO === 'local' ? 'Time do ' + nomeLado(LOCAL.vez - 1).toLowerCase() : 'Seu time';
   $('dicaRolar').hidden = !!S.atual || n > 0;
   $('naMao').hidden = !S.naMao;
   if (S.naMao) $('naMao').innerHTML =
@@ -258,8 +279,10 @@ function rolar(){
   if (m){ m.style.animation='none'; void m.offsetWidth; m.style.animation='tremeDado .45s ease-in-out'; }
   pinta();
 }
-function escala(p){
+async function escala(p){
   if (bloqueio(p)) return;
+  // no duelo online o jogador só é seu depois que o banco confirma
+  if (MODO_JOGO === 'online' && !(await reservaJogador(p))) return;
   // uma vaga só do grupo: não há o que escolher, entra direto
   const vagas = S.slots.filter(s => s.grupo === p.grupo && !s.jog);
   if (vagas.length === 1) return encaixa(S.slots.indexOf(vagas[0]), p);
@@ -288,7 +311,7 @@ document.querySelectorAll('.modo').forEach(b => b.onclick = () => {
   MODO_JOGO = m === 'temporada' ? 'temporada' : m === 'local' ? 'local' : 'campanha';
   // temporada e duelo local correm sobre os times atuais
   BASE = m === 'temporada' ? 'atuais' : m === 'local' ? BASE : m;
-  if (MODO_JOGO === 'local'){ comecaLocal(); return; }
+  if (MODO_JOGO === 'local'){ escolheOndeDuelar(); return; }
   novoJogo(FORMACOES[1], ESTILOS[1]);
   mostra('scr-jogo'); pinta();
 });
@@ -301,6 +324,7 @@ async function revelar(){
   S.over = Math.round(xi.reduce((a,p)=>a+p.over,0)/xi.length);
   $('ovTat').textContent = S.form.n + ' · ' + S.estilo.n;
   $('startCamp').textContent = MODO_JOGO === 'temporada' ? 'Começar a temporada'
+    : MODO_JOGO === 'online' ? 'Mandar meu time'
     : MODO_JOGO === 'local' ? (LOCAL.vez === 1 ? 'Passar o celular' : 'Ir para a partida')
     : 'Jogar a campanha';
   $('xi').innerHTML = xi.map(p=>`<div class="c"><span class="ov">${p.over}</span><div class="nm">${p.nome}</div><div class="sm">${ROT[p.grupo]} · ${p.de}</div></div>`).join('');
@@ -332,7 +356,7 @@ async function revelar(){
 }
 
 /* ---------- simulação ---------- */
-const poisson = l => { let k=0,p=1,L=Math.exp(-l); do{k++;p*=Math.random()}while(p>L); return k-1; };
+const poisson = l => { let k=0,p=1,L=Math.exp(-l); do{k++;p*=RND()}while(p>L); return k-1; };
 const MEDIA_BASE = 82.5;
 const forca = time => {
   const m = time.elenco.reduce((s,p)=>s+p.over,0) / time.elenco.length;
@@ -341,7 +365,7 @@ const forca = time => {
 function marcador(xi){
   const peso = p => p.over * ({ATA:6,MEI:3,DEF:1,GOL:0}[p.grupo]);
   const tot = xi.reduce((s,p)=>s+peso(p),0);
-  let r = Math.random()*tot;
+  let r = RND()*tot;
   for (const p of xi){ r -= peso(p); if (r<=0) return p.nome; }
   return xi[xi.length-1].nome;
 }
@@ -356,7 +380,7 @@ function simula(meuXi, meuOv, opp, mods, empatar){
   let b = Math.min(6, poisson(lam(of-meuOv, mods ? mods.sof : modDefesa())));
   if (empatar) b = a;
   const ev = [];
-  const min = () => 1 + Math.floor(Math.random()*90);
+  const min = () => 1 + Math.floor(RND()*90);
   for (let i=0;i<a;i++) ev.push({m:min(), meu:true,  who:marcador(meuXi)});
   for (let i=0;i<b;i++) ev.push({m:min(), meu:false, who:marcador(opp.elenco)});
   ev.sort((x,y)=>x.m-y.m);
@@ -379,7 +403,7 @@ function penaltis(meuXi, meuOv, opp, of){
     // quem bate melhor converte mais: 70% de base, mais a qualidade do
     // batedor e a diferença de nível entre os times
     const chance = .62 + (quem.over - 78) / 100 + (forcas[lado] - forcas[1-lado]) / 260;
-    const fez = Math.random() < Math.max(.45, Math.min(.95, chance));
+    const fez = RND() < Math.max(.45, Math.min(.95, chance));
     if (fez) gols[lado]++;
     cobrancas.push({ meu: lado === 0, nome: quem.nome, fez });
     return fez;
@@ -634,6 +658,11 @@ function pintaTacas(linha, tamanho){
 /* ---------- duelo local: dois jogadores, um aparelho ---------- */
 let LOCAL = null;
 
+/* No duelo local os lados são "Jogador 1" e "Jogador 2". No online cada um
+   tem apelido, e o dono do aparelho é "você". Uma função só, para os dois. */
+const nomeLado = i => (LOCAL && LOCAL.nomes && LOCAL.nomes[i]) || ('Jogador ' + (i + 1));
+const souEu = i => !!(LOCAL && LOCAL.eu === i + 1);
+
 function telaPassagem({ vez, titulo, cima, aviso, feito, botao, botao2, botao3 }){
   return new Promise(resolve => {
     $('passeCima').textContent = cima;
@@ -659,6 +688,17 @@ function telaPassagem({ vez, titulo, cima, aviso, feito, botao, botao2, botao3 }
     $('passeOk2').onclick = fecha(2);
     $('passeOk3').onclick = fecha(3);
   });
+}
+
+/* O duelo é o mesmo jogo nos dois casos; só muda por onde o time viaja. */
+async function escolheOndeDuelar(){
+  const onde = await telaPassagem({
+    titulo:'Duelo', cima:'Contra um amigo',
+    aviso:'No mesmo aparelho vocês passam o celular de mão em mão. '
+        + 'Online cada um monta no seu, ao mesmo tempo, disputando os jogadores.',
+    botao:'No mesmo celular', botao2:'Online, por código' });
+  if (onde === 2) return comecaOnline();
+  return comecaLocal();
 }
 
 async function comecaLocal(){
@@ -724,7 +764,7 @@ async function partidaLocal(){
   const f1 = estica(media(xi1)), f2 = estica(media(xi2));
   const m1 = modsDe(LOCAL.forms[0], LOCAL.estilos[0]);
   const m2 = modsDe(LOCAL.forms[1], LOCAL.estilos[1]);
-  const adversario = { clube:'Jogador 2', ano:'', cores:['#e9c46a','#0a0d0a'],
+  const adversario = { clube:nomeLado(1), ano:'', cores:['#e9c46a','#0a0d0a'],
                        elenco: xi2, forca: f2 };
   const serie = [0, 0];
   const historico = [];
@@ -742,18 +782,18 @@ async function partidaLocal(){
     const el = document.createElement('div');
     el.className = 'duelo';
     el.innerHTML = `<div class="lado${serie[0]>serie[1]?' g':''}">
-        <div class="q">Jogador 1</div><div class="o">${LOCAL.overs[0]}</div>
+        <div class="q">${nomeLado(0)}</div><div class="o">${LOCAL.overs[0]}</div>
         <div class="f">${LOCAL.forms[0].n} · ${LOCAL.estilos[0].n}</div></div>
       <div class="vs"><b>${serie[0]} – ${serie[1]}</b><span>${jogo}ª de 3</span></div>
       <div class="lado${serie[1]>serie[0]?' g':''}">
-        <div class="q">Jogador 2</div><div class="o">${LOCAL.overs[1]}</div>
+        <div class="q">${nomeLado(1)}</div><div class="o">${LOCAL.overs[1]}</div>
         <div class="f">${LOCAL.forms[1].n} · ${LOCAL.estilos[1].n}</div></div>`;
     $('matches').appendChild(el);
 
     const antes = S.over;
     S.over = f1;
     const r = await jogaPartida({ xi: xi1, opp: adversario, box: $('matches'),
-                                  fase: jogo + 'ª partida', mata: false, eu: 'Jogador 1',
+                                  fase: jogo + 'ª partida', mata: false, eu: nomeLado(0),
                                   mods: { atk: m1.atk * m2.sof, sof: m2.atk * m1.sof },
                                   empatar: ATALHO_PEN });
     S.over = antes;
@@ -772,7 +812,7 @@ async function partidaLocal(){
 /* entre uma partida e outra, quem está com o aparelho vê como está a série */
 function placarDaSerie(serie, proxima){
   const lidera = serie[0] === serie[1] ? 'Empatado'
-    : 'Jogador ' + (serie[0] > serie[1] ? 1 : 2) + ' na frente';
+    : nomeLado(serie[0] > serie[1] ? 0 : 1) + ' na frente';
   return telaPassagem({
     titulo: serie[0] + ' a ' + serie[1], cima: 'Série',
     aviso: `${lidera}. Quem fizer <b>duas</b> leva o duelo.`,
@@ -785,7 +825,7 @@ function fimDaSerie(serie, historico){
   const venceu1 = serie[0] > serie[1];
   const v = $('verdict'); v.hidden = false;
   $('fimTitulo').textContent = 'Fim do duelo';
-  $('vbig').textContent = 'JOGADOR ' + (venceu1 ? '1' : '2');
+  $('vbig').textContent = nomeLado(venceu1 ? 0 : 1).toUpperCase();
   $('vbig').className = 'big seven';
   const jogos = historico.map(h =>
     `${h.jogo}ª: <b>${h.a} a ${h.b}</b>` + (h.pen ? ` (${h.pen.g[0]}x${h.pen.g[1]} nos pênaltis)` : '')
@@ -793,9 +833,337 @@ function fimDaSerie(serie, historico){
   // o placar sai pelo lado de quem ganhou, senão vira "levou a série por 1 a 2"
   const placar = venceu1 ? serie[0] + ' a ' + serie[1] : serie[1] + ' a ' + serie[0];
   $('vtxt').innerHTML = `Levou a série por <b>${placar}</b>.<br>${jogos}<br>`
-    + `Jogador 1 com <b>${LOCAL.overs[0]}</b>, Jogador 2 com <b>${LOCAL.overs[1]}</b> de overall.`;
+    + `${nomeLado(0)} com <b>${LOCAL.overs[0]}</b>, ${nomeLado(1)} com <b>${LOCAL.overs[1]}</b> de overall.`;
   v.scrollIntoView({ behavior:'smooth' });
 }
+
+/* ---------- duelo online: dois aparelhos, uma sala ---------- */
+/* A sala mora no banco, então ninguém precisa estar online ao mesmo tempo:
+   um monta hoje, o outro monta amanhã e a partida roda igual nos dois. */
+let SALA = null, canalSala = null, relogioSala = 0;
+const LEMBRA_SALA = 'zebra_sala';
+
+async function rpc(nome, args){
+  const { data, error } = await window.ZB.sb.rpc(nome, args);
+  if (error) throw new Error(error.message);
+  return Array.isArray(data) ? data[0] : data;
+}
+const meuLado = s => s.j1 === EU.id ? 1 : 2;
+
+function telaSala({ titulo, cima, aviso, codigo, entrada, feito, espera, botao, botao2 }){
+  return new Promise(resolve => {
+    $('salaCima').textContent = cima;
+    $('salaTitulo').textContent = titulo;
+    $('salaAviso').innerHTML = aviso || '';
+    $('salaCod').hidden = !codigo;
+    if (codigo) $('salaCodigo').textContent = codigo;
+    $('salaInput').hidden = !entrada;
+    if (entrada) $('salaInput').value = '';
+    $('salaFeito').hidden = !feito;
+    if (feito) $('salaFeito').innerHTML = '<span class="ok">✓</span><div>' + feito + '</div>';
+    $('salaEspera').hidden = !espera;
+    if (espera) $('salaEsperaTxt').textContent = espera;
+    $('salaOk').hidden = !botao;
+    if (botao) $('salaOk').textContent = botao;
+    $('salaOk2').hidden = !botao2;
+    if (botao2) $('salaOk2').textContent = botao2;
+    // sair só aparece quando já existe sala para sair
+    $('salaSair').hidden = !SALA;
+    mostra('scr-sala');
+    if (entrada) setTimeout(() => $('salaInput').focus(), 120);
+    const fecha = r => () => { $('salaOk').onclick = $('salaOk2').onclick = null; resolve(r); };
+    $('salaOk').onclick = fecha(1);
+    $('salaOk2').onclick = fecha(2);
+  });
+}
+
+const dizSala = txt => { $('salaAviso').innerHTML = txt; };
+
+async function comecaOnline(){
+  if (!window.ZB) return telaPassagem({
+    titulo:'Sem conexão', cima:'Duelo online',
+    aviso:'O duelo online precisa do servidor, e ele não respondeu. '
+        + 'Confira a internet e tente de novo.', botao:'Voltar' })
+    .then(() => mostra('scr-modo'));
+
+  if (!EU){
+    await telaPassagem({
+      titulo:'Entrar', cima:'Duelo online',
+      aviso:'Para jogar com um amigo os dois precisam de conta — é ela que '
+          + 'guarda a sala e o placar. Leva meio minuto.',
+      botao:'Criar conta ou entrar', botao2:'Agora não' })
+      .then(r => r === 1 ? abreConta() : mostra('scr-modo'));
+    return;
+  }
+  const q = await telaSala({
+    titulo:'Duelo online', cima:'Jogar com um amigo',
+    aviso:'Um de vocês cria a sala e manda o código. O outro entra com ele. '
+        + 'Os dois montam ao mesmo tempo, disputando os mesmos jogadores.',
+    botao:'Criar uma sala', botao2:'Entrar com um código' });
+  return q === 1 ? escolheBaseESala() : telaEntrarCodigo();
+}
+
+async function escolheBaseESala(){
+  const base = await telaPassagem({
+    titulo:'Duelo online', cima:'Escolha a base',
+    aviso:'De onde saem os jogadores que vocês vão disputar? '
+        + 'Quem entrar na sala joga na base que você escolher aqui.',
+    botao:'Lendas do futebol brasileiro',
+    botao2:'Times atuais · Brasileirão 2026',
+    botao3:'Misto · as duas bases juntas' });
+  const b = base === 2 ? 'atuais' : base === 3 ? 'misto' : 'lendas';
+  try {
+    const sala = await rpc('criar_sala', { p_base: b });
+    entraNaSala(sala);
+  } catch (e){
+    await telaPassagem({ titulo:'Deu errado', cima:'Duelo online',
+      aviso:'Não consegui criar a sala: <b>' + e.message + '</b>', botao:'Voltar' });
+    mostra('scr-modo');
+  }
+}
+
+async function telaEntrarCodigo(){
+  const inp = $('salaInput');
+  inp.oninput = () => {
+    inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+    $('salaOk').disabled = inp.value.length !== 5;
+  };
+  inp.onkeydown = e => { if (e.key === 'Enter' && inp.value.length === 5) $('salaOk').click(); };
+  $('salaOk').disabled = true;
+  const r = await telaSala({
+    titulo:'Entrar', cima:'Duelo online',
+    aviso:'Digite o código de cinco letras que seu amigo te mandou.',
+    entrada:true, botao:'Entrar na sala', botao2:'Voltar' });
+  $('salaOk').disabled = false;
+  if (r === 2) return comecaOnline();
+  try {
+    const sala = await rpc('entrar_sala', { p_codigo: inp.value });
+    entraNaSala(sala);
+  } catch (e){
+    dizSala('<b style="color:var(--vermelho)">' + e.message + '</b>');
+    return telaEntrarCodigo();
+  }
+}
+
+/* Entrar e acompanhar: o Realtime avisa na hora, e um relógio de seis
+   segundos cobre o caso de a conexão cair sem avisar. */
+function entraNaSala(sala){
+  MODO_JOGO = 'online';
+  BASE = sala.base;
+  try { localStorage.setItem(LEMBRA_SALA, sala.codigo); } catch {}
+  soltaSala(false);
+  canalSala = window.ZB.sb.channel('sala-' + sala.codigo)
+    .on('postgres_changes',
+        { event:'UPDATE', schema:'public', table:'zebra_salas',
+          filter:'codigo=eq.' + sala.codigo },
+        carga => sincronizaSala(carga.new))
+    .subscribe();
+  relogioSala = setInterval(async () => {
+    if (!SALA || SALA.fase === 'pronto' || SALA.fase === 'fim') return;
+    const { data } = await window.ZB.sb.from('zebra_salas')
+      .select('*').eq('codigo', SALA.codigo).maybeSingle();
+    if (data && data.mexida_em !== SALA.mexida_em) sincronizaSala(data);
+  }, 6000);
+  sincronizaSala(sala);
+}
+
+function soltaSala(limpaLembranca){
+  MONTANDO = null;
+  if (canalSala){ window.ZB.sb.removeChannel(canalSala); canalSala = null; }
+  if (relogioSala){ clearInterval(relogioSala); relogioSala = 0; }
+  if (limpaLembranca){ try { localStorage.removeItem(LEMBRA_SALA); } catch {} SALA = null; }
+}
+
+async function apelidoDe(id){
+  if (!id) return null;
+  const { data } = await window.ZB.sb.from('zebra_perfis')
+    .select('apelido').eq('id', id).maybeSingle();
+  return data ? data.apelido : null;
+}
+
+/* O coração: olha a sala e decide o que a pessoa vê agora. */
+async function sincronizaSala(sala){
+  const mudouFase = !SALA || SALA.fase !== sala.fase || SALA.vez !== sala.vez;
+  SALA = sala;
+  const eu = meuLado(sala);
+  const outro = eu === 1 ? sala.j2 : sala.j1;
+  const nomeOutro = (await apelidoDe(outro)) || 'seu amigo';
+  LOCAL = LOCAL && LOCAL.codigo === sala.codigo ? LOCAL
+        : { times:[], overs:[], forms:[], estilos:[], vez:eu, codigo:sala.codigo };
+  LOCAL.eu = eu;
+  LOCAL.nomes = eu === 1 ? ['Você', nomeOutro] : [nomeOutro, 'Você'];
+  Object.assign(LOCAL, sala.estado);
+
+  if (sala.fase === 'esperando'){
+    /* sem await: quem tira a pessoa daqui é a próxima mexida na sala, ou o
+       botão de sair, que é fixo na tela */
+    telaSala({
+      titulo:'Sala criada', cima:'Duelo online',
+      aviso:'Manda o código para o seu amigo. Assim que ele entrar, vocês dois '
+          + 'montam ao mesmo tempo — e quem clicar primeiro fica com o jogador.',
+      codigo: sala.codigo,
+      espera:'Esperando o adversário entrar' });
+    return;
+  }
+
+  if (sala.fase === 'montando'){
+    const meuTime = (sala.estado.times || [])[eu - 1];
+    if (meuTime){
+      MONTANDO = null;
+      telaSala({
+        titulo:'Time enviado', cima:'Duelo online',
+        aviso: `Seus onze estão guardados. <b>${nomeOutro}</b> ainda está montando — `
+             + 'pode fechar o jogo, que quando ele fechar a partida te espera aqui.',
+        codigo: sala.codigo,
+        feito: `Você fechou os onze<br><b>${(sala.estado.overs||[])[eu-1]}</b> de overall`,
+        espera:`Esperando ${nomeOutro} fechar os onze` });
+      return;
+    }
+    // já estou no campo: só atualizo quem o outro levou, sem recomeçar
+    if (MONTANDO === sala.codigo && S) return atualizaLevados(sala);
+    MONTANDO = sala.codigo;
+    return montaNaSala(sala);
+  }
+
+  if (sala.fase === 'pronto' || sala.fase === 'fim'){
+    if (!mudouFase && !$('scr-camp').hidden) return;
+    return partidaOnline(sala);
+  }
+}
+
+let MONTANDO = null;
+
+function montaNaSala(sala){
+  novoJogo(FORMACOES[1], ESTILOS[1]);
+  S.usados = new Set(sala.levados || []);
+  S.meus = new Set();
+  mostra('scr-jogo'); pinta();
+}
+
+/* O adversário levou alguém: a lista dele chega pelo Realtime e o elenco na
+   tela muda debaixo da mão de quem está escolhendo. */
+function atualizaLevados(sala){
+  if (!S) return;
+  S.usados = new Set(sala.levados || []);
+  /* A lista que volta do banco inclui quem eu mesmo acabei de pegar. Sem esta
+     distinção o jogo dava o aviso de roubado para o próprio dono do jogador. */
+  if (S.naMao && S.usados.has(S.naMao.id) && !S.meus.has(S.naMao.id)){
+    const quem = S.naMao.nome;
+    S.naMao = null;
+    avisaRoubo(quem);
+  }
+  pinta();
+  // se o elenco na mesa ficou sem ninguém escalável, o dado rola de novo
+  if (S.atual && !temEscolha(S.atual)) rolar();
+}
+
+function avisaRoubo(nome){
+  const el = $('naMao');
+  el.hidden = false;
+  el.classList.add('roubo');
+  el.innerHTML = `Tarde demais · <b>${nome}</b> já foi levado`;
+  clearTimeout(avisaRoubo.t);
+  avisaRoubo.t = setTimeout(() => {
+    el.classList.remove('roubo');
+    if (!S || !S.naMao) el.hidden = true; else pintaBarra();
+  }, 2600);
+}
+
+async function reservaJogador(p){
+  $('squad').classList.add('pedindo');
+  try {
+    SALA = await rpc('pegar_jogador', { p_codigo: SALA.codigo, p_id: p.id });
+    S.meus.add(p.id);
+    S.usados = new Set(SALA.levados || []);
+    return true;
+  } catch {
+    // alguém chegou primeiro: relê a sala para a tela contar a verdade
+    const { data } = await window.ZB.sb.from('zebra_salas')
+      .select('*').eq('codigo', SALA.codigo).maybeSingle();
+    if (data){ SALA = data; S.usados = new Set(data.levados || []); }
+    avisaRoubo(p.nome);
+    pinta();
+    if (S.atual && !temEscolha(S.atual)) rolar();
+    return false;
+  } finally {
+    $('squad').classList.remove('pedindo');
+  }
+}
+
+/* chamado quando a pessoa fecha os onze dentro de uma sala */
+async function fechouNoOnline(){
+  const eu = LOCAL.eu;
+  $('startCamp').disabled = true;
+  $('startCamp').textContent = 'Enviando...';
+  try {
+    const sala = await rpc('salvar_time', {
+      p_codigo: SALA.codigo,
+      p_time:   S.slots.map(s => s.jog),
+      p_over:   S.over,
+      p_form:   S.form,
+      p_estilo: S.estilo });
+    LOCAL.overs[eu - 1] = S.over;
+    sincronizaSala(sala);
+  } catch (e){
+    $('startCamp').textContent = 'Tentar de novo';
+    await telaPassagem({ titulo:'Não enviou', cima:'Duelo online',
+      aviso:'O time não subiu: <b>' + e.message + '</b>', botao:'Voltar ao time' });
+    mostra('scr-reveal');
+  } finally {
+    $('startCamp').disabled = false;
+  }
+}
+
+async function partidaOnline(sala){
+  /* mesma semente nos dois aparelhos, senão cada um veria um placar */
+  RND = geradorSemeado(sementeDe(sala.codigo));
+  const eu = meuLado(sala);
+  const nomeOutro = (await apelidoDe(eu === 1 ? sala.j2 : sala.j1)) || 'seu amigo';
+  LOCAL = { ...sala.estado, eu, codigo: sala.codigo,
+            nomes: eu === 1 ? ['Você', nomeOutro] : [nomeOutro, 'Você'] };
+  await telaPassagem({
+    titulo:'Bola rolando', cima:'Os dois times estão prontos',
+    aviso:'Melhor de três. O resultado é o mesmo nos dois aparelhos.',
+    feito:`${nomeLado(0)} · <b>${LOCAL.overs[0]}</b> de overall<br>`
+        + `${nomeLado(1)} · <b>${LOCAL.overs[1]}</b> de overall`,
+    botao:'Começar o duelo' });
+  await partidaLocal();
+  RND = Math.random;
+  try { await rpc('fechar_sala', { p_codigo: sala.codigo, p_resultado: {} }); } catch {}
+  soltaSala(true);
+}
+
+async function saiDaSala(){
+  soltaSala(true);
+  MODO_JOGO = 'campanha';
+  LOCAL = null;
+  mostra('scr-modo');
+}
+
+/* link com ?sala=CODIGO cai direto na sala; senão, retoma a última */
+async function retomaSala(){
+  if (!window.ZB || !EU) return false;
+  const daUrl = new URLSearchParams(location.search).get('sala');
+  let cod = daUrl;
+  if (!cod){ try { cod = localStorage.getItem(LEMBRA_SALA); } catch {} }
+  if (!cod) return false;
+  try {
+    const sala = await rpc('entrar_sala', { p_codigo: cod });
+    if (sala.fase === 'fim'){ soltaSala(true); return false; }
+    entraNaSala(sala);
+    return true;
+  } catch { soltaSala(true); return false; }
+}
+
+$('salaSair').onclick = saiDaSala;
+$('salaCopia').onclick = async () => {
+  const link = location.origin + location.pathname + '?sala=' + SALA.codigo;
+  const txt = `Bora um duelo no ZEBRA? Código ${SALA.codigo} — ${link}`;
+  try { await navigator.clipboard.writeText(txt); } catch {}
+  const b = $('salaCopia');
+  b.textContent = 'Copiado'; b.classList.add('feito');
+  setTimeout(() => { b.textContent = 'Copiar o convite'; b.classList.remove('feito'); }, 1800);
+};
 
 /* ---------- pênaltis na mão, só no duelo local ---------- */
 const PEN = { RMAX:125, RMIN:6, RALVO:40, JANELA:23, CICLOS:5 };
@@ -905,14 +1273,19 @@ function pintaPlacarPen(g, feitas){
     }).join('');
   };
   $('penPlacar').innerHTML =
-    `<div class="lado"><div class="nm">Jogador 1 · ${g[0]}</div><div class="pts">${bolas(0)}</div></div>
-     <div class="lado"><div class="nm">Jogador 2 · ${g[1]}</div><div class="pts">${bolas(1)}</div></div>`;
+    `<div class="lado"><div class="nm">${nomeLado(0)} · ${g[0]}</div><div class="pts">${bolas(0)}</div></div>
+     <div class="lado"><div class="nm">${nomeLado(1)} · ${g[1]}</div><div class="pts">${bolas(1)}</div></div>`;
 }
 
 async function disputaPenaltisLocal(xi1, xi2){
   const filas = [filaLocal(xi1), filaLocal(xi2)];
   const g = [0, 0], feitas = [];
   let n = 0;
+
+  /* Bater na mão exige os dois no mesmo aparelho. No online cada um está no
+     seu, e o duelo pode até correr em horas diferentes: vai no automático,
+     que o gerador semeado faz sair igual nos dois lados. */
+  if (MODO_JOGO === 'online') return penaltisAutoLocal(filas, g, feitas);
 
   const escolha = await telaPassagem({
     titulo: 'Pênaltis', cima: 'Deu empate',
@@ -934,7 +1307,7 @@ async function disputaPenaltisLocal(xi1, xi2){
            + 'Escolha o canto e acerte o tempo.',
     });
     mostra('scr-pen'); pintaPlacarPen(g, feitas);
-    $('penQuem').textContent = 'Jogador ' + (lado + 1) + ' · cobra';
+    $('penQuem').textContent = nomeLado(lado) + ' · cobra';
     $('penQuem').className = 'tag pen-quem bate';
     const ladoBat = await escolheLado(quem.nome, 'Para onde você bate?', '');
 
@@ -950,7 +1323,7 @@ async function disputaPenaltisLocal(xi1, xi2){
       aviso: 'A bola já saiu. Você é o goleiro: <b>chute o canto</b>.',
     });
     mostra('scr-pen'); pintaPlacarPen(g, feitas);
-    $('penQuem').textContent = 'Jogador ' + outro + ' · defende';
+    $('penQuem').textContent = nomeLado(outro - 1) + ' · defende';
     $('penQuem').className = 'tag pen-quem pega';
     const ladoGol = await escolheLado('Você defende', 'Para onde você se joga?', 'ouro');
 
@@ -1004,10 +1377,10 @@ async function penaltisAutoLocal(filas, g, feitas){
 
   const bate = async lado => {
     const quem = filas[lado][n % 11];
-    const fez = Math.random() < Math.max(.45, Math.min(.95, .68 + (quem.over - 78) / 100));
+    const fez = RND() < Math.max(.45, Math.min(.95, .68 + (quem.over - 78) / 100));
     $('penTitulo').textContent = quem.nome;
     $('penTitulo').className = 'pen-t';
-    $('penSub').textContent = 'Jogador ' + (lado + 1) + ' na marca do pênalti';
+    $('penSub').textContent = nomeLado(lado) + ' na marca do pênalti';
     await sleep(420);
     if (fez) g[lado]++;
     feitas.push({ lado, nome: quem.nome, fez });
@@ -1556,11 +1929,14 @@ $('btRank').onclick = async () => {
   } catch(e){ $('rankCorpo').innerHTML = `<div class="aviso erro" style="margin-top:18px">Não deu para carregar o ranking: ${e.message}</div>`; }
 };
 
-window.addEventListener('zb-pronto', () => { pintaTopo(); carregaEu(); });
+window.addEventListener('zb-pronto', async () => {
+  pintaTopo(); await carregaEu(); retomaSala();
+});
 window.addEventListener('zb-falhou', pintaTopo);
 pintaTopo();
 
 $('startCamp').onclick = () => MODO_JOGO === 'temporada' ? temporada()
+  : MODO_JOGO === 'online' ? fechouNoOnline()
   : MODO_JOGO === 'local' ? fechouNoLocal() : campanha();
 $('again').onclick = () => location.reload();
 document.querySelectorAll('.sp[data-sp]').forEach(b=>b.onclick=()=>{
